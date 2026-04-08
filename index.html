@@ -140,7 +140,8 @@
     <script>
         let peliculasGlobal = [];
         let searchTimeout = null;
-        const API_BASE = "https://mi-servidor-cine.onrender.com/"; 
+        // CORRECCIÓN: URL segura HTTPS y sin barra al final
+        const API_BASE = "https://mi-servidor-cine.onrender.com"; 
 
         lucide.createIcons();
 
@@ -151,9 +152,13 @@
             btn.classList.replace("text-slate-400", "text-red-500");
         }
 
+        // CORRECCIÓN: Mejora de la función API para evitar errores de red
         async function api(endpoint) {
             try {
-                const res = await fetch(`${API_BASE}${endpoint}`);
+                const res = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
                 if (!res.ok) throw new Error("Error en red");
                 return await res.json();
             } catch (e) { 
@@ -201,7 +206,6 @@
             lucide.createIcons();
         }
 
-        // --- NUEVA LÓGICA DE MONETIZACIÓN ---
         async function prepararReproductor(id) {
             const container = document.getElementById("video-player-container");
             container.innerHTML = `
@@ -214,13 +218,13 @@
             const adData = await api("/get-ads");
             
             if (adData && adData.enabled) {
-                // Abrir anuncio de inicio
-                window.open(adData.start_link, "_blank");
+                // Abrir anuncio
+                window.open(adData.video_ad_start || adData.start_link, "_blank");
                 
-                // Esperar el tiempo de carga obligatorio
+                // Espera obligatoria antes de mostrar el video
                 setTimeout(() => {
                     cargarReproductor(id);
-                }, adData.must_wait);
+                }, adData.must_wait || 5000);
             } else {
                 cargarReproductor(id);
             }
@@ -241,6 +245,8 @@
                     <div id="shield" class="video-shield" onclick="this.remove()"></div>
                     <iframe id="main-player" src="${data.primary}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                 `;
+            } else {
+                container.innerHTML = `<p class="text-red-500">Video no disponible por el momento.</p>`;
             }
         }
 
@@ -255,10 +261,9 @@
         }
 
         async function cerrarDetalles() {
-            // Publicidad al salir
             const adData = await api("/get-ads");
             if (adData && adData.enabled) {
-                window.open(adData.end_link, "_blank");
+                window.open(adData.video_ad_end || adData.end_link, "_blank");
             }
 
             document.getElementById("movie-details").classList.remove("open");
@@ -273,7 +278,10 @@
             if (q.length > 2) {
                 searchTimeout = setTimeout(async () => {
                     let data = await api(`/ai?q=${encodeURIComponent(q)}`);
-                    if (data) pintar(data, "resultados");
+                    if (data) {
+                        pintar(data, "resultados");
+                        cambiarPantalla('search-results', document.querySelectorAll(".nav-btn")[1]);
+                    }
                 }, 600);
             }
         });
