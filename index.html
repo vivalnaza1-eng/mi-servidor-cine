@@ -88,7 +88,6 @@
             border-radius: 9999px;
             font-weight: 800;
             border: 2px solid white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             z-index: 1000000;
         }
 
@@ -103,7 +102,7 @@
 <body class="pb-20">
 
     <div id="ad-control-layer">
-        <button onclick="forzarCierreAd()" class="btn-close-global">
+        <button id="main-ad-close" onclick="forzarCierreAd()" class="btn-close-global">
             CERRAR PUBLICIDAD [X]
         </button>
         <iframe id="universal-ad-frame" class="w-full h-full border-none"></iframe>
@@ -146,7 +145,7 @@
         let peliculasGlobal = [];
         let searchTimeout = null;
         let peliActualId = null;
-        let modoCierreActivo = false; // Nueva bandera para controlar el flujo de cierre
+        let modoCierreActivo = false;
         const API_BASE = "https://mi-servidor-cine.onrender.com"; 
 
         lucide.createIcons();
@@ -208,8 +207,12 @@
 
         async function lanzarAnuncioControlado(id, esInicio) {
             const adData = await api("/get-ads");
+            
+            // Siempre cargamos el reproductor de fondo si es el inicio
+            if(esInicio) cargarReproductor(id);
+
             if (adData && adData.enabled) {
-                if (!esInicio) modoCierreActivo = true; // Estamos cerrando la peli
+                if (!esInicio) modoCierreActivo = true;
                 
                 const linkAd = esInicio ? (adData.video_ad_start || adData.start_link) : (adData.video_ad_end || adData.end_link);
                 const layer = document.getElementById('ad-control-layer');
@@ -218,8 +221,7 @@
                 frame.src = linkAd;
                 layer.style.display = "block";
             } else {
-                if(esInicio) cargarReproductor(id);
-                else cerrarDetallesReal();
+                if(!esInicio) cerrarDetallesReal();
             }
         }
 
@@ -227,18 +229,15 @@
             document.getElementById('ad-control-layer').style.display = "none";
             document.getElementById('universal-ad-frame').src = "";
             
-            // Si estábamos cerrando la película, terminamos de cerrar todo
             if (modoCierreActivo) {
                 cerrarDetallesReal();
-            } else if(peliActualId) {
-                cargarReproductor(peliActualId);
             }
         }
 
         async function cargarReproductor(id) {
             const container = document.getElementById("video-player-container");
             const serverNav = document.getElementById("server-selector");
-            container.innerHTML = `<div class="loader-ring"></div>`;
+            container.innerHTML = `<div class="flex flex-col items-center h-full justify-center"><div class="loader-ring"></div></div>`;
             container.classList.remove("hidden");
 
             const data = await api(`/limpiar-video/${id}`);
@@ -265,7 +264,6 @@
         }
 
         function cerrarDetalles() {
-            // Antes de mostrar el anuncio de salida, matamos el video
             matarReproductor();
             lanzarAnuncioControlado(peliActualId, false);
         }
