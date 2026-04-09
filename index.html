@@ -3,293 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineApp Master | Streaming AI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>CineMaster AI - Películas Gratis</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
+        /* Diseño Base Estilo Cine */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
+            background-color: #0f0f0f;
             color: white;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
         }
 
-        .screen { display: none; }
-        .screen.active { display: block; animation: fadeIn 0.3s ease; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        h1 { color: #e50914; margin-bottom: 30px; }
+
+        .pelicula-card {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px auto;
+            max-width: 400px;
+            border: 1px solid #333;
         }
 
-        #movie-details {
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        #movie-details.open { transform: translateY(0); }
-
-        .glass-nav {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .movie-card {
-            aspect-ratio: 2/3;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .movie-card:active { transform: scale(0.95); }
-
-        .loader-ring {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(239, 68, 68, 0.1);
-            border-top: 4px solid #ef4444;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .server-btn {
-            background: rgba(30, 41, 59, 0.8);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 11px;
+        .btn-play {
+            background-color: #e50914;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
             font-weight: bold;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .server-btn.active {
-            background: #ef4444;
-            border-color: #ef4444;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
         }
 
-        .video-shield {
+        /* --- CAPA DEL ANUNCIO (INTERSTITIAL) --- */
+        #capa-anuncio {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 99999;
+        }
+
+        /* Botón de cerrar fijo arriba */
+        .btn-cerrar-ad {
             position: absolute;
-            inset: 0;
-            z-index: 50;
-            background: transparent;
+            top: 15px;
+            right: 15px;
+            background: #ff0000;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            z-index: 100000;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+        }
+
+        #ad-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Contenedor del Reproductor de Video */
+        #reproductor-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        iframe.video-player {
+            width: 100%;
+            max-width: 800px;
+            height: 450px;
+            border: 2px solid #e50914;
         }
     </style>
 </head>
-<body class="pb-20">
+<body>
 
-    <header class="p-4 sticky top-0 z-40 bg-[#0f172a]">
-        <div class="relative">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5"></i>
-            <input type="text" id="search" 
-                placeholder="Busca una peli o pide una recomendación..." 
-                class="w-full bg-slate-800 border-none rounded-2xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm text-white">
-        </div>
-    </header>
+    <h1>CineMaster AI 🍿</h1>
 
-    <main id="app-content" class="px-4">
-        <section id="home" class="screen active">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <i data-lucide="sparkles" class="text-yellow-500 w-5"></i> Tendencias
-            </h2>
-            <div id="populares" class="grid grid-cols-2 gap-4"></div>
-        </section>
-
-        <section id="search-results" class="screen">
-            <h2 class="text-xl font-bold mb-4 text-slate-400">Resultados</h2>
-            <div id="resultados" class="grid grid-cols-2 gap-4"></div>
-        </section>
-
-        <section id="favs" class="screen">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <i data-lucide="heart" class="text-red-500 fill-red-500 w-5"></i> Guardadas
-            </h2>
-            <div id="favoritos" class="grid grid-cols-2 gap-4">
-                <div class="col-span-full py-20 text-center opacity-50 text-sm">Próximamente disponible</div>
-            </div>
-        </section>
-    </main>
-
-    <div id="movie-details" class="fixed inset-0 z-[60] bg-slate-900 overflow-y-auto">
-        <button onclick="cerrarDetalles()" class="fixed top-4 right-4 z-[100] bg-black/50 p-2 rounded-full backdrop-blur-md border border-white/10 active:scale-90 transition-transform">
-            <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-        <div id="details-content"></div>
+    <div class="pelicula-card">
+        <h3>Película de Estreno 2026</h3>
+        <p>Acción | Ciencia Ficción</p>
+        <button class="btn-play" onclick="mostrarPublicidad('URL_DE_TU_VIDEO_AQUI')">▶️ VER AHORA</button>
     </div>
 
-    <nav class="glass-nav fixed bottom-0 left-0 right-0 px-8 py-3 flex justify-between items-center z-50">
-        <button onclick="cambiarPantalla('home', this)" class="nav-btn flex flex-col items-center gap-1 text-red-500">
-            <i data-lucide="home" class="w-6 h-6"></i>
-            <span class="text-[10px] font-bold text-center">Inicio</span>
-        </button>
-        <button onclick="cambiarPantalla('search-results', this)" class="nav-btn flex flex-col items-center gap-1 text-slate-400">
-            <i data-lucide="compass" class="w-6 h-6"></i>
-            <span class="text-[10px] font-bold text-center">Explorar</span>
-        </button>
-        <button onclick="cambiarPantalla('favs', this)" class="nav-btn flex flex-col items-center gap-1 text-slate-400">
-            <i data-lucide="heart" class="w-6 h-6"></i>
-            <span class="text-[10px] font-bold text-center">Favoritos</span>
-        </button>
-    </nav>
+    <div id="reproductor-container">
+        <h2 id="titulo-reproduciendo">Reproduciendo...</h2>
+        <iframe id="main-video" class="video-player" src="" allowfullscreen></iframe>
+    </div>
+
+    <div id="capa-anuncio">
+        <button class="btn-cerrar-ad" onclick="quitarPublicidad()">CERRAR ANUNCIO [X]</button>
+        <iframe id="ad-frame" src=""></iframe>
+    </div>
 
     <script>
-        let peliculasGlobal = [];
-        let searchTimeout = null;
-        // CORRECCIÓN: URL segura HTTPS y sin barra al final
-        const API_BASE = "https://mi-servidor-cine.onrender.com"; 
+        // CONFIGURACIÓN
+        const MI_LINK_ADSTERRA = "TU_LINK_DE_ADSTERRA_AQUI"; // <-- PEGA AQUÍ TU DIRECT LINK
+        let videoPendiente = "";
 
-        lucide.createIcons();
-
-        function cambiarPantalla(id, btn) {
-            document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-            document.getElementById(id).classList.add("active");
-            document.querySelectorAll(".nav-btn").forEach(b => b.classList.replace("text-red-500", "text-slate-400"));
-            btn.classList.replace("text-slate-400", "text-red-500");
-        }
-
-        // CORRECCIÓN: Mejora de la función API para evitar errores de red
-        async function api(endpoint) {
-            try {
-                const res = await fetch(`${API_BASE}${endpoint}`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (!res.ok) throw new Error("Error en red");
-                return await res.json();
-            } catch (e) { 
-                console.error("Error conectando al servidor:", e);
-                return null; 
-            }
-        }
-
-        function pintar(lista, contenedorId) {
-            const cont = document.getElementById(contenedorId);
-            if (!cont || !lista) return;
-            cont.innerHTML = lista.map(p => `
-                <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-2xl overflow-hidden bg-slate-800">
-                    <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover" loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent p-3 flex flex-col justify-end">
-                        <p class="text-[10px] text-yellow-400 font-bold">⭐ ${p.vote_average.toFixed(1)}</p>
-                        <h3 class="text-xs font-bold truncate">${p.title}</h3>
-                    </div>
-                </div>
-            `).join('');
-            peliculasGlobal = [...new Map([...peliculasGlobal, ...lista].map(m => [m.id, m])).values()];
-        }
-
-        async function abrirDetalles(id) {
-            const p = peliculasGlobal.find(m => m.id === id);
-            if (!p) return;
-
-            document.getElementById("details-content").innerHTML = `
-                <div class="relative w-full aspect-video bg-black">
-                    <img src="https://image.tmdb.org/t/p/original${p.backdrop_path}" class="w-full h-full object-cover opacity-60">
-                    <div id="play-overlay" class="absolute inset-0 flex items-center justify-center">
-                        <button onclick="prepararReproductor(${p.id})" class="bg-red-600 p-5 rounded-full scale-125 shadow-xl">
-                            <i data-lucide="play" class="fill-current w-6 h-6"></i>
-                        </button>
-                    </div>
-                    <div id="video-player-container" class="hidden absolute inset-0 bg-black flex flex-col items-center justify-center z-10"></div>
-                </div>
-                <div id="server-selector" class="hidden flex gap-2 p-4 bg-slate-800 overflow-x-auto sticky top-0 z-50"></div>
-                <div class="p-6">
-                    <h2 class="text-2xl font-bold">${p.title}</h2>
-                    <p class="text-slate-400 text-sm mt-4 leading-relaxed">${p.overview || 'Sin descripción.'}</p>
-                </div>
-            `;
-            document.getElementById("movie-details").classList.add("open");
-            lucide.createIcons();
-        }
-
-        async function prepararReproductor(id) {
-            const container = document.getElementById("video-player-container");
-            container.innerHTML = `
-                <div class="flex flex-col items-center">
-                    <div class="loader-ring mb-4"></div>
-                    <p class="text-xs font-bold animate-pulse text-red-500 uppercase">Cargando servidor seguro...</p>
-                </div>`;
-            container.classList.remove("hidden");
-
-            const adData = await api("/get-ads");
+        function mostrarPublicidad(urlVideo) {
+            videoPendiente = urlVideo; // Guardamos el video para después
             
-            if (adData && adData.enabled) {
-                // Abrir anuncio
-                window.open(adData.video_ad_start || adData.start_link, "_blank");
-                
-                // Espera obligatoria antes de mostrar el video
-                setTimeout(() => {
-                    cargarReproductor(id);
-                }, adData.must_wait || 5000);
-            } else {
-                cargarReproductor(id);
-            }
-        }
+            const capa = document.getElementById('capa-anuncio');
+            const frame = document.getElementById('ad-frame');
 
-        async function cargarReproductor(id) {
-            const container = document.getElementById("video-player-container");
-            const serverNav = document.getElementById("server-selector");
+            // Cargamos el anuncio de Adsterra
+            frame.src = MI_LINK_ADSTERRA;
+            capa.style.display = "block";
             
-            const data = await api(`/limpiar-video/${id}`);
-            if (data) {
-                serverNav.classList.remove("hidden");
-                serverNav.innerHTML = data.alternatives.map((s, idx) => `
-                    <button onclick="cambiarFuente('${s.url}', this)" class="server-btn ${idx === 0 ? 'active' : ''}">${s.name}</button>
-                `).join('');
-
-                container.innerHTML = `
-                    <div id="shield" class="video-shield" onclick="this.remove()"></div>
-                    <iframe id="main-player" src="${data.primary}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                `;
-            } else {
-                container.innerHTML = `<p class="text-red-500">Video no disponible por el momento.</p>`;
-            }
+            console.log("Mostrando anuncio antes de: " + urlVideo);
         }
 
-        function cambiarFuente(url, btn) {
-            document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            const container = document.getElementById("video-player-container");
-            container.innerHTML = `
-                <div id="shield" class="video-shield" onclick="this.remove()"></div>
-                <iframe id="main-player" src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-            `;
+        function quitarPublicidad() {
+            // Ocultamos la capa y limpiamos el frame del anuncio
+            document.getElementById('capa-anuncio').style.display = "none";
+            document.getElementById('ad-frame').src = "";
+
+            // Ahora mostramos el reproductor con el video real
+            const repoContainer = document.getElementById('reproductor-container');
+            const mainVideo = document.getElementById('main-video');
+
+            repoContainer.style.display = "block";
+            mainVideo.src = videoPendiente;
+
+            // Scroll automático al reproductor
+            window.scrollTo(0, document.body.scrollHeight);
         }
-
-        async function cerrarDetalles() {
-            const adData = await api("/get-ads");
-            if (adData && adData.enabled) {
-                window.open(adData.video_ad_end || adData.end_link, "_blank");
-            }
-
-            document.getElementById("movie-details").classList.remove("open");
-            setTimeout(() => {
-                document.getElementById("details-content").innerHTML = "";
-            }, 400);
-        }
-
-        document.getElementById("search").addEventListener("input", (e) => {
-            clearTimeout(searchTimeout);
-            const q = e.target.value.trim();
-            if (q.length > 2) {
-                searchTimeout = setTimeout(async () => {
-                    let data = await api(`/ai?q=${encodeURIComponent(q)}`);
-                    if (data) {
-                        pintar(data, "resultados");
-                        cambiarPantalla('search-results', document.querySelectorAll(".nav-btn")[1]);
-                    }
-                }, 600);
-            }
-        });
-
-        window.onload = async () => {
-            const data = await api("/populares");
-            if (data) pintar(data, "populares");
-        };
     </script>
+
 </body>
 </html>
