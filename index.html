@@ -2,147 +2,135 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineApp | Nazareth Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nazareth Cinema Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
-        .movie-card { aspect-ratio: 2/3; cursor: pointer; transition: 0.3s; background: #1e293b; border-radius: 12px; overflow: hidden; }
-        .movie-card:active { transform: scale(0.95); }
-        #movie-details { position: fixed; inset: 0; background: #0f172a; transform: translateY(100%); transition: 0.4s ease; z-index: 100; overflow-y: auto; }
-        #movie-details.open { transform: translateY(0); }
-        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #ef4444; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .signature { font-size: 10px; color: rgba(255, 255, 255, 0.4); text-align: right; margin-top: 5px; }
-        #ad-layer { display: none; position: fixed; inset: 0; background: black; z-index: 9999; }
+        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .poster-card { transition: transform 0.3s ease; aspect-ratio: 2/3; border-radius: 8px; overflow: hidden; background: #111; }
+        .poster-card:active { transform: scale(0.95); }
+        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
+        .modal.active { display: flex; }
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="pb-10">
 
-    <div id="ad-layer">
-        <button onclick="cerrarAd()" class="fixed top-4 right-4 bg-red-600 px-4 py-2 rounded-full font-bold border-2 border-white z-[10000]">CERRAR ANUNCIO [X]</button>
-        <iframe id="ad-frame" class="w-full h-full border-none"></iframe>
-    </div>
-
-    <header class="p-4 sticky top-0 bg-[#0f172a] z-50">
-        <input type="text" id="search-input" placeholder="Buscar película..." 
-            class="w-full bg-slate-800 rounded-xl py-3 px-4 outline-none border border-slate-700 focus:border-red-500">
-        <div class="signature">by Nazareth</div>
-    </header>
-
-    <main class="p-4">
-        <div id="grid-peliculas" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            </div>
-    </main>
-
-    <div id="movie-details">
-        <div class="relative w-full aspect-video bg-black">
-            <button onclick="cerrarDetalles()" class="absolute top-4 right-4 z-[110] bg-black/50 p-2 rounded-full"><i data-lucide="x"></i></button>
-            <div id="player-container" class="w-full h-full"></div>
+    <nav class="flex items-center justify-between p-5 sticky top-0 bg-black/90 backdrop-blur-md z-50">
+        <h1 class="text-red-600 font-black text-2xl tracking-tighter">NAZARETH <span class="text-white font-light text-sm">PRO</span></h1>
+        <div class="relative w-2/3">
+            <input type="text" id="search" placeholder="Busca tu película..." 
+                class="w-full bg-zinc-800 rounded-full py-2 px-10 text-sm outline-none focus:ring-1 focus:ring-red-600">
+            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400"></i>
         </div>
-        <div class="p-4">
-            <h2 id="detail-title" class="text-xl font-bold mb-4">Reproduciendo</h2>
-            <div class="flex flex-wrap gap-2" id="server-options"></div>
+    </nav>
+
+    <div id="loading" class="text-center py-20 hidden"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-red-600"></div></div>
+    
+    <div id="grid" class="grid grid-cols-3 gap-3 p-3">
+        </div>
+
+    <div id="player-modal" class="modal overflow-y-auto">
+        <div class="p-4 flex items-center justify-between border-b border-zinc-800">
+            <button onclick="closePlayer()" class="p-2"><i data-lucide="chevron-left"></i></button>
+            <span class="font-bold truncate px-4 text-sm" id="m-title">Cargando...</span>
+            <div class="w-10"></div>
+        </div>
+        
+        <div class="w-full aspect-video bg-zinc-900 shadow-2xl">
+            <div id="video-container" class="w-full h-full"></div>
+        </div>
+
+        <div class="p-5">
+            <h3 class="text-zinc-400 text-xs font-bold uppercase mb-3">Servidores Disponibles</h3>
+            <div id="servers" class="flex gap-2 overflow-x-auto pb-4"></div>
+            
+            <h3 class="text-zinc-400 text-xs font-bold uppercase mt-4 mb-2">Sinopsis</h3>
+            <p id="m-desc" class="text-sm text-zinc-300 leading-relaxed"></p>
         </div>
     </div>
 
     <script>
-        // Extraemos la lógica: Usamos los IDs que ya vienen en los posters de tu servidor de Render
-        const API_RENDER = "https://mi-servidor-cine.onrender.com";
-        let todasLasPelis = [];
+        // CAMBIA ESTO POR TU URL DE RENDER
+        const API_URL = "https://mi-servidor-cine.onrender.com";
+        let localMovies = [];
 
-        // 1. Cargar tendencias al abrir
-        async function cargarTendencias() {
+        async function init() {
+            showLoading(true);
             try {
-                const res = await fetch(`${API_RENDER}/populares`);
-                const data = await res.json();
-                todasLasPelis = data;
-                renderizar(data);
-            } catch (e) { console.error("Error al cargar populares"); }
+                const r = await fetch(`${API_URL}/populares`);
+                localMovies = await r.json();
+                drawMovies(localMovies);
+            } catch (e) { console.error("Error inicial"); }
+            showLoading(false);
         }
 
-        function renderizar(lista) {
-            const grid = document.getElementById('grid-peliculas');
-            grid.innerHTML = lista.map(p => `
-                <div class="movie-card" onclick="abrirPlayer('${p.id}', '${p.title.replace(/'/g, "")}')">
-                    <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black p-3 flex items-end">
-                        <span class="text-[10px] font-bold">${p.title}</span>
-                    </div>
+        function drawMovies(list) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = list.map(m => `
+                <div class="poster-card" onclick="openPlayer(${m.id})">
+                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        // 2. Buscador integrado (Ataca la ruta de búsqueda de tu server)
-        document.getElementById('search-input').addEventListener('input', async (e) => {
-            const q = e.target.value.trim();
+        // BUSCADOR EN TIEMPO REAL
+        let timer;
+        document.getElementById('search').addEventListener('input', (e) => {
+            clearTimeout(timer);
+            const q = e.target.value;
             if (q.length < 3) return;
-            try {
-                const res = await fetch(`${API_RENDER}/buscar?q=${encodeURIComponent(q)}`);
-                const data = await res.json();
-                renderizar(data);
-                // Guardamos en memoria para que el reproductor sepa qué peli es
-                todasLasPelis = [...todasLasPelis, ...data];
-            } catch (e) { }
+            timer = setTimeout(async () => {
+                showLoading(true);
+                const r = await fetch(`${API_URL}/buscar?q=${q}`);
+                const data = await r.json();
+                localMovies = [...localMovies, ...data];
+                drawMovies(data);
+                showLoading(false);
+            }, 600);
         });
 
-        // 3. El Reproductor (Sin pasar por la limpieza de Render para evitar el 404)
-        function abrirPlayer(id, titulo) {
-            document.getElementById('detail-title').innerText = titulo;
-            const servers = [
-                { name: "Latino/Esp", url: `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1` },
-                { name: "Servidor 2", url: `https://vidsrc.me/embed/movie?tmdb=${id}` },
-                { name: "Servidor 3", url: `https://embed.su/embed/movie/${id}` }
+        function openPlayer(id) {
+            const movie = localMovies.find(m => m.id == id);
+            if (!movie) return;
+
+            document.getElementById('m-title').innerText = movie.title;
+            document.getElementById('m-desc').innerText = movie.overview || "No hay descripción disponible.";
+            document.getElementById('player-modal').classList.add('active');
+
+            const options = [
+                { n: "Latino", u: `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1` },
+                { n: "Castellano", u: `https://vidsrc.me/embed/movie?tmdb=${id}` },
+                { n: "VIP", u: `https://embed.su/embed/movie/${id}` }
             ];
 
-            const serverDiv = document.getElementById('server-options');
-            serverDiv.innerHTML = servers.map((s, i) => `
-                <button onclick="cambiarServer('${s.url}', this)" class="px-3 py-2 rounded-lg text-[10px] font-bold ${i===0?'bg-red-600':'bg-slate-700'}">
-                    ${s.name}
+            document.getElementById('servers').innerHTML = options.map((s, i) => `
+                <button onclick="play('${s.u}', this)" class="px-5 py-2 rounded-full text-[11px] font-bold border border-zinc-700 whitespace-nowrap ${i==0?'bg-red-600 border-red-600':''}">
+                    ${s.n}
                 </button>
             `).join('');
 
-            // Lanzar anuncio antes de reproducir
-            lanzarAnuncio();
-            cambiarServer(servers[0].url);
-            document.getElementById('movie-details').classList.add('open');
+            play(options[0].u);
         }
 
-        function cambiarServer(url, btn) {
-            if(btn) {
-                document.querySelectorAll('#server-options button').forEach(b => b.classList.replace('bg-red-600', 'bg-slate-700'));
-                btn.classList.replace('bg-slate-700', 'bg-red-600');
+        function play(url, btn) {
+            if (btn) {
+                document.querySelectorAll('#servers button').forEach(b => b.classList.remove('bg-red-600', 'border-red-600'));
+                btn.classList.add('bg-red-600', 'border-red-600');
             }
-            document.getElementById('player-container').innerHTML = `
-                <iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-            `;
+            document.getElementById('video-container').innerHTML = `<iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
         }
 
-        async function lanzarAnuncio() {
-            try {
-                const res = await fetch(`${API_RENDER}/get-ads`);
-                const data = await res.json();
-                if(data.enabled) {
-                    document.getElementById('ad-frame').src = data.video_ad_start;
-                    document.getElementById('ad-layer').style.display = 'block';
-                }
-            } catch (e) { }
+        function closePlayer() {
+            document.getElementById('player-modal').classList.remove('active');
+            document.getElementById('video-container').innerHTML = "";
         }
 
-        function cerrarAd() {
-            document.getElementById('ad-layer').style.display = 'none';
-            document.getElementById('ad-frame').src = '';
-        }
+        function showLoading(s) { document.getElementById('loading').style.display = s ? 'block' : 'none'; }
 
-        function cerrarDetalles() {
-            document.getElementById('movie-details').classList.remove('open');
-            document.getElementById('player-container').innerHTML = '';
-        }
-
-        window.onload = cargarTendencias;
+        window.onload = init;
     </script>
 </body>
 </html>
