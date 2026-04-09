@@ -3,176 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineApp Master | Streaming AI</title>
+    <title>CineApp | Fix Servers</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
-        .screen { display: none; }
-        .screen.active { display: block; }
-        #movie-details { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        .movie-card { aspect-ratio: 2/3; cursor: pointer; transition: 0.2s; }
+        .movie-card:active { transform: scale(0.98); }
+        #movie-details { transform: translateY(100%); transition: transform 0.4s ease; z-index: 100; }
         #movie-details.open { transform: translateY(0); }
-        .movie-card { aspect-ratio: 2/3; cursor: pointer; }
-        .loader-ring { width: 40px; height: 40px; border: 4px solid rgba(239, 68, 68, 0.1); border-top: 4px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader-ring { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        #ad-control-layer { display: none; position: fixed; inset: 0; background: black; z-index: 999999; }
-        .btn-close-global { position: fixed; top: 1.5rem; right: 1.5rem; background: #ef4444; color: white; padding: 0.8rem 1.5rem; border-radius: 9999px; font-weight: 800; border: 2px solid white; z-index: 1000000; }
-        .video-shield { position: absolute; inset: 0; z-index: 40; background: rgba(0,0,0,0.01); }
+        /* Capa Publicidad */
+        #ad-control-layer { display: none; position: fixed; inset: 0; background: black; z-index: 99999; }
+        .btn-close-ad { position: fixed; top: 1rem; right: 1rem; background: #ef4444; color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; border: 2px solid white; z-index: 100000; }
+        .video-shield { position: absolute; inset: 0; z-index: 50; background: rgba(0,0,0,0.01); }
     </style>
 </head>
 <body class="pb-20">
 
     <div id="ad-control-layer">
-        <button onclick="forzarCierreAd()" class="btn-close-global">CERRAR PUBLICIDAD [X]</button>
+        <button onclick="forzarCierreAd()" class="btn-close-ad">CERRAR PUBLICIDAD [X]</button>
         <iframe id="universal-ad-frame" class="w-full h-full border-none"></iframe>
     </div>
 
-    <header class="p-4 sticky top-0 z-40 bg-[#0f172a]">
-        <input type="text" id="search" placeholder="Busca una peli..." class="w-full bg-slate-800 rounded-2xl py-3 px-4 outline-none text-white">
+    <header class="p-4 bg-[#0f172a] sticky top-0 z-40">
+        <input type="text" id="search" placeholder="Buscar..." class="w-full bg-slate-800 rounded-xl py-3 px-4 outline-none">
     </header>
 
-    <main class="px-4">
-        <section id="home" class="screen active">
-            <h2 class="text-xl font-bold mb-4">Tendencias</h2>
-            <div id="populares" class="grid grid-cols-2 gap-4"></div>
-        </section>
-        <section id="search-results" class="screen">
-            <h2 class="text-xl font-bold mb-4">Resultados</h2>
-            <div id="resultados" class="grid grid-cols-2 gap-4"></div>
-        </section>
-    </main>
+    <div id="populares" class="grid grid-cols-2 gap-4 px-4"></div>
 
-    <div id="movie-details" class="fixed inset-0 z-[60] bg-slate-900 overflow-y-auto">
-        <button onclick="cerrarDetallesConAd()" class="fixed top-4 right-4 z-[100] bg-black/50 p-2 rounded-full border border-white/10">
-            <i data-lucide="x"></i>
-        </button>
+    <div id="movie-details" class="fixed inset-0 bg-slate-900 overflow-y-auto">
+        <button onclick="cerrarDetallesConAd()" class="fixed top-4 right-4 z-[110] bg-black/60 p-2 rounded-full border border-white/20"><i data-lucide="x"></i></button>
         <div id="details-content"></div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md p-4 flex justify-around z-50">
-        <button onclick="location.reload()" class="text-red-500"><i data-lucide="home"></i></button>
-        <button onclick="document.getElementById('search').focus()" class="text-slate-400"><i data-lucide="search"></i></button>
-    </nav>
-
     <script>
+        const API_BASE = "https://mi-servidor-cine.onrender.com";
         let peliculasGlobal = [];
         let peliActualId = null;
-        let modoCierreActivo = false; // Esta es la clave
-        const API_BASE = "https://mi-servidor-cine.onrender.com"; 
+        let modoCierreActivo = false;
 
-        async function cargarHome() {
+        // Carga inicial
+        async function init() {
             try {
                 const res = await fetch(`${API_BASE}/populares`);
                 const data = await res.json();
-                pintar(data, "populares");
-            } catch (e) { console.error("Error cargando home"); }
-        }
-
-        function pintar(lista, contenedorId) {
-            const cont = document.getElementById(contenedorId);
-            cont.innerHTML = lista.map(p => `
-                <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-2xl overflow-hidden bg-slate-800">
-                    <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black p-3 flex flex-col justify-end">
-                        <h3 class="text-xs font-bold truncate">${p.title}</h3>
+                peliculasGlobal = data;
+                document.getElementById('populares').innerHTML = data.map(p => `
+                    <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
+                        <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end">
+                            <h3 class="text-[10px] font-bold truncate">${p.title}</h3>
+                        </div>
                     </div>
-                </div>
-            `).join('');
-            peliculasGlobal = [...new Map([...peliculasGlobal, ...lista].map(m => [m.id, m])).values()];
+                `).join('');
+                lucide.createIcons();
+            } catch (e) { console.error("Servidor dormido..."); }
         }
 
         function abrirDetalles(id) {
-            const p = peliculasGlobal.find(m => m.id === id);
-            if (!p) return;
+            const p = peliculasGlobal.find(m => m.id == id);
             peliActualId = id;
-            modoCierreActivo = false; // Al abrir, siempre es falso
+            modoCierreActivo = false;
 
             document.getElementById("details-content").innerHTML = `
                 <div class="relative w-full aspect-video bg-black">
-                    <img src="https://image.tmdb.org/t/p/original${p.backdrop_path}" class="w-full h-full object-cover opacity-60">
+                    <img src="https://image.tmdb.org/t/p/original${p.backdrop_path}" class="w-full h-full object-cover opacity-50">
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-5 rounded-full shadow-xl">
-                            <i data-lucide="play" class="fill-current w-6 h-6"></i>
-                        </button>
+                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-4 rounded-full"><i data-lucide="play"></i></button>
                     </div>
-                    <div id="video-player-container" class="hidden absolute inset-0 bg-black z-10"></div>
+                    <div id="player-zone" class="hidden absolute inset-0 bg-black z-10"></div>
                 </div>
-                <div id="server-selector" class="hidden flex gap-2 p-4 bg-slate-800 overflow-x-auto"></div>
-                <div class="p-6"><h2 class="text-2xl font-bold">${p.title}</h2><p class="text-slate-400 mt-4">${p.overview}</p></div>
+                <div id="server-list" class="flex gap-2 p-4 bg-slate-800 overflow-x-auto min-h-[60px]"></div>
+                <div class="p-6"><h2 class="text-xl font-bold">${p.title}</h2><p class="text-slate-400 text-sm mt-2">${p.overview}</p></div>
             `;
             document.getElementById("movie-details").classList.add("open");
             lucide.createIcons();
         }
 
         async function lanzarAnuncioControlado(id, esInicio) {
+            if (esInicio) cargarFuentes(id); // Carga botones y video
+
             try {
-                // Si es inicio, cargamos el reproductor DE UNA VEZ abajo del anuncio
-                if (esInicio) cargarReproductor(id);
-
                 const res = await fetch(`${API_BASE}/get-ads`);
-                const adData = await res.json();
-
-                if (adData && adData.enabled) {
-                    const linkAd = esInicio ? (adData.video_ad_start || adData.start_link) : (adData.video_ad_end || adData.end_link);
-                    document.getElementById('universal-ad-frame').src = linkAd;
+                const ads = await res.json();
+                if (ads && ads.enabled) {
+                    modoCierreActivo = !esInicio;
+                    document.getElementById('universal-ad-frame').src = esInicio ? ads.video_ad_start : ads.video_ad_end;
                     document.getElementById('ad-control-layer').style.display = "block";
                 } else if (!esInicio) {
                     cerrarDetallesReal();
                 }
-            } catch (e) {
-                if (!esInicio) cerrarDetallesReal();
-            }
+            } catch (e) { if (!esInicio) cerrarDetallesReal(); }
         }
 
-        // FUNCIÓN CRÍTICA CORREGIDA
-        function forzarCierreAd() {
-            document.getElementById('ad-control-layer').style.display = "none";
-            document.getElementById('universal-ad-frame').src = "";
+        async function cargarFuentes(id) {
+            const serverList = document.getElementById("server-list");
+            const playerZone = document.getElementById("player-zone");
             
-            // SOLO si el usuario presionó la X de salir, cerramos el video.
-            // Si estaba en "Play", modoCierreActivo es false y NO se cierra nada.
-            if (modoCierreActivo === true) {
-                cerrarDetallesReal();
-            }
-        }
-
-        async function cargarReproductor(id) {
-            const container = document.getElementById("video-player-container");
-            const serverNav = document.getElementById("server-selector");
-            container.classList.remove("hidden");
-            container.innerHTML = `<div class="flex h-full items-center justify-center"><div class="loader-ring"></div></div>`;
+            serverList.innerHTML = `<div class="loader-ring"></div>`;
+            playerZone.classList.remove("hidden");
+            playerZone.innerHTML = `<div class="flex h-full items-center justify-center"><div class="loader-ring"></div></div>`;
 
             try {
                 const res = await fetch(`${API_BASE}/limpiar-video/${id}`);
                 const data = await res.json();
                 
-                serverNav.classList.remove("hidden");
-                serverNav.innerHTML = data.alternatives.map((s, idx) => `
-                    <button onclick="cambiarFuente('${s.url}', this)" class="bg-slate-700 p-2 rounded text-[10px] ${idx === 0 ? 'bg-red-600' : ''}">${s.name}</button>
+                // Pintar servidores
+                serverList.innerHTML = data.alternatives.map((s, i) => `
+                    <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 rounded-lg bg-slate-700 text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
+                        ${s.name}
+                    </button>
                 `).join('');
 
-                container.innerHTML = `
-                    <div class="video-shield" onclick="lanzarAnuncioControlado('${id}', false); this.remove();"></div>
-                    <iframe src="${data.primary}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                `;
-            } catch (e) { console.error("Error"); }
+                cambiarPlayer(data.primary);
+            } catch (e) { 
+                serverList.innerHTML = `<p class="text-red-500 text-xs">Error al obtener servidores</p>`;
+            }
+        }
+
+        function cambiarPlayer(url, btn = null) {
+            if (btn) {
+                document.querySelectorAll("#server-list button").forEach(b => b.classList.remove("bg-red-600"));
+                btn.classList.add("bg-red-600");
+            }
+            document.getElementById("player-zone").innerHTML = `
+                <div class="video-shield" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
+                <iframe src="${url}" class="w-full h-full" allowfullscreen referrerpolicy="no-referrer" sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>
+            `;
+        }
+
+        function forzarCierreAd() {
+            document.getElementById('ad-control-layer').style.display = "none";
+            document.getElementById('universal-ad-frame').src = "";
+            if (modoCierreActivo) cerrarDetallesReal();
         }
 
         function cerrarDetallesConAd() {
-            modoCierreActivo = true; // Aquí marcamos que SÍ queremos salir
+            modoCierreActivo = true;
             lanzarAnuncioControlado(peliActualId, false);
         }
 
         function cerrarDetallesReal() {
-            document.getElementById("video-player-container").innerHTML = "";
+            document.getElementById("player-zone").innerHTML = "";
             document.getElementById("movie-details").classList.remove("open");
-            modoCierreActivo = false;
         }
 
-        window.onload = cargarHome;
-        lucide.createIcons();
+        window.onload = init;
     </script>
 </body>
 </html>
