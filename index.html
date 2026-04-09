@@ -20,6 +20,19 @@
         #ad-control-layer { display: none; position: fixed; inset: 0; background: black; z-index: 99999; }
         .btn-close-ad { position: fixed; top: 1rem; right: 1rem; background: #ef4444; color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; border: 2px solid white; z-index: 100000; }
         .video-shield { position: absolute; inset: 0; z-index: 50; background: rgba(0,0,0,0.01); }
+        
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Estilo para tu nombre */
+        .signature {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 300;
+            text-align: right;
+            margin-top: 5px;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body class="pb-20">
@@ -31,9 +44,20 @@
 
     <header class="p-4 bg-[#0f172a] sticky top-0 z-40">
         <input type="text" id="search" placeholder="Buscar..." class="w-full bg-slate-800 rounded-xl py-3 px-4 outline-none">
+        <div class="signature">by Nazareth</div>
     </header>
 
-    <div id="populares" class="grid grid-cols-2 gap-4 px-4"></div>
+    <main id="main-content" class="px-4">
+        <section id="home-screen" class="screen active">
+            <h2 class="text-xl font-bold mb-4">Tendencias</h2>
+            <div id="populares" class="grid grid-cols-2 gap-4"></div>
+        </section>
+
+        <section id="search-screen" class="screen">
+            <h2 class="text-xl font-bold mb-4 text-slate-400">Resultados de búsqueda</h2>
+            <div id="resultados" class="grid grid-cols-2 gap-4"></div>
+        </section>
+    </main>
 
     <div id="movie-details" class="fixed inset-0 bg-slate-900 overflow-y-auto">
         <button onclick="cerrarDetallesConAd()" class="fixed top-4 right-4 z-[110] bg-black/60 p-2 rounded-full border border-white/20"><i data-lucide="x"></i></button>
@@ -45,6 +69,7 @@
         let peliculasGlobal = [];
         let peliActualId = null;
         let modoCierreActivo = false;
+        let searchTimeout = null;
 
         // Carga inicial
         async function init() {
@@ -64,8 +89,52 @@
             } catch (e) { console.error("Servidor dormido..."); }
         }
 
+        // LÓGICA DEL BUSCADOR
+        document.getElementById('search').addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearTimeout(searchTimeout);
+
+            if (query.length === 0) {
+                document.getElementById('home-screen').classList.add('active');
+                document.getElementById('search-screen').classList.remove('active');
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                document.getElementById('home-screen').classList.remove('active');
+                document.getElementById('search-screen').classList.add('active');
+                
+                const contResultados = document.getElementById('resultados');
+                contResultados.innerHTML = `<div class="col-span-full py-10 text-center"><div class="loader-ring mx-auto"></div></div>`;
+
+                try {
+                    const res = await fetch(`${API_BASE}/buscar?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    
+                    if (data && data.length > 0) {
+                        contResultados.innerHTML = data.map(p => `
+                            <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
+                                <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500x750?text=Sin+Imagen'">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end">
+                                    <h3 class="text-[10px] font-bold truncate">${p.title}</h3>
+                                </div>
+                            </div>
+                        `).join('');
+                        
+                        // Actualizar lista global para que abrirDetalles funcione con las nuevas pelis
+                        peliculasGlobal = [...new Map([...peliculasGlobal, ...data].map(m => [m.id, m])).values()];
+                    } else {
+                        contResultados.innerHTML = `<div class="col-span-full py-20 text-center opacity-50 text-sm">No se encontraron resultados para "${query}"</div>`;
+                    }
+                } catch (e) {
+                    contResultados.innerHTML = `<div class="col-span-full py-20 text-center text-red-500 text-sm">Error en la búsqueda</div>`;
+                }
+            }, 500);
+        });
+
         function abrirDetalles(id) {
             const p = peliculasGlobal.find(m => m.id == id);
+            if (!p) return;
             peliActualId = id;
             modoCierreActivo = false;
 
@@ -85,7 +154,7 @@
         }
 
         async function lanzarAnuncioControlado(id, esInicio) {
-            if (esInicio) cargarFuentes(id); // Carga botones y video
+            if (esInicio) cargarFuentes(id);
 
             try {
                 const res = await fetch(`${API_BASE}/get-ads`);
@@ -112,7 +181,6 @@
                 const res = await fetch(`${API_BASE}/limpiar-video/${id}`);
                 const data = await res.json();
                 
-                // Pintar servidores
                 serverList.innerHTML = data.alternatives.map((s, i) => `
                     <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 rounded-lg bg-slate-700 text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
                         ${s.name}
