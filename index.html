@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineApp | Nazareth</title>
+    <title>CineApp | Nazareth Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
         .movie-card { aspect-ratio: 2/3; cursor: pointer; transition: 0.2s; }
-        .movie-card:active { transform: scale(0.95); }
         #movie-details { transform: translateY(100%); transition: transform 0.4s ease; z-index: 100; }
         #movie-details.open { transform: translateY(0); }
         .loader-ring { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 4px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
         #ad-control-layer { display: none; position: fixed; inset: 0; background: black; z-index: 99999; }
         .btn-close-ad { position: fixed; top: 1rem; right: 1rem; background: #ef4444; color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; border: 2px solid white; z-index: 100000; }
         .signature { font-size: 10px; color: rgba(255, 255, 255, 0.4); text-align: right; margin-top: 5px; }
@@ -40,7 +38,6 @@
             <h2 class="text-xl font-bold mb-4">Tendencias</h2>
             <div id="populares" class="grid grid-cols-2 gap-4"></div>
         </section>
-
         <section id="search-screen" class="screen">
             <h2 class="text-xl font-bold mb-4 text-slate-400">Resultados</h2>
             <div id="resultados" class="grid grid-cols-2 gap-4"></div>
@@ -59,7 +56,6 @@
         let modoCierreActivo = false;
         let searchTimeout = null;
 
-        // Cargar populares al inicio
         async function init() {
             try {
                 const res = await fetch(`${API_BASE}/populares`);
@@ -67,14 +63,13 @@
                 peliculasGlobal = data;
                 pintarPeliculas(data, 'populares');
                 lucide.createIcons();
-            } catch (e) { console.error("Error al conectar con Render"); }
+            } catch (e) { console.error("Error inicial"); }
         }
 
-        // Función para pintar cuadrícula de pelis
         function pintarPeliculas(lista, contenedorId) {
             document.getElementById(contenedorId).innerHTML = lista.map(p => `
                 <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
-                    <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500x750?text=No+Image'">
+                    <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end">
                         <h3 class="text-[10px] font-bold truncate">${p.title}</h3>
                     </div>
@@ -82,34 +77,23 @@
             `).join('');
         }
 
-        // LÓGICA DEL BUSCADOR
         document.getElementById('search').addEventListener('input', (e) => {
             const query = e.target.value.trim();
             clearTimeout(searchTimeout);
-
             if (query.length === 0) {
                 document.getElementById('home-screen').classList.add('active');
                 document.getElementById('search-screen').classList.remove('active');
                 return;
             }
-
             searchTimeout = setTimeout(async () => {
                 document.getElementById('home-screen').classList.remove('active');
                 document.getElementById('search-screen').classList.add('active');
-                const resCont = document.getElementById('resultados');
-                resCont.innerHTML = `<div class="col-span-full py-10 text-center"><div class="loader-ring mx-auto"></div></div>`;
-
                 try {
                     const res = await fetch(`${API_BASE}/buscar?q=${encodeURIComponent(query)}`);
                     const data = await res.json();
-                    if (data && data.length > 0) {
-                        pintarPeliculas(data, 'resultados');
-                        // Unir resultados a la lista global para que funcionen los detalles
-                        peliculasGlobal = [...new Map([...peliculasGlobal, ...data].map(m => [m.id, m])).values()];
-                    } else {
-                        resCont.innerHTML = `<p class="col-span-full text-center py-10 opacity-50">No hay resultados</p>`;
-                    }
-                } catch (e) { resCont.innerHTML = `<p class="col-span-full text-center py-10 text-red-500">Error en búsqueda</p>`; }
+                    pintarPeliculas(data, 'resultados');
+                    peliculasGlobal = [...new Map([...peliculasGlobal, ...data].map(m => [m.id, m])).values()];
+                } catch (e) { console.log("Error búsqueda"); }
             }, 500);
         });
 
@@ -123,7 +107,7 @@
                 <div class="relative w-full aspect-video bg-black">
                     <img src="https://image.tmdb.org/t/p/original${p.backdrop_path}" class="w-full h-full object-cover opacity-50">
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-4 rounded-full shadow-lg"><i data-lucide="play"></i></button>
+                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-4 rounded-full"><i data-lucide="play"></i></button>
                     </div>
                     <div id="player-zone" class="hidden absolute inset-0 bg-black z-10"></div>
                 </div>
@@ -135,8 +119,7 @@
         }
 
         async function lanzarAnuncioControlado(id, esInicio) {
-            if (esInicio) obtenerLinksYReproducir(id);
-
+            if (esInicio) reproducirEmergencia(id);
             try {
                 const res = await fetch(`${API_BASE}/get-ads`);
                 const ads = await res.json();
@@ -148,37 +131,28 @@
             } catch (e) { if (!esInicio) cerrarDetallesReal(); }
         }
 
-        async function obtenerLinksYReproducir(id) {
+        // FUNCIÓN DE EMERGENCIA: Si el servidor falla, el HTML genera sus propios links
+        function reproducirEmergencia(id) {
             const playerZone = document.getElementById("player-zone");
             const serverList = document.getElementById("server-list");
-            
             playerZone.classList.remove("hidden");
-            playerZone.innerHTML = `<div class="flex h-full items-center justify-center"><div class="loader-ring"></div></div>`;
-            serverList.innerHTML = `<div class="loader-ring"></div>`;
+            
+            // Definimos los servidores que casi nunca fallan
+            const servidores = [
+                { name: "Principal", url: `https://vidsrc.me/embed/movie?tmdb=${id}` },
+                { name: "Servidor 2", url: `https://embed.su/embed/movie/${id}` },
+                { name: "Servidor 3", url: `https://vidsrc.to/embed/movie/${id}` }
+            ];
 
-            try {
-                // USAMOS LA RUTA QUE TIENE TU SERVIDOR: /video/:id
-                const res = await fetch(`${API_BASE}/video/${id}`);
-                const data = await res.json();
+            // Pintamos los botones
+            serverList.innerHTML = servidores.map((s, i) => `
+                <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 bg-slate-700 rounded-lg text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
+                    ${s.name}
+                </button>
+            `).join('');
 
-                // Pintar botones de servidores
-                if (data.alternatives && data.alternatives.length > 0) {
-                    serverList.innerHTML = data.alternatives.map((s, i) => `
-                        <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 bg-slate-700 rounded-lg text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
-                            ${s.name}
-                        </button>
-                    `).join('');
-                } else {
-                    serverList.innerHTML = `<p class="text-[10px] opacity-50">Servidor único disponible</p>`;
-                }
-
-                // Cargar el link primario
-                cambiarPlayer(data.primary || data.url);
-
-            } catch (e) {
-                playerZone.innerHTML = `<p class="p-10 text-center text-xs text-red-500">Error 404: No se encontraron links para esta película.</p>`;
-                serverList.innerHTML = "";
-            }
+            // Cargamos el primero
+            cambiarPlayer(servidores[0].url);
         }
 
         function cambiarPlayer(url, btn = null) {
