@@ -9,7 +9,8 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
-        .movie-card { aspect-ratio: 2/3; cursor: pointer; }
+        .movie-card { aspect-ratio: 2/3; cursor: pointer; transition: 0.2s; }
+        .movie-card:active { transform: scale(0.95); }
         #movie-details { transform: translateY(100%); transition: transform 0.4s ease; z-index: 100; }
         #movie-details.open { transform: translateY(0); }
         .loader-ring { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 4px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -39,6 +40,7 @@
             <h2 class="text-xl font-bold mb-4">Tendencias</h2>
             <div id="populares" class="grid grid-cols-2 gap-4"></div>
         </section>
+
         <section id="search-screen" class="screen">
             <h2 class="text-xl font-bold mb-4 text-slate-400">Resultados</h2>
             <div id="resultados" class="grid grid-cols-2 gap-4"></div>
@@ -55,22 +57,61 @@
         let peliculasGlobal = [];
         let peliActualId = null;
         let modoCierreActivo = false;
+        let searchTimeout = null;
 
-        // 1. VOLVEMOS A LA RUTA QUE USABAS ANTES (Probablemente /video/)
+        // Cargar populares al inicio
         async function init() {
             try {
                 const res = await fetch(`${API_BASE}/populares`);
                 const data = await res.json();
                 peliculasGlobal = data;
-                document.getElementById('populares').innerHTML = data.map(p => `
-                    <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
-                        <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end"><h3 class="text-[10px] font-bold truncate">${p.title}</h3></div>
-                    </div>
-                `).join('');
+                pintarPeliculas(data, 'populares');
                 lucide.createIcons();
-            } catch (e) { console.error("Error inicial"); }
+            } catch (e) { console.error("Error al conectar con Render"); }
         }
+
+        // Función para pintar cuadrícula de pelis
+        function pintarPeliculas(lista, contenedorId) {
+            document.getElementById(contenedorId).innerHTML = lista.map(p => `
+                <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
+                    <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500x750?text=No+Image'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end">
+                        <h3 class="text-[10px] font-bold truncate">${p.title}</h3>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // LÓGICA DEL BUSCADOR
+        document.getElementById('search').addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            clearTimeout(searchTimeout);
+
+            if (query.length === 0) {
+                document.getElementById('home-screen').classList.add('active');
+                document.getElementById('search-screen').classList.remove('active');
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                document.getElementById('home-screen').classList.remove('active');
+                document.getElementById('search-screen').classList.add('active');
+                const resCont = document.getElementById('resultados');
+                resCont.innerHTML = `<div class="col-span-full py-10 text-center"><div class="loader-ring mx-auto"></div></div>`;
+
+                try {
+                    const res = await fetch(`${API_BASE}/buscar?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        pintarPeliculas(data, 'resultados');
+                        // Unir resultados a la lista global para que funcionen los detalles
+                        peliculasGlobal = [...new Map([...peliculasGlobal, ...data].map(m => [m.id, m])).values()];
+                    } else {
+                        resCont.innerHTML = `<p class="col-span-full text-center py-10 opacity-50">No hay resultados</p>`;
+                    }
+                } catch (e) { resCont.innerHTML = `<p class="col-span-full text-center py-10 text-red-500">Error en búsqueda</p>`; }
+            }, 500);
+        });
 
         function abrirDetalles(id) {
             const p = peliculasGlobal.find(m => m.id == id);
@@ -94,7 +135,7 @@
         }
 
         async function lanzarAnuncioControlado(id, esInicio) {
-            if (esInicio) reproducirVideoDirecto(id); // Llamamos a la función de reproducción
+            if (esInicio) obtenerLinksYReproducir(id);
 
             try {
                 const res = await fetch(`${API_BASE}/get-ads`);
@@ -107,38 +148,44 @@
             } catch (e) { if (!esInicio) cerrarDetallesReal(); }
         }
 
-        // 2. RECONECTAMOS CON TU RUTA ORIGINAL
-        async function reproducirVideoDirecto(id) {
+        async function obtenerLinksYReproducir(id) {
             const playerZone = document.getElementById("player-zone");
+            const serverList = document.getElementById("server-list");
+            
             playerZone.classList.remove("hidden");
             playerZone.innerHTML = `<div class="flex h-full items-center justify-center"><div class="loader-ring"></div></div>`;
+            serverList.innerHTML = `<div class="loader-ring"></div>`;
 
-            // Aquí está el cambio: Antes quizás usabas /video/ en lugar de /limpiar-video/
-            // He puesto /video/ que es lo más común en los proyectos que funcionan
             try {
-                const res = await fetch(`${API_BASE}/video/${id}`); 
+                // USAMOS LA RUTA QUE TIENE TU SERVIDOR: /video/:id
+                const res = await fetch(`${API_BASE}/video/${id}`);
                 const data = await res.json();
-                
-                // Si tu servidor devuelve 'url', lo usamos directamente
-                const videoUrl = data.url || data.primary;
 
-                playerZone.innerHTML = `
-                    <div class="absolute inset-0 z-50 bg-transparent" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
-                    <iframe src="${videoUrl}" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
-                `;
-
-                // Si hay alternativas, las ponemos
-                if (data.alternatives) {
-                    document.getElementById("server-list").innerHTML = data.alternatives.map(s => `
-                        <button onclick="cambiarPlayer('${s.url}')" class="px-3 py-1 bg-slate-700 rounded text-[10px] whitespace-nowrap">${s.name}</button>
+                // Pintar botones de servidores
+                if (data.alternatives && data.alternatives.length > 0) {
+                    serverList.innerHTML = data.alternatives.map((s, i) => `
+                        <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 bg-slate-700 rounded-lg text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
+                            ${s.name}
+                        </button>
                     `).join('');
+                } else {
+                    serverList.innerHTML = `<p class="text-[10px] opacity-50">Servidor único disponible</p>`;
                 }
+
+                // Cargar el link primario
+                cambiarPlayer(data.primary || data.url);
+
             } catch (e) {
-                playerZone.innerHTML = `<p class="p-10 text-center text-xs text-red-400">Error al cargar video. Intenta de nuevo.</p>`;
+                playerZone.innerHTML = `<p class="p-10 text-center text-xs text-red-500">Error 404: No se encontraron links para esta película.</p>`;
+                serverList.innerHTML = "";
             }
         }
 
-        function cambiarPlayer(url) {
+        function cambiarPlayer(url, btn = null) {
+            if (btn) {
+                document.querySelectorAll("#server-list button").forEach(b => b.classList.remove("bg-red-600"));
+                btn.classList.add("bg-red-600");
+            }
             document.getElementById("player-zone").innerHTML = `
                 <div class="absolute inset-0 z-50 bg-transparent" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
                 <iframe src="${url}" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
