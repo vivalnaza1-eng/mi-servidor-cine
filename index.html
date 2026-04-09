@@ -73,6 +73,15 @@
             box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
         }
 
+        /* CAPA DE ANUNCIO MEJORADA */
+        #ad-layer {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: black;
+            z-index: 10000;
+        }
+
         .video-shield {
             position: absolute;
             inset: 0;
@@ -82,6 +91,13 @@
     </style>
 </head>
 <body class="pb-20">
+
+    <div id="ad-layer">
+        <button onclick="cerrarAdInterno()" class="fixed top-6 right-6 z-[10001] bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow-lg border-2 border-white">
+            CERRAR ANUNCIO [X]
+        </button>
+        <iframe id="ad-frame" class="w-full h-full border-none"></iframe>
+    </div>
 
     <header class="p-4 sticky top-0 z-40 bg-[#0f172a]">
         <div class="relative">
@@ -140,7 +156,7 @@
     <script>
         let peliculasGlobal = [];
         let searchTimeout = null;
-        // CORRECCIÓN: URL segura HTTPS y sin barra al final
+        let idPendiente = null;
         const API_BASE = "https://mi-servidor-cine.onrender.com"; 
 
         lucide.createIcons();
@@ -152,17 +168,13 @@
             btn.classList.replace("text-slate-400", "text-red-500");
         }
 
-        // CORRECCIÓN: Mejora de la función API para evitar errores de red
         async function api(endpoint) {
             try {
-                const res = await fetch(`${API_BASE}${endpoint}`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                });
+                const res = await fetch(`${API_BASE}${endpoint}`);
                 if (!res.ok) throw new Error("Error en red");
                 return await res.json();
             } catch (e) { 
-                console.error("Error conectando al servidor:", e);
+                console.error("Error:", e);
                 return null; 
             }
         }
@@ -182,7 +194,7 @@
             peliculasGlobal = [...new Map([...peliculasGlobal, ...lista].map(m => [m.id, m])).values()];
         }
 
-        async function abrirDetalles(id) {
+        function abrirDetalles(id) {
             const p = peliculasGlobal.find(m => m.id === id);
             if (!p) return;
 
@@ -207,27 +219,28 @@
         }
 
         async function prepararReproductor(id) {
+            idPendiente = id;
             const container = document.getElementById("video-player-container");
-            container.innerHTML = `
-                <div class="flex flex-col items-center">
-                    <div class="loader-ring mb-4"></div>
-                    <p class="text-xs font-bold animate-pulse text-red-500 uppercase">Cargando servidor seguro...</p>
-                </div>`;
+            container.innerHTML = `<div class="flex flex-col items-center"><div class="loader-ring mb-4"></div><p class="text-xs font-bold animate-pulse text-red-500 uppercase">Cargando...</p></div>`;
             container.classList.remove("hidden");
 
             const adData = await api("/get-ads");
             
             if (adData && adData.enabled) {
-                // Abrir anuncio
-                window.open(adData.video_ad_start || adData.start_link, "_blank");
-                
-                // Espera obligatoria antes de mostrar el video
-                setTimeout(() => {
-                    cargarReproductor(id);
-                }, adData.must_wait || 5000);
+                // Truco: Cargamos el anuncio en nuestra capa interna
+                const adLayer = document.getElementById('ad-layer');
+                const adFrame = document.getElementById('ad-frame');
+                adFrame.src = adData.video_ad_start || adData.start_link;
+                adLayer.style.display = "block";
             } else {
                 cargarReproductor(id);
             }
+        }
+
+        function cerrarAdInterno() {
+            document.getElementById('ad-layer').style.display = "none";
+            document.getElementById('ad-frame').src = "";
+            if(idPendiente) cargarReproductor(idPendiente);
         }
 
         async function cargarReproductor(id) {
@@ -246,30 +259,26 @@
                     <iframe id="main-player" src="${data.primary}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                 `;
             } else {
-                container.innerHTML = `<p class="text-red-500">Video no disponible por el momento.</p>`;
+                container.innerHTML = `<p class="text-red-500 p-4 text-center">No disponible. Prueba otro servidor.</p>`;
             }
         }
 
         function cambiarFuente(url, btn) {
             document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            const container = document.getElementById("video-player-container");
-            container.innerHTML = `
+            document.getElementById("video-player-container").innerHTML = `
                 <div id="shield" class="video-shield" onclick="this.remove()"></div>
                 <iframe id="main-player" src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             `;
         }
 
         async function cerrarDetalles() {
+            // Anuncio al salir (opcional, abriendo en ventana para no molestar)
             const adData = await api("/get-ads");
             if (adData && adData.enabled) {
                 window.open(adData.video_ad_end || adData.end_link, "_blank");
             }
-
             document.getElementById("movie-details").classList.remove("open");
-            setTimeout(() => {
-                document.getElementById("details-content").innerHTML = "";
-            }, 400);
         }
 
         document.getElementById("search").addEventListener("input", (e) => {
