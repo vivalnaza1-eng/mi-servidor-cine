@@ -70,13 +70,12 @@
             box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
         }
 
-        /* CAPA DE CONTROL DE ANUNCIOS GLOBAL */
         #ad-control-layer {
             display: none;
             position: fixed;
             inset: 0;
             background: black;
-            z-index: 999999; /* Máxima prioridad */
+            z-index: 999999;
         }
 
         .btn-close-global {
@@ -93,7 +92,6 @@
             z-index: 1000000;
         }
 
-        /* Escudo transparente sobre el iframe para atrapar clics maliciosos */
         .video-shield-v2 {
             position: absolute;
             inset: 0;
@@ -148,6 +146,7 @@
         let peliculasGlobal = [];
         let searchTimeout = null;
         let peliActualId = null;
+        let modoCierreActivo = false; // Nueva bandera para controlar el flujo de cierre
         const API_BASE = "https://mi-servidor-cine.onrender.com"; 
 
         lucide.createIcons();
@@ -185,6 +184,7 @@
             const p = peliculasGlobal.find(m => m.id === id);
             if (!p) return;
             peliActualId = id;
+            modoCierreActivo = false;
 
             document.getElementById("details-content").innerHTML = `
                 <div class="relative w-full aspect-video bg-black">
@@ -206,12 +206,12 @@
             lucide.createIcons();
         }
 
-        // --- SISTEMA ANTI-POPUP GLOBAL ---
         async function lanzarAnuncioControlado(id, esInicio) {
             const adData = await api("/get-ads");
             if (adData && adData.enabled) {
-                const linkAd = esInicio ? (adData.video_ad_start || adData.start_link) : (adData.video_ad_end || adData.end_link);
+                if (!esInicio) modoCierreActivo = true; // Estamos cerrando la peli
                 
+                const linkAd = esInicio ? (adData.video_ad_start || adData.start_link) : (adData.video_ad_end || adData.end_link);
                 const layer = document.getElementById('ad-control-layer');
                 const frame = document.getElementById('universal-ad-frame');
                 
@@ -226,7 +226,13 @@
         function forzarCierreAd() {
             document.getElementById('ad-control-layer').style.display = "none";
             document.getElementById('universal-ad-frame').src = "";
-            if(peliActualId) cargarReproductor(peliActualId);
+            
+            // Si estábamos cerrando la película, terminamos de cerrar todo
+            if (modoCierreActivo) {
+                cerrarDetallesReal();
+            } else if(peliActualId) {
+                cargarReproductor(peliActualId);
+            }
         }
 
         async function cargarReproductor(id) {
@@ -242,7 +248,6 @@
                     <button onclick="cambiarFuente('${s.url}', this)" class="server-btn ${idx === 0 ? 'active' : ''}">${s.name}</button>
                 `).join('');
 
-                // Shield activado: Cualquier clic para "Play" que intente abrir popup será atrapado
                 container.innerHTML = `
                     <div class="video-shield-v2" onclick="lanzarAnuncioControlado('${id}', false); this.remove();"></div>
                     <iframe id="main-player" src="${data.primary}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
@@ -260,12 +265,25 @@
         }
 
         function cerrarDetalles() {
+            // Antes de mostrar el anuncio de salida, matamos el video
+            matarReproductor();
             lanzarAnuncioControlado(peliActualId, false);
-            setTimeout(cerrarDetallesReal, 500);
+        }
+
+        function matarReproductor() {
+            const container = document.getElementById("video-player-container");
+            const serverNav = document.getElementById("server-selector");
+            if (container) {
+                container.innerHTML = "";
+                container.classList.add("hidden");
+            }
+            if (serverNav) serverNav.classList.add("hidden");
         }
 
         function cerrarDetallesReal() {
+            matarReproductor();
             document.getElementById("movie-details").classList.remove("open");
+            modoCierreActivo = false;
         }
 
         window.onload = async () => {
