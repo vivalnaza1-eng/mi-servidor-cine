@@ -3,36 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineApp | Fix Servers</title>
+    <title>CineApp | Fix 404</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
         .movie-card { aspect-ratio: 2/3; cursor: pointer; transition: 0.2s; }
-        .movie-card:active { transform: scale(0.98); }
         #movie-details { transform: translateY(100%); transition: transform 0.4s ease; z-index: 100; }
         #movie-details.open { transform: translateY(0); }
         .loader-ring { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        /* Capa Publicidad */
         #ad-control-layer { display: none; position: fixed; inset: 0; background: black; z-index: 99999; }
         .btn-close-ad { position: fixed; top: 1rem; right: 1rem; background: #ef4444; color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; border: 2px solid white; z-index: 100000; }
         .video-shield { position: absolute; inset: 0; z-index: 50; background: rgba(0,0,0,0.01); }
-        
         .screen { display: none; }
         .screen.active { display: block; }
-
-        /* Estilo para tu nombre */
-        .signature {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.4);
-            font-weight: 300;
-            text-align: right;
-            margin-top: 5px;
-            margin-right: 5px;
-        }
+        .signature { font-size: 10px; color: rgba(255, 255, 255, 0.4); text-align: right; margin-top: 5px; }
     </style>
 </head>
 <body class="pb-20">
@@ -47,14 +34,13 @@
         <div class="signature">by Nazareth</div>
     </header>
 
-    <main id="main-content" class="px-4">
+    <main class="px-4">
         <section id="home-screen" class="screen active">
             <h2 class="text-xl font-bold mb-4">Tendencias</h2>
             <div id="populares" class="grid grid-cols-2 gap-4"></div>
         </section>
-
         <section id="search-screen" class="screen">
-            <h2 class="text-xl font-bold mb-4 text-slate-400">Resultados de búsqueda</h2>
+            <h2 class="text-xl font-bold mb-4 text-slate-400">Resultados</h2>
             <div id="resultados" class="grid grid-cols-2 gap-4"></div>
         </section>
     </main>
@@ -71,7 +57,6 @@
         let modoCierreActivo = false;
         let searchTimeout = null;
 
-        // Carga inicial
         async function init() {
             try {
                 const res = await fetch(`${API_BASE}/populares`);
@@ -80,55 +65,39 @@
                 document.getElementById('populares').innerHTML = data.map(p => `
                     <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
                         <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end">
-                            <h3 class="text-[10px] font-bold truncate">${p.title}</h3>
-                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end"><h3 class="text-[10px] font-bold truncate">${p.title}</h3></div>
                     </div>
                 `).join('');
                 lucide.createIcons();
-            } catch (e) { console.error("Servidor dormido..."); }
+            } catch (e) { console.error("Revisa tu servidor en Render."); }
         }
 
-        // LÓGICA DEL BUSCADOR
         document.getElementById('search').addEventListener('input', (e) => {
             const query = e.target.value.trim();
             clearTimeout(searchTimeout);
-
             if (query.length === 0) {
                 document.getElementById('home-screen').classList.add('active');
                 document.getElementById('search-screen').classList.remove('active');
                 return;
             }
-
             searchTimeout = setTimeout(async () => {
                 document.getElementById('home-screen').classList.remove('active');
                 document.getElementById('search-screen').classList.add('active');
-                
-                const contResultados = document.getElementById('resultados');
-                contResultados.innerHTML = `<div class="col-span-full py-10 text-center"><div class="loader-ring mx-auto"></div></div>`;
-
+                const cont = document.getElementById('resultados');
+                cont.innerHTML = `<div class="col-span-full py-10 text-center"><div class="loader-ring mx-auto"></div></div>`;
                 try {
                     const res = await fetch(`${API_BASE}/buscar?q=${encodeURIComponent(query)}`);
                     const data = await res.json();
-                    
                     if (data && data.length > 0) {
-                        contResultados.innerHTML = data.map(p => `
+                        cont.innerHTML = data.map(p => `
                             <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
-                                <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500x750?text=Sin+Imagen'">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end">
-                                    <h3 class="text-[10px] font-bold truncate">${p.title}</h3>
-                                </div>
+                                <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end"><h3 class="text-[10px] font-bold truncate">${p.title}</h3></div>
                             </div>
                         `).join('');
-                        
-                        // Actualizar lista global para que abrirDetalles funcione con las nuevas pelis
                         peliculasGlobal = [...new Map([...peliculasGlobal, ...data].map(m => [m.id, m])).values()];
-                    } else {
-                        contResultados.innerHTML = `<div class="col-span-full py-20 text-center opacity-50 text-sm">No se encontraron resultados para "${query}"</div>`;
-                    }
-                } catch (e) {
-                    contResultados.innerHTML = `<div class="col-span-full py-20 text-center text-red-500 text-sm">Error en la búsqueda</div>`;
-                }
+                    } else { cont.innerHTML = `<div class="col-span-full py-20 text-center opacity-50">Sin resultados.</div>`; }
+                } catch (e) { cont.innerHTML = `<div class="col-span-full py-20 text-center text-red-500">Error de conexión.</div>`; }
             }, 500);
         });
 
@@ -137,16 +106,15 @@
             if (!p) return;
             peliActualId = id;
             modoCierreActivo = false;
-
             document.getElementById("details-content").innerHTML = `
                 <div class="relative w-full aspect-video bg-black">
                     <img src="https://image.tmdb.org/t/p/original${p.backdrop_path}" class="w-full h-full object-cover opacity-50">
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-4 rounded-full"><i data-lucide="play"></i></button>
+                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-4 rounded-full shadow-lg"><i data-lucide="play"></i></button>
                     </div>
                     <div id="player-zone" class="hidden absolute inset-0 bg-black z-10"></div>
                 </div>
-                <div id="server-list" class="flex gap-2 p-4 bg-slate-800 overflow-x-auto min-h-[60px]"></div>
+                <div id="server-list" class="flex gap-2 p-4 bg-slate-800 overflow-x-auto min-h-[60px] items-center"></div>
                 <div class="p-6"><h2 class="text-xl font-bold">${p.title}</h2><p class="text-slate-400 text-sm mt-2">${p.overview}</p></div>
             `;
             document.getElementById("movie-details").classList.add("open");
@@ -155,7 +123,6 @@
 
         async function lanzarAnuncioControlado(id, esInicio) {
             if (esInicio) cargarFuentes(id);
-
             try {
                 const res = await fetch(`${API_BASE}/get-ads`);
                 const ads = await res.json();
@@ -163,33 +130,39 @@
                     modoCierreActivo = !esInicio;
                     document.getElementById('universal-ad-frame').src = esInicio ? ads.video_ad_start : ads.video_ad_end;
                     document.getElementById('ad-control-layer').style.display = "block";
-                } else if (!esInicio) {
-                    cerrarDetallesReal();
-                }
+                } else if (!esInicio) { cerrarDetallesReal(); }
             } catch (e) { if (!esInicio) cerrarDetallesReal(); }
         }
 
         async function cargarFuentes(id) {
             const serverList = document.getElementById("server-list");
             const playerZone = document.getElementById("player-zone");
-            
             serverList.innerHTML = `<div class="loader-ring"></div>`;
             playerZone.classList.remove("hidden");
             playerZone.innerHTML = `<div class="flex h-full items-center justify-center"><div class="loader-ring"></div></div>`;
 
             try {
                 const res = await fetch(`${API_BASE}/limpiar-video/${id}`);
+                if (!res.ok) throw new Error("Error 404");
                 const data = await res.json();
                 
-                serverList.innerHTML = data.alternatives.map((s, i) => `
-                    <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 rounded-lg bg-slate-700 text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
-                        ${s.name}
-                    </button>
-                `).join('');
-
-                cambiarPlayer(data.primary);
+                if (data.alternatives && data.alternatives.length > 0) {
+                    serverList.innerHTML = data.alternatives.map((s, i) => `
+                        <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 rounded-lg bg-slate-700 text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
+                            ${s.name}
+                        </button>
+                    `).join('');
+                    cambiarPlayer(data.primary);
+                } else {
+                    throw new Error("No hay links");
+                }
             } catch (e) { 
-                serverList.innerHTML = `<p class="text-red-500 text-xs">Error al obtener servidores</p>`;
+                playerZone.innerHTML = `<div class="flex flex-col items-center justify-center h-full p-6 text-center">
+                    <i data-lucide="alert-circle" class="text-red-500 mb-2"></i>
+                    <p class="text-xs text-red-400">El servidor principal no responde (404).<br>Prueba otro servidor abajo si aparece.</p>
+                </div>`;
+                serverList.innerHTML = `<p class="text-[10px] opacity-50">Error al cargar proveedores.</p>`;
+                lucide.createIcons();
             }
         }
 
@@ -200,7 +173,7 @@
             }
             document.getElementById("player-zone").innerHTML = `
                 <div class="video-shield" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
-                <iframe src="${url}" class="w-full h-full" allowfullscreen referrerpolicy="no-referrer" sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>
+                <iframe src="${url}" class="w-full h-full" allowfullscreen referrerpolicy="no-referrer"></iframe>
             `;
         }
 
