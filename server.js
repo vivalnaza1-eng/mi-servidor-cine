@@ -14,8 +14,8 @@ const OPENAI_API_KEY = "sk-proj-MfNcxkhdVCcqT0dlspc_47cIom-s-e2kebiuCF1vQLEMUNbZ
 const ADS_CONFIG = {
     show_ads: true,
     // Aquí pondrás los "Direct Links" que te de Adsterra o Monetag
-    video_ad_start: "https://www.ejemplo-anuncio.com/video-inicio", 
-    video_ad_end: "https://www.ejemplo-anuncio.com/video-final",
+    video_ad_start: "https://www.profitablecpmratenetwork.com/jpp1ah70?key=2362ad52be7ddb0ad6207c0ceb1443af", 
+    video_ad_end: "https://www.profitablecpmratenetwork.com/jpp1ah70?key=2362ad52be7ddb0ad6207c0ceb1443af",
     probability: 1.0 // 1.0 significa que siempre pedirá anuncio para maximizar ganancias
 };
 
