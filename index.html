@@ -3,143 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineMaster AI - Películas Gratis</title>
+    <title>CineMaster AI</title>
     <style>
-        /* Diseño Base Estilo Cine */
         body {
-            background-color: #0f0f0f;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
             padding: 20px;
             text-align: center;
+            background: linear-gradient(to bottom, #e50914, #050505);
         }
 
-        h1 { color: #e50914; margin-bottom: 30px; }
-
-        .pelicula-card {
-            background: #1e1e1e;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 10px auto;
-            max-width: 400px;
-            border: 1px solid #333;
+        .container {
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
         }
+
+        .movie-card {
+            background: #141414;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid #222;
+        }
+
+        .movie-info { padding: 15px; }
 
         .btn-play {
             background-color: #e50914;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 15px;
             width: 100%;
-            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        /* --- CAPA DEL ANUNCIO (INTERSTITIAL) --- */
-        #capa-anuncio {
-            display: none; /* Oculto por defecto */
+        /* CAPA DE ANUNCIO (INTERSTITIAL) */
+        #ad-overlay {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: black;
+            background: #000;
             z-index: 99999;
         }
 
-        /* Botón de cerrar fijo arriba */
-        .btn-cerrar-ad {
+        .close-ad-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 20px;
+            right: 20px;
             background: #ff0000;
             color: white;
-            border: 2px solid white;
-            padding: 10px 20px;
+            border: 2px solid #fff;
+            padding: 10px 25px;
             font-weight: bold;
-            border-radius: 50px;
+            border-radius: 30px;
             z-index: 100000;
-            box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
         }
 
-        #ad-frame {
+        iframe#ad-frame {
             width: 100%;
             height: 100%;
             border: none;
         }
 
-        /* Contenedor del Reproductor de Video */
-        #reproductor-container {
+        #video-player-section {
             display: none;
+            width: 100%;
             margin-top: 20px;
         }
 
-        iframe.video-player {
+        iframe#video-frame {
             width: 100%;
-            max-width: 800px;
-            height: 450px;
-            border: 2px solid #e50914;
+            height: 300px;
+            border: 1px solid #e50914;
         }
     </style>
 </head>
 <body>
 
-    <h1>CineMaster AI 🍿</h1>
+    <header>
+        <h1>CineMaster AI</h1>
+    </header>
 
-    <div class="pelicula-card">
-        <h3>Película de Estreno 2026</h3>
-        <p>Acción | Ciencia Ficción</p>
-        <button class="btn-play" onclick="mostrarPublicidad('URL_DE_TU_VIDEO_AQUI')">▶️ VER AHORA</button>
+    <div class="container">
+        <div class="movie-card">
+            <div class="movie-info">
+                <h3>Película Recomendada</h3>
+                <p>Haz clic abajo para reproducir el contenido.</p>
+                <button class="btn-play" onclick="activarFlujo('https://www.youtube.com/embed/dQw4w9WgXcQ')">▶ REPRODUCIR</button>
+            </div>
+        </div>
+
+        <div id="video-player-section">
+            <h3>Ahora reproduciendo:</h3>
+            <iframe id="video-frame" src="" allowfullscreen></iframe>
+        </div>
     </div>
 
-    <div id="reproductor-container">
-        <h2 id="titulo-reproduciendo">Reproduciendo...</h2>
-        <iframe id="main-video" class="video-player" src="" allowfullscreen></iframe>
-    </div>
-
-    <div id="capa-anuncio">
-        <button class="btn-cerrar-ad" onclick="quitarPublicidad()">CERRAR ANUNCIO [X]</button>
+    <div id="ad-overlay">
+        <button class="close-ad-btn" onclick="cerrarAd()">CERRAR ANUNCIO [X]</button>
         <iframe id="ad-frame" src=""></iframe>
     </div>
 
     <script>
-        // CONFIGURACIÓN
-        const MI_LINK_ADSTERRA = "TU_LINK_DE_ADSTERRA_AQUI"; // <-- PEGA AQUÍ TU DIRECT LINK
-        let videoPendiente = "";
+        // --- CONFIGURACIÓN ---
+        // Aquí debes poner el Direct Link que te dio Adsterra
+        const LINK_ADSTERRA = "TU_DIRECT_LINK_DE_ADSTERRA_AQUI"; 
+        
+        let urlVideoDestino = "";
 
-        function mostrarPublicidad(urlVideo) {
-            videoPendiente = urlVideo; // Guardamos el video para después
+        function activarFlujo(urlVideo) {
+            urlVideoDestino = urlVideo;
             
-            const capa = document.getElementById('capa-anuncio');
-            const frame = document.getElementById('ad-frame');
-
-            // Cargamos el anuncio de Adsterra
-            frame.src = MI_LINK_ADSTERRA;
-            capa.style.display = "block";
+            // 1. Mostrar la capa de publicidad
+            const overlay = document.getElementById('ad-overlay');
+            const adFrame = document.getElementById('ad-frame');
             
-            console.log("Mostrando anuncio antes de: " + urlVideo);
+            adFrame.src = LINK_ADSTERRA;
+            overlay.style.display = "block";
         }
 
-        function quitarPublicidad() {
-            // Ocultamos la capa y limpiamos el frame del anuncio
-            document.getElementById('capa-anuncio').style.display = "none";
+        function cerrarAd() {
+            // 1. Ocultar publicidad
+            document.getElementById('ad-overlay').style.display = "none";
             document.getElementById('ad-frame').src = "";
 
-            // Ahora mostramos el reproductor con el video real
-            const repoContainer = document.getElementById('reproductor-container');
-            const mainVideo = document.getElementById('main-video');
+            // 2. Mostrar y cargar el video
+            const videoSection = document.getElementById('video-player-section');
+            const videoFrame = document.getElementById('video-frame');
 
-            repoContainer.style.display = "block";
-            mainVideo.src = videoPendiente;
+            videoSection.style.display = "block";
+            videoFrame.src = urlVideoDestino;
 
-            // Scroll automático al reproductor
-            window.scrollTo(0, document.body.scrollHeight);
+            // Bajar automáticamente al video
+            videoSection.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
-
 </body>
 </html>
