@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineApp | Fix Servers</title>
+    <title>CineApp | Nazareth</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
-        .movie-card { aspect-ratio: 2/3; cursor: pointer; transition: 0.2s; }
-        .movie-card:active { transform: scale(0.98); }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
+        .movie-card { aspect-ratio: 2/3; cursor: pointer; }
         #movie-details { transform: translateY(100%); transition: transform 0.4s ease; z-index: 100; }
         #movie-details.open { transform: translateY(0); }
-        .loader-ring { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader-ring { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 4px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* Capa Publicidad */
         #ad-control-layer { display: none; position: fixed; inset: 0; background: black; z-index: 99999; }
         .btn-close-ad { position: fixed; top: 1rem; right: 1rem; background: #ef4444; color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; border: 2px solid white; z-index: 100000; }
-        .video-shield { position: absolute; inset: 0; z-index: 50; background: rgba(0,0,0,0.01); }
+        .signature { font-size: 10px; color: rgba(255, 255, 255, 0.4); text-align: right; margin-top: 5px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
     </style>
 </head>
 <body class="pb-20">
@@ -31,9 +31,19 @@
 
     <header class="p-4 bg-[#0f172a] sticky top-0 z-40">
         <input type="text" id="search" placeholder="Buscar..." class="w-full bg-slate-800 rounded-xl py-3 px-4 outline-none">
+        <div class="signature">by Nazareth</div>
     </header>
 
-    <div id="populares" class="grid grid-cols-2 gap-4 px-4"></div>
+    <main class="px-4">
+        <section id="home-screen" class="screen active">
+            <h2 class="text-xl font-bold mb-4">Tendencias</h2>
+            <div id="populares" class="grid grid-cols-2 gap-4"></div>
+        </section>
+        <section id="search-screen" class="screen">
+            <h2 class="text-xl font-bold mb-4 text-slate-400">Resultados</h2>
+            <div id="resultados" class="grid grid-cols-2 gap-4"></div>
+        </section>
+    </main>
 
     <div id="movie-details" class="fixed inset-0 bg-slate-900 overflow-y-auto">
         <button onclick="cerrarDetallesConAd()" class="fixed top-4 right-4 z-[110] bg-black/60 p-2 rounded-full border border-white/20"><i data-lucide="x"></i></button>
@@ -46,7 +56,7 @@
         let peliActualId = null;
         let modoCierreActivo = false;
 
-        // Carga inicial
+        // 1. VOLVEMOS A LA RUTA QUE USABAS ANTES (Probablemente /video/)
         async function init() {
             try {
                 const res = await fetch(`${API_BASE}/populares`);
@@ -55,17 +65,16 @@
                 document.getElementById('populares').innerHTML = data.map(p => `
                     <div onclick="abrirDetalles(${p.id})" class="movie-card relative rounded-xl overflow-hidden bg-slate-800">
                         <img src="https://image.tmdb.org/t/p/w500${p.poster_path}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end">
-                            <h3 class="text-[10px] font-bold truncate">${p.title}</h3>
-                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black p-2 flex items-end"><h3 class="text-[10px] font-bold truncate">${p.title}</h3></div>
                     </div>
                 `).join('');
                 lucide.createIcons();
-            } catch (e) { console.error("Servidor dormido..."); }
+            } catch (e) { console.error("Error inicial"); }
         }
 
         function abrirDetalles(id) {
             const p = peliculasGlobal.find(m => m.id == id);
+            if (!p) return;
             peliActualId = id;
             modoCierreActivo = false;
 
@@ -73,11 +82,11 @@
                 <div class="relative w-full aspect-video bg-black">
                     <img src="https://image.tmdb.org/t/p/original${p.backdrop_path}" class="w-full h-full object-cover opacity-50">
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-4 rounded-full"><i data-lucide="play"></i></button>
+                        <button onclick="lanzarAnuncioControlado('${id}', true)" class="bg-red-600 p-4 rounded-full shadow-lg"><i data-lucide="play"></i></button>
                     </div>
                     <div id="player-zone" class="hidden absolute inset-0 bg-black z-10"></div>
                 </div>
-                <div id="server-list" class="flex gap-2 p-4 bg-slate-800 overflow-x-auto min-h-[60px]"></div>
+                <div id="server-list" class="flex gap-2 p-4 bg-slate-800 overflow-x-auto items-center min-h-[50px]"></div>
                 <div class="p-6"><h2 class="text-xl font-bold">${p.title}</h2><p class="text-slate-400 text-sm mt-2">${p.overview}</p></div>
             `;
             document.getElementById("movie-details").classList.add("open");
@@ -85,7 +94,7 @@
         }
 
         async function lanzarAnuncioControlado(id, esInicio) {
-            if (esInicio) cargarFuentes(id); // Carga botones y video
+            if (esInicio) reproducirVideoDirecto(id); // Llamamos a la función de reproducción
 
             try {
                 const res = await fetch(`${API_BASE}/get-ads`);
@@ -94,45 +103,45 @@
                     modoCierreActivo = !esInicio;
                     document.getElementById('universal-ad-frame').src = esInicio ? ads.video_ad_start : ads.video_ad_end;
                     document.getElementById('ad-control-layer').style.display = "block";
-                } else if (!esInicio) {
-                    cerrarDetallesReal();
-                }
+                } else if (!esInicio) { cerrarDetallesReal(); }
             } catch (e) { if (!esInicio) cerrarDetallesReal(); }
         }
 
-        async function cargarFuentes(id) {
-            const serverList = document.getElementById("server-list");
+        // 2. RECONECTAMOS CON TU RUTA ORIGINAL
+        async function reproducirVideoDirecto(id) {
             const playerZone = document.getElementById("player-zone");
-            
-            serverList.innerHTML = `<div class="loader-ring"></div>`;
             playerZone.classList.remove("hidden");
             playerZone.innerHTML = `<div class="flex h-full items-center justify-center"><div class="loader-ring"></div></div>`;
 
+            // Aquí está el cambio: Antes quizás usabas /video/ en lugar de /limpiar-video/
+            // He puesto /video/ que es lo más común en los proyectos que funcionan
             try {
-                const res = await fetch(`${API_BASE}/limpiar-video/${id}`);
+                const res = await fetch(`${API_BASE}/video/${id}`); 
                 const data = await res.json();
                 
-                // Pintar servidores
-                serverList.innerHTML = data.alternatives.map((s, i) => `
-                    <button onclick="cambiarPlayer('${s.url}', this)" class="px-4 py-2 rounded-lg bg-slate-700 text-[10px] font-bold whitespace-nowrap ${i==0?'bg-red-600':''}">
-                        ${s.name}
-                    </button>
-                `).join('');
+                // Si tu servidor devuelve 'url', lo usamos directamente
+                const videoUrl = data.url || data.primary;
 
-                cambiarPlayer(data.primary);
-            } catch (e) { 
-                serverList.innerHTML = `<p class="text-red-500 text-xs">Error al obtener servidores</p>`;
+                playerZone.innerHTML = `
+                    <div class="absolute inset-0 z-50 bg-transparent" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
+                    <iframe src="${videoUrl}" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
+                `;
+
+                // Si hay alternativas, las ponemos
+                if (data.alternatives) {
+                    document.getElementById("server-list").innerHTML = data.alternatives.map(s => `
+                        <button onclick="cambiarPlayer('${s.url}')" class="px-3 py-1 bg-slate-700 rounded text-[10px] whitespace-nowrap">${s.name}</button>
+                    `).join('');
+                }
+            } catch (e) {
+                playerZone.innerHTML = `<p class="p-10 text-center text-xs text-red-400">Error al cargar video. Intenta de nuevo.</p>`;
             }
         }
 
-        function cambiarPlayer(url, btn = null) {
-            if (btn) {
-                document.querySelectorAll("#server-list button").forEach(b => b.classList.remove("bg-red-600"));
-                btn.classList.add("bg-red-600");
-            }
+        function cambiarPlayer(url) {
             document.getElementById("player-zone").innerHTML = `
-                <div class="video-shield" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
-                <iframe src="${url}" class="w-full h-full" allowfullscreen referrerpolicy="no-referrer" sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>
+                <div class="absolute inset-0 z-50 bg-transparent" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
+                <iframe src="${url}" class="w-full h-full" allowfullscreen frameborder="0"></iframe>
             `;
         }
 
