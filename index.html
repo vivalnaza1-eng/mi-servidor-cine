@@ -7,128 +7,224 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .poster-card { transition: transform 0.3s ease; aspect-ratio: 2/3; border-radius: 8px; overflow: hidden; background: #111; }
-        .poster-card:active { transform: scale(0.95); }
-        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        /* Diseño de las tarjetas de películas */
+        .poster-card { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            aspect-ratio: 2/3; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            background: #111;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .poster-card:active { transform: scale(0.92); }
+        
+        /* Modal del reproductor estilo Netflix */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: #000; 
+            z-index: 1000; 
+            flex-direction: column; 
+        }
+        
         .modal.active { display: flex; }
+
+        /* Capa de anuncios */
+        #ad-layer {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 2000;
+        }
+
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="pb-10">
 
-    <nav class="flex items-center justify-between p-5 sticky top-0 bg-black/90 backdrop-blur-md z-50">
-        <h1 class="text-red-600 font-black text-2xl tracking-tighter">NAZARETH <span class="text-white font-light text-sm">PRO</span></h1>
-        <div class="relative w-2/3">
-            <input type="text" id="search" placeholder="Busca tu película..." 
-                class="w-full bg-zinc-800 rounded-full py-2 px-10 text-sm outline-none focus:ring-1 focus:ring-red-600">
-            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400"></i>
+    <div id="ad-layer">
+        <div class="absolute top-5 right-5 z-[2100]">
+            <button onclick="closeAd()" class="bg-white text-black px-6 py-2 rounded-full font-bold shadow-lg active:scale-90 transition-transform">
+                SALTAR ANUNCIO
+            </button>
+        </div>
+        <iframe id="ad-frame" class="w-full h-full border-none"></iframe>
+    </div>
+
+    <nav class="flex items-center justify-between p-5 sticky top-0 bg-black/95 backdrop-blur-xl z-50">
+        <div>
+            <h1 class="text-red-600 font-black text-2xl tracking-tighter uppercase italic">Nazareth</h1>
+            <p class="text-[8px] text-zinc-500 tracking-[0.3em] font-bold uppercase">Digital Cinema</p>
+        </div>
+        <div class="relative w-3/5">
+            <input type="text" id="search" placeholder="Buscar película..." 
+                class="w-full bg-zinc-900 rounded-full py-2.5 px-10 text-sm outline-none focus:ring-2 focus:ring-red-600 transition-all border border-zinc-800">
+            <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-zinc-500"></i>
         </div>
     </nav>
 
-    <div id="loading" class="text-center py-20 hidden"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-red-600"></div></div>
+    <div id="loading" class="text-center py-20">
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-red-600 border-r-2 border-transparent"></div>
+        <p class="text-zinc-500 text-xs mt-4 font-bold uppercase tracking-widest">Cargando catálogo...</p>
+    </div>
     
-    <div id="grid" class="grid grid-cols-3 gap-3 p-3">
-        </div>
+    <main id="grid" class="grid grid-cols-3 gap-3 p-3 opacity-0 transition-opacity duration-500">
+        </main>
 
     <div id="player-modal" class="modal overflow-y-auto">
-        <div class="p-4 flex items-center justify-between border-b border-zinc-800">
-            <button onclick="closePlayer()" class="p-2"><i data-lucide="chevron-left"></i></button>
-            <span class="font-bold truncate px-4 text-sm" id="m-title">Cargando...</span>
-            <div class="w-10"></div>
+        <div class="p-4 flex items-center border-b border-zinc-900 bg-zinc-950/50">
+            <button onclick="closePlayer()" class="p-2 bg-zinc-900 rounded-full active:scale-75 transition-transform">
+                <i data-lucide="chevron-left"></i>
+            </button>
+            <span class="font-bold truncate px-5 text-sm uppercase tracking-tight" id="m-title">Reproduciendo</span>
         </div>
         
-        <div class="w-full aspect-video bg-zinc-900 shadow-2xl">
+        <div class="w-full aspect-video bg-black shadow-2xl">
             <div id="video-container" class="w-full h-full"></div>
         </div>
 
-        <div class="p-5">
-            <h3 class="text-zinc-400 text-xs font-bold uppercase mb-3">Servidores Disponibles</h3>
-            <div id="servers" class="flex gap-2 overflow-x-auto pb-4"></div>
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Seleccionar Servidor</h3>
+                <span class="bg-red-600/10 text-red-500 text-[9px] px-2 py-0.5 rounded font-bold uppercase">HD Disponible</span>
+            </div>
             
-            <h3 class="text-zinc-400 text-xs font-bold uppercase mt-4 mb-2">Sinopsis</h3>
-            <p id="m-desc" class="text-sm text-zinc-300 leading-relaxed"></p>
+            <div id="servers" class="flex gap-2 overflow-x-auto pb-6"></div>
+            
+            <hr class="border-zinc-900 mb-6">
+            
+            <h3 class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Sinopsis</h3>
+            <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-medium"></p>
         </div>
     </div>
 
     <script>
-        // CAMBIA ESTO POR TU URL DE RENDER
+        // CONFIGURACIÓN DE TU SERVIDOR
         const API_URL = "https://mi-servidor-cine.onrender.com";
         let localMovies = [];
 
+        // Inicializar App
         async function init() {
-            showLoading(true);
             try {
                 const r = await fetch(`${API_URL}/populares`);
                 localMovies = await r.json();
                 drawMovies(localMovies);
-            } catch (e) { console.error("Error inicial"); }
-            showLoading(false);
+                document.getElementById('grid').classList.replace('opacity-0', 'opacity-100');
+            } catch (e) { 
+                console.error("Error al conectar con Render");
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
         }
 
+        // Pintar películas en pantalla
         function drawMovies(list) {
             const grid = document.getElementById('grid');
             grid.innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id})">
-                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/342x513?text=No+Image'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity p-2 flex items-end">
+                        <p class="text-[8px] font-bold truncate">${m.title}</p>
+                    </div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        // BUSCADOR EN TIEMPO REAL
+        // Buscador Inteligente
         let timer;
         document.getElementById('search').addEventListener('input', (e) => {
             clearTimeout(timer);
             const q = e.target.value;
+            if (q.length === 0) { init(); return; }
             if (q.length < 3) return;
+            
             timer = setTimeout(async () => {
-                showLoading(true);
-                const r = await fetch(`${API_URL}/buscar?q=${q}`);
-                const data = await r.json();
-                localMovies = [...localMovies, ...data];
-                drawMovies(data);
-                showLoading(false);
+                try {
+                    const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}`);
+                    const data = await r.json();
+                    localMovies = [...localMovies, ...data];
+                    drawMovies(data);
+                } catch (e) { console.log("Error en búsqueda"); }
             }, 600);
         });
 
-        function openPlayer(id) {
+        // Abrir Reproductor
+        async function openPlayer(id) {
             const movie = localMovies.find(m => m.id == id);
             if (!movie) return;
 
             document.getElementById('m-title').innerText = movie.title;
-            document.getElementById('m-desc').innerText = movie.overview || "No hay descripción disponible.";
-            document.getElementById('player-modal').classList.add('active');
+            document.getElementById('m-desc').innerText = movie.overview || "No hay descripción disponible para esta película.";
+            
+            // 1. Lanzar Anuncio primero
+            await launchAd();
 
+            // 2. Preparar servidores
             const options = [
-                { n: "Latino", u: `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1` },
-                { n: "Castellano", u: `https://vidsrc.me/embed/movie?tmdb=${id}` },
-                { n: "VIP", u: `https://embed.su/embed/movie/${id}` }
+                { n: "Latino Pro", u: `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1` },
+                { n: "Español HD", u: `https://vidsrc.me/embed/movie?tmdb=${id}` },
+                { n: "Server VIP", u: `https://embed.su/embed/movie/${id}` }
             ];
 
             document.getElementById('servers').innerHTML = options.map((s, i) => `
-                <button onclick="play('${s.u}', this)" class="px-5 py-2 rounded-full text-[11px] font-bold border border-zinc-700 whitespace-nowrap ${i==0?'bg-red-600 border-red-600':''}">
+                <button onclick="play('${s.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-zinc-800 whitespace-nowrap transition-all ${i==0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900'}">
                     ${s.n}
                 </button>
             `).join('');
 
             play(options[0].u);
+            document.getElementById('player-modal').classList.add('active');
         }
 
         function play(url, btn) {
             if (btn) {
-                document.querySelectorAll('#servers button').forEach(b => b.classList.remove('bg-red-600', 'border-red-600'));
-                btn.classList.add('bg-red-600', 'border-red-600');
+                document.querySelectorAll('#servers button').forEach(b => {
+                    b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg');
+                    b.classList.add('bg-zinc-900');
+                });
+                btn.classList.replace('bg-zinc-900', 'bg-red-600');
+                btn.classList.add('border-red-600', 'shadow-lg');
             }
-            document.getElementById('video-container').innerHTML = `<iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
+            document.getElementById('video-container').innerHTML = `
+                <iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+            `;
+        }
+
+        // Lógica de Anuncios
+        async function launchAd() {
+            try {
+                const res = await fetch(`${API_URL}/get-ads`);
+                const data = await res.json();
+                if(data.enabled && data.video_ad_start) {
+                    document.getElementById('ad-frame').src = data.video_ad_start;
+                    document.getElementById('ad-layer').style.display = 'block';
+                }
+            } catch (e) {}
+        }
+
+        function closeAd() {
+            document.getElementById('ad-layer').style.display = 'none';
+            document.getElementById('ad-frame').src = '';
         }
 
         function closePlayer() {
             document.getElementById('player-modal').classList.remove('active');
             document.getElementById('video-container').innerHTML = "";
         }
-
-        function showLoading(s) { document.getElementById('loading').style.display = s ? 'block' : 'none'; }
 
         window.onload = init;
     </script>
