@@ -208,11 +208,11 @@
         async function lanzarAnuncioControlado(id, esInicio) {
             const adData = await api("/get-ads");
             
-            // Siempre cargamos el reproductor de fondo si es el inicio
             if(esInicio) cargarReproductor(id);
 
             if (adData && adData.enabled) {
-                if (!esInicio) modoCierreActivo = true;
+                // SÓLO ponemos modoCierre si NO es el inicio
+                modoCierreActivo = !esInicio; 
                 
                 const linkAd = esInicio ? (adData.video_ad_start || adData.start_link) : (adData.video_ad_end || adData.end_link);
                 const layer = document.getElementById('ad-control-layer');
@@ -229,6 +229,8 @@
             document.getElementById('ad-control-layer').style.display = "none";
             document.getElementById('universal-ad-frame').src = "";
             
+            // Si modoCierreActivo es true, significa que el usuario estaba saliendo del video.
+            // Si es false, solo estaba viendo el anuncio inicial, así que NO cerramos el video.
             if (modoCierreActivo) {
                 cerrarDetallesReal();
             }
@@ -238,56 +240,4 @@
             const container = document.getElementById("video-player-container");
             const serverNav = document.getElementById("server-selector");
             container.innerHTML = `<div class="flex flex-col items-center h-full justify-center"><div class="loader-ring"></div></div>`;
-            container.classList.remove("hidden");
-
-            const data = await api(`/limpiar-video/${id}`);
-            if (data) {
-                serverNav.classList.remove("hidden");
-                serverNav.innerHTML = data.alternatives.map((s, idx) => `
-                    <button onclick="cambiarFuente('${s.url}', this)" class="server-btn ${idx === 0 ? 'active' : ''}">${s.name}</button>
-                `).join('');
-
-                container.innerHTML = `
-                    <div class="video-shield-v2" onclick="lanzarAnuncioControlado('${id}', false); this.remove();"></div>
-                    <iframe id="main-player" src="${data.primary}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                `;
-            }
-        }
-
-        function cambiarFuente(url, btn) {
-            document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            document.getElementById("video-player-container").innerHTML = `
-                <div class="video-shield-v2" onclick="lanzarAnuncioControlado(peliActualId, false); this.remove();"></div>
-                <iframe id="main-player" src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-            `;
-        }
-
-        function cerrarDetalles() {
-            matarReproductor();
-            lanzarAnuncioControlado(peliActualId, false);
-        }
-
-        function matarReproductor() {
-            const container = document.getElementById("video-player-container");
-            const serverNav = document.getElementById("server-selector");
-            if (container) {
-                container.innerHTML = "";
-                container.classList.add("hidden");
-            }
-            if (serverNav) serverNav.classList.add("hidden");
-        }
-
-        function cerrarDetallesReal() {
-            matarReproductor();
-            document.getElementById("movie-details").classList.remove("open");
-            modoCierreActivo = false;
-        }
-
-        window.onload = async () => {
-            const data = await api("/populares");
-            if (data) pintar(data, "populares");
-        };
-    </script>
-</body>
-</html>
+            container.
