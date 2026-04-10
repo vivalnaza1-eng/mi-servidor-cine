@@ -4,9 +4,9 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
-const TMDB_API_KEY = '93f066b6e40938456209b55231c5188f';
+// Esta es la llave que trae las películas
+const API_KEY = '93f066b6e40938456209b55231c5188f';
 
 app.get('/', (req, res) => {
     res.send("Servidor de Nazareth Activo");
@@ -14,32 +14,27 @@ app.get('/', (req, res) => {
 
 app.get('/populares', async (req, res) => {
     try {
-        const response = await axios.get('https://api.themoviedb.org/3/movie/popular', {
-            params: { api_key: TMDB_API_KEY, language: 'es-MX' }
-        });
-        res.json(response.data.results);
+        const respuesta = await axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-MX`);
+        res.json(respuesta.data.results);
     } catch (error) {
-        res.status(500).json({ error: "Error en TMDB" });
+        console.error("Error en TMDB:", error.message);
+        res.status(500).json({ mensaje: "Error al conectar con las películas", detalle: error.message });
     }
 });
 
 app.get('/buscar', async (req, res) => {
     try {
         const query = req.query.q;
-        const response = await axios.get('https://api.themoviedb.org/3/search/movie', {
-            params: { api_key: TMDB_API_KEY, query: query, language: 'es-MX' }
-        });
-        res.json(response.data.results);
+        const respuesta = await axios.get(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=es-MX&query=${encodeURIComponent(query)}`);
+        res.json(respuesta.data.results);
     } catch (error) {
-        res.status(500).json({ error: "Error en busqueda" });
+        res.status(500).json({ mensaje: "Error en la búsqueda" });
     }
 });
 
-app.get('/get-ads', (req, res) => {
-    res.json({ enabled: false });
-});
+app.get('/get-ads', (req, res) => { res.json({ enabled: false }); });
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor escuchando en puerto ${PORT}`);
+    console.log("Servidor corriendo perfectamente");
 });
