@@ -5,12 +5,14 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 
-// TU LLAVE OFICIAL
+// TU LLAVE DE TMDB
 const API_KEY = '2519980fb2074bfdf5f7abce52b2e2d6';
 
-// Ruta de prueba
+// Link de tu servidor de Render (para el despertador externo)
+const MI_URL = "https://mi-servidor-cine.onrender.com";
+
 app.get('/', (req, res) => {
-    res.send("Servidor de Nazareth Activo - Version Estable");
+    res.send("Servidor de Nazareth Activo - Monetización Activada");
 });
 
 // Ruta para el catálogo de películas
@@ -37,12 +39,15 @@ app.get('/buscar', async (req, res) => {
     }
 });
 
-// Ruta para anuncios (vacía por ahora para no romper nada)
+// --- RUTA DE PUBLICIDAD QUIRÚRGICA ---
 app.get('/get-ads', (req, res) => { 
-    res.json({ enabled: false }); 
+    res.json({ 
+        enabled: true, 
+        video_ad_start: "https://www.profitablecpmratenetwork.com/jpp1ah70?key=2362ad52be7ddb0ad6207c0ceb1443af" 
+    }); 
 });
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log("Servidor Nazareth Cinema Pro corriendo en puerto " + PORT);
+    console.log("Servidor Nazareth Cinema Pro corriendo y monetizando");
 });
