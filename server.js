@@ -7,69 +7,46 @@ app.use(cors());
 
 const API_KEY = '2519980fb2074bfdf5f7abce52b2e2d6';
 
+// Ruta base para verificar que vive
 app.get('/', (req, res) => {
-    res.send("Servidor de Nazareth Activo - Series y Películas Sincronizadas");
+    res.send("Servidor de Nazareth: ¡ESTÁ VIVO! 🚀");
 });
 
-// --- RUTA PELÍCULAS POPULARES ---
+// Películas Populares
 app.get('/populares', async (req, res) => {
     try {
-        const url = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-MX&page=1`;
-        const respuesta = await axios.get(url);
-        res.json(respuesta.data.results);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener peliculas" });
-    }
+        const r = await axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-MX`);
+        res.json(r.data.results);
+    } catch (e) { res.status(500).send("Error en Pelis"); }
 });
 
-// --- RUTA SERIES POPULARES (NUEVA) ---
+// Series Populares
 app.get('/series', async (req, res) => {
     try {
-        const url = `https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=es-MX&page=1`;
-        const respuesta = await axios.get(url);
-        // TMDB usa 'name' para series y 'title' para pelis. 
-        // Normalizamos un poco para que el frontend no sufra.
-        res.json(respuesta.data.results);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener series" });
-    }
+        const r = await axios.get(`https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=es-MX`);
+        res.json(r.data.results);
+    } catch (e) { res.status(500).send("Error en Series"); }
 });
 
-// --- BUSCADOR HÍBRIDO (ACTUALIZADO) ---
+// Buscador Inteligente
 app.get('/buscar', async (req, res) => {
+    const { q, type } = req.query;
+    const searchType = type === 'tv' ? 'tv' : 'movie';
     try {
-        const query = req.query.q;
-        const type = req.query.type || 'movie'; // Recibe 'movie' o 'tv' del frontend
-        const url = `https://api.themoviedb.org/3/search/${type}?api_key=${API_KEY}&language=es-MX&query=${encodeURIComponent(query)}`;
-        const respuesta = await axios.get(url);
-        res.json(respuesta.data.results);
-    } catch (error) {
-        res.status(500).json({ error: "Error en la busqueda" });
-    }
+        const r = await axios.get(`https://api.themoviedb.org/3/search/${searchType}?api_key=${API_KEY}&language=es-MX&query=${encodeURIComponent(q)}`);
+        res.json(r.data.results);
+    } catch (e) { res.status(500).send("Error en Buscador"); }
 });
 
-// --- FILTRO POR GÉNERO (NUEVA) ---
-app.get('/genero/:id', async (req, res) => {
-    try {
-        const genreId = req.params.id;
-        const type = req.query.type || 'movie';
-        const url = `https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=es-MX&with_genres=${genreId}&sort_by=popularity.desc`;
-        const respuesta = await axios.get(url);
-        res.json(respuesta.data.results);
-    } catch (error) {
-        res.status(500).json({ error: "Error al filtrar por genero" });
-    }
-});
-
-// --- PUBLICIDAD ---
-app.get('/get-ads', (req, res) => { 
-    res.json({ 
-        enabled: true, 
-        video_ad_start: "https://www.profitablecpmratenetwork.com/jpp1ah70?key=2362ad52be7ddb0ad6207c0ceb1443af" 
-    }); 
+// Publicidad
+app.get('/get-ads', (req, res) => {
+    res.json({
+        enabled: true,
+        video_ad_start: "https://www.profitablecpmratenetwork.com/jpp1ah70?key=2362ad52be7ddb0ad6207c0ceb1443af"
+    });
 });
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log("Servidor Nazareth Cinema Pro: Nivel App Desbloqueado");
+    console.log("Sistema restaurado en puerto " + PORT);
 });
