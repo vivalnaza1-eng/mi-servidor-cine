@@ -43,8 +43,11 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: #000;
+            background: rgba(0,0,0,0.95);
             z-index: 2000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         #skip-btn:disabled {
@@ -58,20 +61,26 @@
 </head>
 <body class="pb-10">
 
-    <div id="ad-layer">
-        <div class="absolute top-5 right-5 z-[2100]">
-            <button id="skip-btn" onclick="closeAd()" class="bg-white text-black px-6 py-2 rounded-full font-bold shadow-lg active:scale-90 transition-transform uppercase text-xs">
+    <div id="ad-layer" class="flex">
+        <div class="text-center p-6">
+            <div class="inline-block animate-bounce mb-6">
+                <i data-lucide="external-link" class="w-12 h-12 text-red-600"></i>
+            </div>
+            <h2 class="text-xl font-black mb-2 uppercase italic">Anuncio Abierto</h2>
+            <p class="text-zinc-500 text-xs mb-8">Espera unos segundos para desbloquear la película...</p>
+            
+            <button id="skip-btn" onclick="closeAd()" class="bg-white text-black px-10 py-4 rounded-full font-black shadow-2xl active:scale-90 transition-transform uppercase text-sm tracking-widest">
                 Cargando...
             </button>
         </div>
-        <iframe id="ad-frame" class="w-full h-full border-none"></iframe>
     </div>
 
     <nav class="flex items-center justify-between p-5 sticky top-0 bg-black/95 backdrop-blur-xl z-50">
-        <div>
+        <div onclick="location.reload()" class="cursor-pointer active:opacity-50 transition-opacity">
             <h1 class="text-red-600 font-black text-2xl tracking-tighter uppercase italic">Nazareth</h1>
             <p class="text-[8px] text-zinc-500 tracking-[0.3em] font-bold uppercase">Digital Cinema</p>
         </div>
+        
         <div class="relative w-3/5">
             <input type="text" id="search" placeholder="Buscar película..." 
                 class="w-full bg-zinc-900 rounded-full py-2.5 px-10 text-sm outline-none focus:ring-2 focus:ring-red-600 transition-all border border-zinc-800">
@@ -113,7 +122,7 @@
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
         let localMovies = [];
-        let anuncioVisto = false; // Control de frecuencia
+        let anuncioVisto = false;
 
         async function init(retries = 3) {
             const grid = document.getElementById('grid');
@@ -158,7 +167,6 @@
             document.getElementById('m-title').innerText = movie.title;
             document.getElementById('m-desc').innerText = movie.overview || "Sin descripción.";
             
-            // FILTRO DE ANUNCIOS: Solo uno por sesión
             if (!anuncioVisto) {
                 await launchAd();
                 anuncioVisto = true;
@@ -188,18 +196,21 @@
                     if(data.enabled && data.video_ad_start) {
                         const adLayer = document.getElementById('ad-layer');
                         const skipBtn = document.getElementById('skip-btn');
-                        document.getElementById('ad-frame').src = data.video_ad_start;
-                        adLayer.style.display = 'block';
+                        
+                        // SOLUCIÓN DEFINITIVA: Abrir anuncio en pestaña nueva
+                        window.open(data.video_ad_start, '_blank');
+                        
+                        adLayer.style.display = 'flex';
 
                         let timeLeft = 5;
                         skipBtn.disabled = true;
                         const counter = setInterval(() => {
-                            skipBtn.innerText = `SALTAR EN ${timeLeft}s`;
+                            skipBtn.innerText = `CONTINUAR EN ${timeLeft}s`;
                             timeLeft--;
                             if(timeLeft < 0) {
                                 clearInterval(counter);
                                 skipBtn.disabled = false;
-                                skipBtn.innerText = "SALTAR ANUNCIO";
+                                skipBtn.innerText = "VER PELÍCULA AHORA";
                                 window.currentResolve = resolve;
                             }
                         }, 1000);
@@ -210,7 +221,6 @@
 
         function closeAd() {
             document.getElementById('ad-layer').style.display = 'none';
-            document.getElementById('ad-frame').src = '';
             if(window.currentResolve) window.currentResolve();
         }
 
