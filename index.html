@@ -124,6 +124,7 @@
         const API_URL = "https://mi-servidor-cine.onrender.com";
         let localMovies = [];
 
+        // INICIALIZACIÓN
         async function init(retries = 3) {
             const grid = document.getElementById('grid');
             const loading = document.getElementById('loading');
@@ -150,6 +151,7 @@
             }
         }
 
+        // DIBUJAR PELÍCULAS EN EL GRID
         function drawMovies(list) {
             const grid = document.getElementById('grid');
             grid.innerHTML = list.map(m => `
@@ -160,14 +162,38 @@
             lucide.createIcons();
         }
 
+        // --- LÓGICA DEL BUSCADOR ---
+        document.getElementById('search').addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            const grid = document.getElementById('grid');
+
+            if (query.length < 3) {
+                if (query.length === 0) drawMovies(localMovies);
+                return;
+            }
+
+            try {
+                const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(query)}`);
+                const data = await r.json();
+                if (data && data.length > 0) {
+                    drawMovies(data);
+                } else {
+                    grid.innerHTML = "<p class='col-span-3 text-center text-zinc-500 py-10 text-[10px] font-bold uppercase tracking-widest'>Sin resultados</p>";
+                }
+            } catch (error) {
+                console.error("Error en búsqueda:", error);
+            }
+        });
+
+        // ABRIR REPRODUCTOR
         async function openPlayer(id) {
             const movie = localMovies.find(m => m.id == id);
-            if (!movie) return;
+            // Si no está en populares, buscamos en el estado actual de la pantalla (resultados de búsqueda)
+            const movieData = movie || { title: "Cargando...", overview: "" };
 
-            document.getElementById('m-title').innerText = movie.title;
-            document.getElementById('m-desc').innerText = movie.overview || "Sin descripción disponible.";
+            document.getElementById('m-title').innerText = movieData.title;
+            document.getElementById('m-desc').innerText = movieData.overview || "Sin descripción disponible.";
             
-            // MONETIZACIÓN INFINITA: Siempre lanza el anuncio
             await launchAd();
 
             const options = [
@@ -185,6 +211,7 @@
             document.getElementById('player-modal').classList.add('active');
         }
 
+        // LANZAR ANUNCIO
         async function launchAd() {
             return new Promise(async (resolve) => {
                 try {
@@ -195,9 +222,7 @@
                         const adLayer = document.getElementById('ad-layer');
                         const skipBtn = document.getElementById('skip-btn');
                         
-                        // Abre tu Direct Link de Adsterra
                         window.open(data.video_ad_start, '_blank');
-                        
                         adLayer.style.display = 'flex';
 
                         let timeLeft = 5;
