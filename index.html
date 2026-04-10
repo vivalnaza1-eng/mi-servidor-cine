@@ -75,11 +75,10 @@
 
     <div id="loading" class="text-center py-20">
         <div class="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-red-600 border-r-2 border-transparent"></div>
-        <p class="text-zinc-500 text-xs mt-4 font-bold uppercase tracking-widest">Cargando catálogo...</p>
+        <p id="loading-text" class="text-zinc-500 text-xs mt-4 font-bold uppercase tracking-widest">Cargando catálogo...</p>
     </div>
     
-    <main id="grid" class="grid grid-cols-3 gap-3 p-3 opacity-0 transition-opacity duration-500">
-    </main>
+    <main id="grid" class="grid grid-cols-3 gap-3 p-3 opacity-0 transition-opacity duration-500"></main>
 
     <div id="player-modal" class="modal overflow-y-auto">
         <div class="p-4 flex items-center border-b border-zinc-900 bg-zinc-950/50">
@@ -109,17 +108,20 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN: Asegúrate de que esta URL sea la correcta
         const API_URL = "https://mi-servidor-cine.onrender.com";
         let localMovies = [];
 
-        // Inicializar App con limpieza de URL
-        async function init() {
+        async function init(retries = 3) {
             const grid = document.getElementById('grid');
             const loading = document.getElementById('loading');
+            const lText = document.getElementById('loading-text');
+
             try {
                 const base = API_URL.replace(/\/$/, "");
                 const r = await fetch(`${base}/populares`);
+                
+                if (!r.ok) throw new Error("Error Servidor");
+                
                 const data = await r.json();
                 
                 if (data && data.length > 0) {
@@ -127,12 +129,17 @@
                     drawMovies(localMovies);
                     grid.classList.replace('opacity-0', 'opacity-100');
                     loading.style.display = 'none';
-                } else {
-                    throw new Error("Sin datos");
                 }
             } catch (e) { 
-                console.error("Fallo al cargar catálogo");
-                loading.innerHTML = "<p class='text-zinc-600 text-[10px] uppercase'>Error de red. Intenta refrescar.</p>";
+                if (retries > 0) {
+                    lText.innerText = `Reintentando conexión... (${retries})`;
+                    setTimeout(() => init(retries - 1), 3000);
+                } else {
+                    loading.innerHTML = `
+                        <p class='text-red-500 text-[10px] font-bold uppercase'>Error de red</p>
+                        <button onclick="location.reload()" class="mt-4 bg-zinc-800 px-6 py-2 rounded-full text-[10px] font-bold">Reintentar Manual</button>
+                    `;
+                }
             }
         }
 
@@ -149,7 +156,6 @@
             lucide.createIcons();
         }
 
-        // Buscador corregido
         let timer;
         document.getElementById('search').addEventListener('input', (e) => {
             clearTimeout(timer);
@@ -163,7 +169,7 @@
                     const r = await fetch(`${base}/buscar?q=${encodeURIComponent(q)}`);
                     const data = await r.json();
                     if (data) {
-                        localMovies = [...localMovies, ...data]; // Guardamos para el player
+                        localMovies = [...localMovies, ...data];
                         drawMovies(data);
                     }
                 } catch (e) { console.log("Error buscando"); }
@@ -202,9 +208,7 @@
                 });
                 btn.className = "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-600 whitespace-nowrap transition-all bg-red-600 shadow-lg shadow-red-600/20";
             }
-            document.getElementById('video-container').innerHTML = `
-                <iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-            `;
+            document.getElementById('video-container').innerHTML = `<iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
         }
 
         async function launchAd() {
