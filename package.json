@@ -1,15 +1,17 @@
-
 {
-  "name": "mi-servidor-cine",
+  "name": "nazareth-cinema-pro",
   "version": "1.0.0",
-  "description": "Servidor para Nazareth Cinema",
+  "description": "Servidor para mi app de cine",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.18.2",
     "axios": "^1.6.0",
-    "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
