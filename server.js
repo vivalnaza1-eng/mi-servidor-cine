@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 
 // Esta es la llave que trae las películas
-const API_KEY = '93f066b6e40938456209b55231c5188f';
+const API_KEY = '70093a2955f2b3ec3212871ef3b6d76d';
 
 app.get('/', (req, res) => {
     res.send("Servidor de Nazareth Activo");
