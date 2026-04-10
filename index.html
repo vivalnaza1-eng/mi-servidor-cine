@@ -9,55 +9,15 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
-        body { 
-            background-color: #000; 
-            color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-
-        .poster-card { 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            aspect-ratio: 2/3; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            background: #111;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        
+        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .poster-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #111; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         .poster-card:active { transform: scale(0.92); }
-        
-        .modal { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: #000; 
-            z-index: 1000; 
-            flex-direction: column; 
-        }
-        
+        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
         .modal.active { display: flex; }
-
-        #ad-layer {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.98);
-            z-index: 2000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #skip-btn:disabled {
-            background: #222;
-            color: #555;
-            border-color: #333;
-            cursor: not-allowed;
-        }
-
+        #ad-layer { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
+        #skip-btn:disabled { background: #222; color: #555; border-color: #333; cursor: not-allowed; }
         ::-webkit-scrollbar { display: none; }
+        .hidden { display: none; }
     </style>
 </head>
 <body class="pb-10">
@@ -69,7 +29,6 @@
             </div>
             <h2 class="text-2xl font-black mb-2 uppercase italic">Verificando Acceso</h2>
             <p class="text-zinc-500 text-xs mb-8">Tu anuncio se abrió en una pestaña nueva.<br>Espera para continuar.</p>
-            
             <button id="skip-btn" onclick="closeAd()" class="bg-white text-black px-12 py-4 rounded-full font-black shadow-2xl active:scale-95 transition-transform uppercase text-sm tracking-widest border-2 border-transparent">
                 Cargando...
             </button>
@@ -81,10 +40,8 @@
             <h1 class="text-red-600 font-black text-2xl tracking-tighter uppercase italic">Nazareth</h1>
             <p class="text-[8px] text-zinc-500 tracking-[0.3em] font-bold uppercase">Digital Cinema</p>
         </div>
-        
         <div class="relative w-3/5">
-            <input type="text" id="search" placeholder="Buscar película..." 
-                class="w-full bg-zinc-900 rounded-full py-2.5 px-10 text-sm outline-none focus:ring-2 focus:ring-red-600 transition-all border border-zinc-800">
+            <input type="text" id="search" placeholder="Buscar película..." class="w-full bg-zinc-900 rounded-full py-2.5 px-10 text-sm outline-none focus:ring-2 focus:ring-red-600 transition-all border border-zinc-800">
             <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-zinc-500"></i>
         </div>
     </nav>
@@ -104,7 +61,7 @@
             <span class="font-bold truncate px-5 text-sm uppercase tracking-tight" id="m-title">Cargando...</span>
         </div>
         
-        <div class="w-full aspect-video bg-black shadow-2xl">
+        <div class="w-full aspect-video bg-black shadow-2xl relative">
             <div id="video-container" class="w-full h-full"></div>
         </div>
 
@@ -124,16 +81,13 @@
         const API_URL = "https://mi-servidor-cine.onrender.com";
         let localMovies = [];
 
-        // INICIALIZACIÓN
         async function init(retries = 3) {
             const grid = document.getElementById('grid');
             const loading = document.getElementById('loading');
             const lText = document.getElementById('loading-text');
-
             try {
                 const base = API_URL.replace(/\/$/, "");
                 const r = await fetch(`${base}/populares`);
-                if (!r.ok) throw new Error("Error");
                 const data = await r.json();
                 if (data && data.length > 0) {
                     localMovies = data;
@@ -145,13 +99,10 @@
                 if (retries > 0) {
                     lText.innerText = `Reintentando... (${retries})`;
                     setTimeout(() => init(retries - 1), 3000);
-                } else {
-                    loading.innerHTML = `<p class='text-red-500 text-[10px] font-bold'>Error de Conexión</p>`;
                 }
             }
         }
 
-        // DIBUJAR PELÍCULAS EN EL GRID
         function drawMovies(list) {
             const grid = document.getElementById('grid');
             grid.innerHTML = list.map(m => `
@@ -162,37 +113,24 @@
             lucide.createIcons();
         }
 
-        // --- LÓGICA DEL BUSCADOR ---
         document.getElementById('search').addEventListener('input', async (e) => {
             const query = e.target.value.trim();
             const grid = document.getElementById('grid');
-
             if (query.length < 3) {
                 if (query.length === 0) drawMovies(localMovies);
                 return;
             }
-
             try {
                 const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(query)}`);
                 const data = await r.json();
-                if (data && data.length > 0) {
-                    drawMovies(data);
-                } else {
-                    grid.innerHTML = "<p class='col-span-3 text-center text-zinc-500 py-10 text-[10px] font-bold uppercase tracking-widest'>Sin resultados</p>";
-                }
-            } catch (error) {
-                console.error("Error en búsqueda:", error);
-            }
+                if (data && data.length > 0) drawMovies(data);
+            } catch (error) { console.error(error); }
         });
 
-        // ABRIR REPRODUCTOR
         async function openPlayer(id) {
-            const movie = localMovies.find(m => m.id == id);
-            // Si no está en populares, buscamos en el estado actual de la pantalla (resultados de búsqueda)
-            const movieData = movie || { title: "Cargando...", overview: "" };
-
-            document.getElementById('m-title').innerText = movieData.title;
-            document.getElementById('m-desc').innerText = movieData.overview || "Sin descripción disponible.";
+            const movie = localMovies.find(m => m.id == id) || { title: "Película", overview: "" };
+            document.getElementById('m-title').innerText = movie.title;
+            document.getElementById('m-desc').innerText = movie.overview || "Sin descripción disponible.";
             
             await launchAd();
 
@@ -201,30 +139,31 @@
                 { n: "Server VIP", u: `https://embed.su/embed/movie/${id}` }
             ];
 
-            document.getElementById('servers').innerHTML = options.map((s, i) => `
+            const msgWA = encodeURIComponent(`Hola Nazareth, la película "${movie.title}" no carga.`);
+            let html = options.map((s, i) => `
                 <button onclick="play('${s.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-zinc-800 whitespace-nowrap transition-all ${i==0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900'}">
                     ${s.n}
                 </button>
             `).join('');
+            
+            html += `<a href="https://wa.me/5927005167?text=${msgWA}" target="_blank" class="flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-green-600 bg-green-600/10 text-green-500 whitespace-nowrap"><i data-lucide="message-circle" class="w-3 h-3"></i> Reportar</a>`;
 
+            document.getElementById('servers').innerHTML = html;
             play(options[0].u);
             document.getElementById('player-modal').classList.add('active');
+            lucide.createIcons();
         }
 
-        // LANZAR ANUNCIO
         async function launchAd() {
             return new Promise(async (resolve) => {
                 try {
                     const res = await fetch(`${API_URL}/get-ads`);
                     const data = await res.json();
-                    
                     if(data.enabled && data.video_ad_start) {
                         const adLayer = document.getElementById('ad-layer');
                         const skipBtn = document.getElementById('skip-btn');
-                        
                         window.open(data.video_ad_start, '_blank');
                         adLayer.style.display = 'flex';
-
                         let timeLeft = 5;
                         skipBtn.disabled = true;
                         const counter = setInterval(() => {
@@ -252,7 +191,14 @@
                 document.querySelectorAll('#servers button').forEach(b => b.className = "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-zinc-800 bg-zinc-900");
                 btn.className = "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-600 bg-red-600 shadow-lg shadow-red-600/20";
             }
-            document.getElementById('video-container').innerHTML = `<iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
+            const container = document.getElementById('video-container');
+            container.innerHTML = `
+                <div id="v-loader" class="flex flex-col items-center justify-center h-full bg-zinc-950 text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-red-600 mb-4"></div>
+                    <p class="text-xs font-bold uppercase italic tracking-tighter">Preparando servidor para ti 😘</p>
+                </div>
+                <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-loader').remove();"></iframe>
+            `;
         }
 
         function closePlayer() {
