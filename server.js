@@ -5,33 +5,42 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 
-// TU LLAVE DE TMDB
 const API_KEY = '2519980fb2074bfdf5f7abce52b2e2d6';
 
-// Link de tu servidor de Render (para el despertador externo)
-const MI_URL = "https://mi-servidor-cine.onrender.com";
-
 app.get('/', (req, res) => {
-    res.send("Servidor de Nazareth Activo - Monetización Activada");
+    res.send("Servidor de Nazareth Activo - Series y Películas Sincronizadas");
 });
 
-// Ruta para el catálogo de películas
+// --- RUTA PELÍCULAS POPULARES ---
 app.get('/populares', async (req, res) => {
     try {
-        const url = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-MX`;
+        const url = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-MX&page=1`;
         const respuesta = await axios.get(url);
         res.json(respuesta.data.results);
     } catch (error) {
-        console.error("Error en TMDB:", error.message);
         res.status(500).json({ error: "Error al obtener peliculas" });
     }
 });
 
-// Ruta para el buscador
+// --- RUTA SERIES POPULARES (NUEVA) ---
+app.get('/series', async (req, res) => {
+    try {
+        const url = `https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}&language=es-MX&page=1`;
+        const respuesta = await axios.get(url);
+        // TMDB usa 'name' para series y 'title' para pelis. 
+        // Normalizamos un poco para que el frontend no sufra.
+        res.json(respuesta.data.results);
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener series" });
+    }
+});
+
+// --- BUSCADOR HÍBRIDO (ACTUALIZADO) ---
 app.get('/buscar', async (req, res) => {
     try {
         const query = req.query.q;
-        const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=es-MX&query=${encodeURIComponent(query)}`;
+        const type = req.query.type || 'movie'; // Recibe 'movie' o 'tv' del frontend
+        const url = `https://api.themoviedb.org/3/search/${type}?api_key=${API_KEY}&language=es-MX&query=${encodeURIComponent(query)}`;
         const respuesta = await axios.get(url);
         res.json(respuesta.data.results);
     } catch (error) {
@@ -39,7 +48,20 @@ app.get('/buscar', async (req, res) => {
     }
 });
 
-// --- RUTA DE PUBLICIDAD QUIRÚRGICA ---
+// --- FILTRO POR GÉNERO (NUEVA) ---
+app.get('/genero/:id', async (req, res) => {
+    try {
+        const genreId = req.params.id;
+        const type = req.query.type || 'movie';
+        const url = `https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=es-MX&with_genres=${genreId}&sort_by=popularity.desc`;
+        const respuesta = await axios.get(url);
+        res.json(respuesta.data.results);
+    } catch (error) {
+        res.status(500).json({ error: "Error al filtrar por genero" });
+    }
+});
+
+// --- PUBLICIDAD ---
 app.get('/get-ads', (req, res) => { 
     res.json({ 
         enabled: true, 
@@ -49,5 +71,5 @@ app.get('/get-ads', (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log("Servidor Nazareth Cinema Pro corriendo y monetizando");
+    console.log("Servidor Nazareth Cinema Pro: Nivel App Desbloqueado");
 });
