@@ -16,7 +16,6 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* Diseño de las tarjetas de películas */
         .poster-card { 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             aspect-ratio: 2/3; 
@@ -29,7 +28,6 @@
         
         .poster-card:active { transform: scale(0.92); }
         
-        /* Modal del reproductor estilo Netflix */
         .modal { 
             display: none; 
             position: fixed; 
@@ -41,7 +39,6 @@
         
         .modal.active { display: flex; }
 
-        /* Capa de anuncios */
         #ad-layer {
             display: none;
             position: fixed;
@@ -82,7 +79,7 @@
     </div>
     
     <main id="grid" class="grid grid-cols-3 gap-3 p-3 opacity-0 transition-opacity duration-500">
-        </main>
+    </main>
 
     <div id="player-modal" class="modal overflow-y-auto">
         <div class="p-4 flex items-center border-b border-zinc-900 bg-zinc-950/50">
@@ -112,31 +109,39 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE TU SERVIDOR
+        // CONFIGURACIÓN: Asegúrate de que esta URL sea la correcta
         const API_URL = "https://mi-servidor-cine.onrender.com";
         let localMovies = [];
 
-        // Inicializar App
+        // Inicializar App con limpieza de URL
         async function init() {
+            const grid = document.getElementById('grid');
+            const loading = document.getElementById('loading');
             try {
-                const r = await fetch(`${API_URL}/populares`);
-                localMovies = await r.json();
-                drawMovies(localMovies);
-                document.getElementById('grid').classList.replace('opacity-0', 'opacity-100');
+                const base = API_URL.replace(/\/$/, "");
+                const r = await fetch(`${base}/populares`);
+                const data = await r.json();
+                
+                if (data && data.length > 0) {
+                    localMovies = data;
+                    drawMovies(localMovies);
+                    grid.classList.replace('opacity-0', 'opacity-100');
+                    loading.style.display = 'none';
+                } else {
+                    throw new Error("Sin datos");
+                }
             } catch (e) { 
-                console.error("Error al conectar con Render");
-            } finally {
-                document.getElementById('loading').style.display = 'none';
+                console.error("Fallo al cargar catálogo");
+                loading.innerHTML = "<p class='text-zinc-600 text-[10px] uppercase'>Error de red. Intenta refrescar.</p>";
             }
         }
 
-        // Pintar películas en pantalla
         function drawMovies(list) {
             const grid = document.getElementById('grid');
             grid.innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id})">
-                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/342x513?text=No+Image'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity p-2 flex items-end">
+                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/342x513?text=Sin+Imagen'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity p-2 flex items-end">
                         <p class="text-[8px] font-bold truncate">${m.title}</p>
                     </div>
                 </div>
@@ -144,36 +149,36 @@
             lucide.createIcons();
         }
 
-        // Buscador Inteligente
+        // Buscador corregido
         let timer;
         document.getElementById('search').addEventListener('input', (e) => {
             clearTimeout(timer);
-            const q = e.target.value;
+            const q = e.target.value.trim();
             if (q.length === 0) { init(); return; }
             if (q.length < 3) return;
             
             timer = setTimeout(async () => {
                 try {
-                    const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}`);
+                    const base = API_URL.replace(/\/$/, "");
+                    const r = await fetch(`${base}/buscar?q=${encodeURIComponent(q)}`);
                     const data = await r.json();
-                    localMovies = [...localMovies, ...data];
-                    drawMovies(data);
-                } catch (e) { console.log("Error en búsqueda"); }
+                    if (data) {
+                        localMovies = [...localMovies, ...data]; // Guardamos para el player
+                        drawMovies(data);
+                    }
+                } catch (e) { console.log("Error buscando"); }
             }, 600);
         });
 
-        // Abrir Reproductor
         async function openPlayer(id) {
             const movie = localMovies.find(m => m.id == id);
             if (!movie) return;
 
             document.getElementById('m-title').innerText = movie.title;
-            document.getElementById('m-desc').innerText = movie.overview || "No hay descripción disponible para esta película.";
+            document.getElementById('m-desc').innerText = movie.overview || "Sin descripción.";
             
-            // 1. Lanzar Anuncio primero
             await launchAd();
 
-            // 2. Preparar servidores
             const options = [
                 { n: "Latino Pro", u: `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1` },
                 { n: "Español HD", u: `https://vidsrc.me/embed/movie?tmdb=${id}` },
@@ -193,21 +198,19 @@
         function play(url, btn) {
             if (btn) {
                 document.querySelectorAll('#servers button').forEach(b => {
-                    b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg');
-                    b.classList.add('bg-zinc-900');
+                    b.className = "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-zinc-800 whitespace-nowrap transition-all bg-zinc-900";
                 });
-                btn.classList.replace('bg-zinc-900', 'bg-red-600');
-                btn.classList.add('border-red-600', 'shadow-lg');
+                btn.className = "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-600 whitespace-nowrap transition-all bg-red-600 shadow-lg shadow-red-600/20";
             }
             document.getElementById('video-container').innerHTML = `
                 <iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
             `;
         }
 
-        // Lógica de Anuncios
         async function launchAd() {
             try {
-                const res = await fetch(`${API_URL}/get-ads`);
+                const base = API_URL.replace(/\/$/, "");
+                const res = await fetch(`${base}/get-ads`);
                 const data = await res.json();
                 if(data.enabled && data.video_ad_start) {
                     document.getElementById('ad-frame').src = data.video_ad_start;
