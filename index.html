@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Guyana Digital Cinema | Nazareth Pro</title>
     
-    <link rel="manifest" href="/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Nazareth Pro">
-    <link rel="apple-touch-icon" href="https://mi-servidor-cine.onrender.com/logo.png">
+    
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -91,7 +92,6 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
-        /* Mostrar botón cerrar solo en fullscreen */
         #video-container:fullscreen #close-fullscreen,
         #video-container:-webkit-full-screen #close-fullscreen {
             display: block;
@@ -287,7 +287,7 @@
         }
 
         function play(url) {
-            // 1. Abre anuncio en popup para no perder el foco de la app
+            // 1. Abre anuncio en popup controlado
             window.open(ADS_URL, '_blank', 'width=400,height=500');
             
             // 2. Carga video
