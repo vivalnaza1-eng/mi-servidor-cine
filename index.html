@@ -15,6 +15,7 @@
         .modal.active { display: flex; }
         #ad-layer { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
         ::-webkit-scrollbar { display: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         .tab-active { color: #ef4444; border-bottom: 2px solid #ef4444; }
     </style>
 </head>
@@ -56,10 +57,20 @@
             <button onclick="closePlayer()" class="p-2 bg-zinc-900 rounded-full"><i data-lucide="chevron-left"></i></button>
             <span class="font-bold truncate px-4 text-xs uppercase italic" id="m-title">Cargando...</span>
         </div>
+        
         <div class="w-full aspect-video bg-black relative shadow-2xl">
             <div id="video-container" class="w-full h-full"></div>
         </div>
+
         <div class="p-6">
+            <div class="flex items-start gap-3 mb-6 bg-red-600/10 p-4 rounded-xl border border-red-600/20">
+                <i data-lucide="info" class="w-5 h-5 text-red-500 shrink-0"></i>
+                <p class="text-[11px] text-zinc-300 font-medium leading-tight">
+                    <span class="text-red-500 font-black uppercase block mb-1">¿Problemas con el video?</span>
+                    Si la película no carga o se detiene, prueba cambiando al <strong class="text-white">VIP SERVER</strong> o usa el botón flotante del reproductor.
+                </p>
+            </div>
+
             <div id="series-controls" class="hidden mb-6 grid grid-cols-2 gap-3">
                 <div>
                     <label class="text-[8px] text-zinc-500 font-black uppercase mb-1 block">Temporada</label>
@@ -70,7 +81,9 @@
                     <select id="episode" onchange="updateContent()" class="w-full bg-zinc-900 border border-zinc-800 p-2 rounded-lg text-xs outline-none focus:border-red-600"></select>
                 </div>
             </div>
-            <div id="servers" class="flex gap-2 overflow-x-auto mb-6"></div>
+
+            <div id="servers" class="flex gap-2 overflow-x-auto mb-6 no-scrollbar"></div>
+            <hr class="border-zinc-900 mb-6">
             <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-medium"></p>
         </div>
     </div>
@@ -92,7 +105,7 @@
         function draw(list) {
             document.getElementById('grid').innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id})">
-                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover">
+                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/342x513?text=Sin+Imagen'">
                 </div>
             `).join('');
             lucide.createIcons();
@@ -115,11 +128,10 @@
             activeId = id;
             const item = localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = item.title || item.name;
-            document.getElementById('m-desc').innerText = item.overview || "Sin descripción.";
+            document.getElementById('m-desc').innerText = item.overview || "Sin descripción disponible.";
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                // Llenar selectores (Temporada 1-10, Cap 1-30 por defecto)
                 document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Temporada ${i+1}</option>`).join('');
                 document.getElementById('episode').innerHTML = Array.from({length:40}, (_,i)=>`<option value="${i+1}">Episodio ${i+1}</option>`).join('');
             } else {
@@ -135,27 +147,34 @@
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
-            const servers = [
+            const options = [
                 { n: "LATINO PRO", u: currentMode === 'movie' ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}` },
                 { n: "VIP SERVER", u: currentMode === 'movie' ? `https://embed.su/embed/movie/${activeId}` : `https://embed.su/embed/tv/${activeId}/${s}/${e}` }
             ];
 
-            document.getElementById('servers').innerHTML = servers.map((sv, i) => `
-                <button onclick="play('${sv.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i==0?'bg-red-600 border-red-600':'bg-zinc-900 border-zinc-800'} whitespace-nowrap">${sv.n}</button>
-            `).join('') + `<a href="https://wa.me/5927005167" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600">REPORTAR</a>`;
+            document.getElementById('servers').innerHTML = options.map((sv, i) => `
+                <button onclick="play('${sv.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i==0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900 border-zinc-800'} whitespace-nowrap transition-all active:scale-95">
+                    ${sv.n}
+                </button>
+            `).join('') + `<a href="https://wa.me/5927005167" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600 whitespace-nowrap">REPORTAR</a>`;
             
-            play(servers[0].u);
+            play(options[0].u);
+            lucide.createIcons();
         }
 
         function play(url, btn) {
             if(btn) {
-                document.querySelectorAll('#servers button').forEach(b => b.classList.replace('bg-red-600', 'bg-zinc-900'));
+                document.querySelectorAll('#servers button').forEach(b => {
+                    b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg', 'shadow-red-600/20');
+                    b.classList.add('bg-zinc-900', 'border-zinc-800');
+                });
                 btn.classList.replace('bg-zinc-900', 'bg-red-600');
+                btn.classList.replace('border-zinc-800', 'border-red-600');
             }
             document.getElementById('video-container').innerHTML = `
                 <div id="v-l" class="flex flex-col items-center justify-center h-full bg-zinc-950 text-center">
                     <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-red-600 mb-3"></div>
-                    <p class="text-[10px] font-bold uppercase italic tracking-tighter">Preparando servidor para ti 😘</p>
+                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Sincronizando flujo 😘</p>
                 </div>
                 <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-l').remove();"></iframe>
             `;
@@ -163,18 +182,20 @@
 
         async function launchAd() {
             return new Promise(async (res) => {
-                const r = await fetch(`${API_URL}/get-ads`);
-                const d = await r.json();
-                if(d.enabled) {
-                    window.open(d.video_ad_start, '_blank');
-                    document.getElementById('ad-layer').style.display = 'flex';
-                    let t = 5;
-                    const it = setInterval(() => {
-                        document.getElementById('skip-btn').innerText = `DESBLOQUEANDO EN ${t}S`;
-                        t--;
-                        if(t < 0) { clearInterval(it); document.getElementById('skip-btn').innerText = "IR AL CONTENIDO"; window.resAd = res; }
-                    }, 1000);
-                } else res();
+                try {
+                    const r = await fetch(`${API_URL}/get-ads`);
+                    const d = await r.json();
+                    if(d.enabled) {
+                        window.open(d.video_ad_start, '_blank');
+                        document.getElementById('ad-layer').style.display = 'flex';
+                        let t = 5;
+                        const it = setInterval(() => {
+                            document.getElementById('skip-btn').innerText = `DESBLOQUEANDO EN ${t}S`;
+                            t--;
+                            if(t < 0) { clearInterval(it); document.getElementById('skip-btn').innerText = "IR AL CONTENIDO"; window.resAd = res; }
+                        }, 1000);
+                    } else res();
+                } catch(e) { res(); }
             });
         }
 
