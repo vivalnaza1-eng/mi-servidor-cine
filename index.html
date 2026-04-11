@@ -60,7 +60,7 @@
                 <i data-lucide="info" class="w-5 h-5 text-red-500 shrink-0"></i>
                 <p class="text-[11px] text-zinc-300 font-medium leading-tight">
                     <span class="text-red-500 font-black uppercase block mb-1">Guía de Audio</span>
-                    Si el video está en otro idioma, prueba con los otros proveedores o usa el <strong>botón flotante</strong> del reproductor.
+                    Si buscas <b>Español Latino</b>, usa el botón naranja <b>PANDA</b>. Abrirá una fuente externa garantizada.
                 </p>
             </div>
 
@@ -76,7 +76,7 @@
             </div>
 
             <div id="servers-container" class="space-y-4 mb-6">
-                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Proveedores Disponibles:</p>
+                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Seleccionar Fuente:</p>
                 <div id="servers" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
             </div>
             
@@ -137,37 +137,54 @@
         function updateContent() {
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
-            
-            // NUEVA LISTA DE PROVEEDORES
+            const item = localData.find(m => m.id == activeId);
+
+            // Generar slug para PelisPanda
+            const titleSlug = (item.title || item.name)
+                .toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+                .replace(/[^\w ]+/g, '')
+                .replace(/ +/g, '-');
+
             const providers = [
-                { n: "LATINO PRO", u: currentMode === 'movie' ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}` },
-                { n: "OPCIÓN 2", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` },
-                { n: "OPCIÓN 3", u: currentMode === 'movie' ? `https://vidsrc.pro/embed/movie/${activeId}` : `https://vidsrc.pro/embed/tv/${activeId}/${s}/${e}` },
-                { n: "GLOBAL", u: currentMode === 'movie' ? `https://vidsrc.to/embed/movie/${activeId}` : `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` }
+                { 
+                    n: "LATINO PANDA 🐼", 
+                    u: currentMode === 'movie' 
+                        ? `https://pelispanda.org/pelicula/${titleSlug}` 
+                        : `https://pelispanda.org/episodio/${titleSlug}-${s}x${e}`,
+                    ext: true
+                },
+                { n: "LATINO PRO", u: currentMode === 'movie' ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}`, ext: false },
+                { n: "OPCIÓN 2", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}`, ext: false }
             ];
 
             document.getElementById('servers').innerHTML = providers.map((pv, i) => `
-                <button onclick="play('${pv.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i==0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900 border-zinc-800'} whitespace-nowrap transition-all">
+                <button onclick="${pv.ext ? `window.open('${pv.u}', '_blank')` : `play('${pv.u}', this)`}" 
+                    class="px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i==0?'bg-orange-600 border-orange-600 shadow-lg shadow-orange-600/20':'bg-zinc-900 border-zinc-800'} whitespace-nowrap transition-all">
                     ${pv.n}
                 </button>
             `).join('') + `<a href="https://wa.me/5927005167" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600 whitespace-nowrap">REPORTAR</a>`;
             
-            play(providers[0].u);
+            play(providers[1].u);
         }
 
         function play(url, btn) {
             if(btn) {
                 document.querySelectorAll('#servers button').forEach(b => {
-                    b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg', 'shadow-red-600/20');
-                    b.classList.add('bg-zinc-900', 'border-zinc-800');
+                    if(!b.innerText.includes('PANDA')){
+                        b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg', 'shadow-red-600/20');
+                        b.classList.add('bg-zinc-900', 'border-zinc-800');
+                    }
                 });
-                btn.classList.replace('bg-zinc-900', 'bg-red-600');
-                btn.classList.add('border-red-600', 'shadow-lg', 'shadow-red-600/20');
+                if(!btn.innerText.includes('PANDA')){
+                    btn.classList.replace('bg-zinc-900', 'bg-red-600');
+                    btn.classList.add('border-red-600', 'shadow-lg', 'shadow-red-600/20');
+                }
             }
             document.getElementById('video-container').innerHTML = `
                 <div id="v-l" class="flex flex-col items-center justify-center h-full bg-zinc-950 text-center">
                     <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-red-600 mb-3"></div>
-                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Conectando con el servidor...</p>
+                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Cargando servidor Nazareth...</p>
                 </div>
                 <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-l').remove();"></iframe>
             `;
