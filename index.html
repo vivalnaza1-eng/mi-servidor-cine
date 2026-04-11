@@ -66,8 +66,8 @@
             <div class="flex items-start gap-3 mb-6 bg-red-600/10 p-4 rounded-xl border border-red-600/20">
                 <i data-lucide="help-circle" class="w-5 h-5 text-red-500 shrink-0"></i>
                 <p class="text-[11px] text-zinc-300 font-medium leading-tight">
-                    <span class="text-red-500 font-black uppercase block mb-1">¿Video lento o caído?</span>
-                    Usa el <strong class="text-white italic underline">botón flotante azul/blanco</strong> que aparece dentro del video para cambiar de servidor al instante.
+                    <span class="text-red-500 font-black uppercase block mb-1">¿Video lento o en otro idioma?</span>
+                    Usa el <strong class="text-white italic underline">botón flotante azul</strong> dentro del video para cambiar de servidor o pista de audio.
                 </p>
             </div>
 
@@ -82,7 +82,7 @@
                 </div>
             </div>
 
-            <div id="servers" class="flex gap-2 overflow-x-auto mb-6 no-scrollbar"></div>
+            <div id="servers" class="flex flex-col gap-3 mb-6"></div>
             <hr class="border-zinc-900 mb-6">
             <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-medium"></p>
         </div>
@@ -128,7 +128,17 @@
             activeId = id;
             const item = localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = item.title || item.name;
-            document.getElementById('m-desc').innerText = item.overview || "Sin descripción disponible.";
+            
+            // Añadir tip debajo de la sinopsis
+            const sinopsis = item.overview || "Sin descripción disponible.";
+            document.getElementById('m-desc').innerHTML = `
+                ${sinopsis}
+                <div class="mt-6 p-3 bg-white/5 rounded-lg border border-white/10">
+                    <p class="text-[10px] text-zinc-500 italic">
+                        <strong>Tip:</strong> Si prefieres subtítulos o audio original, selecciona la opción "ENGLISH / SUBS" o usa el menú interno del video.
+                    </p>
+                </div>
+            `;
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
@@ -147,29 +157,48 @@
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
-            // SOLO DEJAMOS EL SERVIDOR PRINCIPAL
-            const mainServer = currentMode === 'movie' 
-                ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` 
-                : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}`;
+            const serverOptions = [
+                { 
+                    n: "ESPAÑOL LATINO", 
+                    u: currentMode === 'movie' ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}`,
+                    icon: "languages"
+                },
+                { 
+                    n: "ENGLISH / SUBS", 
+                    u: currentMode === 'movie' ? `https://vidsrc.to/embed/movie/${activeId}` : `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}`,
+                    icon: "subtitles"
+                }
+            ];
 
             document.getElementById('servers').innerHTML = `
-                <button class="px-8 py-3 rounded-xl text-[10px] font-black uppercase bg-red-600 border border-red-600 shadow-lg shadow-red-600/20 whitespace-nowrap">
-                    LATINO PRO ACTIVADO
-                </button>
-                <a href="https://wa.me/5927005167" class="px-8 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600 whitespace-nowrap">
-                    REPORTAR ERROR
-                </a>
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                    ${serverOptions.map((sv, i) => `
+                        <button onclick="play('${sv.u}', this)" class="flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i==0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900 border-zinc-800'} whitespace-nowrap transition-all">
+                            <i data-lucide="${sv.icon}" class="w-3 h-3"></i>
+                            ${sv.n}
+                        </button>
+                    `).join('')}
+                    <a href="https://wa.me/5927005167" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600 whitespace-nowrap">REPORTAR</a>
+                </div>
             `;
             
-            play(mainServer);
+            play(serverOptions[0].u);
             lucide.createIcons();
         }
 
-        function play(url) {
+        function play(url, btn) {
+            if(btn) {
+                document.querySelectorAll('#servers button').forEach(b => {
+                    b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg', 'shadow-red-600/20');
+                    b.classList.add('bg-zinc-900', 'border-zinc-800');
+                });
+                btn.classList.replace('bg-zinc-900', 'bg-red-600');
+                btn.classList.replace('border-zinc-800', 'border-red-600');
+            }
             document.getElementById('video-container').innerHTML = `
                 <div id="v-l" class="flex flex-col items-center justify-center h-full bg-zinc-950 text-center">
                     <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-red-600 mb-3"></div>
-                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Sincronizando flujo 😘</p>
+                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Cargando cine... 😘</p>
                 </div>
                 <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-l').remove();"></iframe>
             `;
