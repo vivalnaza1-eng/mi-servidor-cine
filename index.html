@@ -22,7 +22,7 @@
             transition: all 0.3s ease; aspect-ratio: 2/3; border-radius: 12px; 
             overflow: hidden; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.05); cursor: pointer;
         }
-        .poster-card:hover { transform: translateY(-5px); border-color: var(--gy-gold); shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .poster-card:hover { transform: translateY(-5px); border-color: var(--gy-gold); }
 
         .modal { 
             display: none; position: fixed; inset: 0; background: #000; 
@@ -38,7 +38,7 @@
         .tab-active { color: var(--gy-gold); border-bottom: 2px solid var(--gy-gold); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        iframe { background: #000; border: none; }
+        iframe { background: #000; border: none; width: 100%; height: 100%; }
     </style>
 </head>
 <body class="pt-28 pb-10">
@@ -66,9 +66,9 @@
         <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em]">TV Shows</button>
     </div>
 
-    <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5 p-5"></main>
+    <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5 p-5 min-h-[50vh]"></main>
 
-    <a href="https://wa.me/5927005167" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-[#25d366] rounded-full flex items-center justify-center z-50">
+    <a href="https://wa.me/5927005167" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-[#25d366] rounded-full flex items-center justify-center z-50 shadow-lg">
         <i data-lucide="message-circle" class="text-white w-7 h-7"></i>
     </a>
 
@@ -112,18 +112,30 @@
         let currentMode = 'movie';
         let activeId = null;
 
+        // Función de carga mejorada
         async function loadInitial() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-500 animate-pulse uppercase tracking-[0.3em] text-[10px]">Loading Catalog...</div>`;
+            
             try {
                 const type = currentMode === 'movie' ? 'movie' : 'tv';
                 const r = await fetch(`https://api.themoviedb.org/3/${type}/popular?api_key=${TMDB_KEY}&language=en-US&page=1`);
                 const data = await r.json();
-                draw(data.results);
-            } catch (e) { console.error("Load Error"); }
+                if(data.results) {
+                    draw(data.results);
+                }
+            } catch (e) { 
+                grid.innerHTML = `<p class="col-span-full text-center py-20 text-red-500 uppercase font-bold">Error loading catalog. Check connection.</p>`;
+            }
         }
 
         async function searchGlobal() {
             const query = document.getElementById('search').value;
             if(!query) return loadInitial();
+            
+            const grid = document.getElementById('grid');
+            grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-500 animate-pulse uppercase tracking-[0.3em] text-[10px]">Searching...</div>`;
+            
             try {
                 const type = currentMode === 'movie' ? 'movie' : 'tv';
                 const r = await fetch(`https://api.themoviedb.org/3/search/${type}?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US`);
@@ -139,7 +151,7 @@
                 return;
             }
             grid.innerHTML = list.map(m => `
-                <div class="poster-card" onclick="openPlayer(${m.id}, '${(m.title || m.name || "Untitled").replace(/'/g, "")}', '${(m.overview || "No description").replace(/'/g, "")}')">
+                <div class="poster-card shadow-lg" onclick="openPlayer(${m.id}, '${(m.title || m.name || "Untitled").replace(/'/g, "")}', '${(m.overview || "No description").replace(/'/g, "")}')">
                     <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w500'+m.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'}" class="w-full h-full object-cover">
                 </div>
             `).join('');
@@ -197,7 +209,7 @@
                 btn.classList.add('bg-yellow-600', 'text-black');
             }
             document.getElementById('video-container').innerHTML = `
-                <iframe src="${url}" class="w-full h-full" allowfullscreen 
+                <iframe src="${url}" allowfullscreen 
                 sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>`;
         }
 
@@ -207,7 +219,11 @@
             document.body.style.overflow = 'auto';
         }
 
-        window.onload = loadInitial;
+        // Ejecutar carga al abrir
+        window.addEventListener('DOMContentLoaded', () => {
+            loadInitial();
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
