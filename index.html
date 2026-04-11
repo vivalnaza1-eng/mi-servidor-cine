@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nazareth Cinema | Guyana Premium</title>
+    <title>Guyana Digital Cinema | Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -16,142 +16,133 @@
         }
 
         body { 
-            background: radial-gradient(circle at top, #111 0%, #000 100%); 
+            background: radial-gradient(circle at top right, #1a1a1a 0%, #000 100%); 
             color: #fff; 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent; 
             overflow-x: hidden;
         }
 
-        /* Efecto de Brillo en Posters */
-        .poster-card { 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            aspect-ratio: 2/3; 
-            border-radius: 16px; 
-            overflow: hidden; 
-            background: #111; 
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
+        /* Botón Flotante del Creador (Esquina) */
+        .creator-badge {
+            position: fixed; top: 20px; left: 20px; z-index: 100;
+            background: rgba(0,0,0,0.8); border: 1.5px solid var(--gy-gold);
+            padding: 8px 15px; border-radius: 50px; display: flex; align-items: center; gap: 10px;
+            backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(252, 209, 22, 0.3);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
+            max-width: 45px; white-space: nowrap; overflow: hidden;
         }
-        .poster-card:hover { transform: translateY(-8px); border-color: var(--gy-gold); box-shadow: 0 10px 30px rgba(252, 209, 22, 0.2); }
-        .poster-card:active { transform: scale(0.92); }
+        .creator-badge:hover { max-width: 200px; border-color: var(--gy-green); }
+        .creator-dot { width: 10px; height: 10px; background: var(--gy-red); border-radius: 50%; animation: blink 1.5s infinite; }
 
-        /* Modal con Glassmorphism */
+        @keyframes blink { 50% { opacity: 0.3; } }
+
+        /* Efectos Visuales */
+        .poster-card { 
+            transition: all 0.4s ease; aspect-ratio: 2/3; border-radius: 20px; 
+            overflow: hidden; background: #111; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .poster-card:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(0, 158, 73, 0.3); border-color: var(--gy-green); }
+
         .modal { 
             display: none; position: fixed; inset: 0; 
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); 
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(25px); 
             z-index: 1000; flex-direction: column; 
         }
-        .modal.active { display: flex; animation: fadeIn 0.3s ease; }
+        .modal.active { display: flex; animation: slideUp 0.4s ease-out; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
-
-        /* Botones con los colores de Guyana */
-        .tab-active { 
-            color: var(--gy-gold); 
-            border-bottom: 3px solid var(--gy-gold); 
-            text-shadow: 0 0 10px rgba(252, 209, 22, 0.5);
-        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
         .gy-gradient-text {
             background: linear-gradient(90deg, var(--gy-red), var(--gy-gold), var(--gy-green));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             font-family: 'Syncopate', sans-serif;
         }
 
-        /* Burbuja Flotante Animada */
+        .tab-active { 
+            color: var(--gy-gold); border-bottom: 3px solid var(--gy-gold);
+            filter: drop-shadow(0 0 5px var(--gy-gold));
+        }
+
         .floating-support {
             position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px;
-            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4); z-index: 100;
-            animation: pulse-green 2s infinite;
+            background: #25d366; border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
-        }
-
-        #ad-layer { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
-        
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="pb-10">
+<body class="pt-20 pb-10">
+
+    <div class="creator-badge group">
+        <div class="creator-dot"></div>
+        <span class="text-[10px] font-black uppercase tracking-widest text-white opacity-0 group-hover:opacity-100 transition-opacity">
+            Created by <span class="text-yellow-400">José Vival</span>
+        </span>
+    </div>
 
     <div id="ad-layer">
-        <div class="text-center p-8 border border-zinc-800 rounded-3xl bg-zinc-900/50 backdrop-blur-xl">
-            <div class="relative w-20 h-20 mx-auto mb-6">
-                <div class="absolute inset-0 bg-red-600 blur-xl opacity-50 animate-pulse"></div>
-                <i data-lucide="shield-check" class="relative w-20 h-20 text-red-600"></i>
-            </div>
-            <h2 class="text-2xl font-black uppercase tracking-tighter gy-gradient-text">Verifying Access</h2>
-            <p class="text-[10px] text-zinc-500 uppercase mt-4 tracking-[0.3em]">Guyana High-Speed Network</p>
-            <button id="skip-btn" onclick="closeAd()" class="bg-white text-black px-12 py-4 rounded-2xl font-black mt-8 tracking-widest text-xs uppercase transition-all active:scale-90">Please wait...</button>
+        <div class="text-center p-10 bg-black/40 border border-white/10 rounded-[40px] backdrop-blur-3xl">
+            <h2 class="text-3xl font-black gy-gradient-text mb-2 italic">DIGITAL CINEMA</h2>
+            <p class="text-[10px] text-zinc-500 uppercase tracking-[0.5em] mb-8">Guyana Premium Network</p>
+            <button id="skip-btn" onclick="closeAd()" class="bg-white text-black px-14 py-4 rounded-full font-black text-xs uppercase hover:bg-yellow-400 transition-colors">Wait...</button>
         </div>
     </div>
 
-    <nav class="flex items-center justify-between p-6 sticky top-0 bg-black/60 backdrop-blur-xl z-50 border-b border-white/5">
+    <nav class="flex items-center justify-between p-6 fixed top-0 w-full bg-black/40 backdrop-blur-xl z-50 border-b border-white/5">
         <div class="flex flex-col" onclick="location.reload()">
-            <h1 class="text-white font-black text-2xl italic uppercase tracking-tighter leading-none">Nazareth</h1>
-            <span class="text-[8px] font-bold text-green-500 tracking-[0.4em] uppercase">Cinema Pro</span>
+            <h1 class="text-white font-black text-xl italic uppercase tracking-tighter leading-none">Guyana Digital</h1>
+            <span class="text-[9px] font-bold text-yellow-500 tracking-[0.2em] uppercase">Cinema Pro</span>
         </div>
-        <div class="relative w-3/5">
-            <input type="text" id="search" placeholder="Search title..." class="w-full bg-zinc-900/80 rounded-2xl py-3 px-12 text-xs border border-white/10 outline-none focus:border-yellow-500 transition-all">
+        <div class="relative w-1/2">
+            <input type="text" id="search" placeholder="Search title..." class="w-full bg-white/5 rounded-2xl py-3 px-12 text-xs border border-white/10 outline-none focus:border-green-500 transition-all">
             <i data-lucide="search" class="absolute left-4 top-3.5 w-4 h-4 text-zinc-500"></i>
         </div>
     </nav>
 
-    <div class="flex gap-8 px-6 py-4 sticky top-[85px] bg-black/80 backdrop-blur-md z-40">
-        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[11px] font-black uppercase tracking-widest transition-all">Movies</button>
-        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-600 text-[11px] font-black uppercase tracking-widest transition-all">TV Series</button>
+    <div class="flex gap-10 px-8 py-6">
+        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-xs font-black uppercase tracking-[0.2em]">Movies</button>
+        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-600 text-xs font-black uppercase tracking-[0.2em]">TV Series</button>
     </div>
 
-    <main id="grid" class="grid grid-cols-3 gap-3 p-3"></main>
+    <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4"></main>
 
-    <a href="https://wa.me/5927005167" target="_blank" class="floating-support">
+    <a href="https://wa.me/5927005167" target="_blank" class="floating-support animate-bounce">
         <i data-lucide="message-circle" class="text-white w-8 h-8"></i>
     </a>
 
     <div id="player-modal" class="modal overflow-y-auto">
-        <div class="p-5 flex items-center justify-between">
-            <button onclick="closePlayer()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md"><i data-lucide="x" class="w-5 h-5 text-white"></i></button>
-            <div class="flex items-center gap-2">
-                <img src="https://flagcdn.com/gy.svg" class="w-6 h-4 rounded-sm shadow-lg" alt="GY">
-                <span class="font-black text-[10px] uppercase tracking-tighter text-zinc-300" id="m-title">STREAMING</span>
+        <div class="p-6 flex items-center justify-between">
+            <button onclick="closePlayer()" class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <div class="flex flex-col items-center">
+                <img src="https://flagcdn.com/gy.svg" class="w-8 h-5 rounded shadow-lg mb-1" alt="Guyana">
+                <span class="font-black text-[9px] uppercase tracking-widest text-zinc-500" id="m-title">PLAYING NOW</span>
             </div>
-            <div class="w-10"></div>
+            <div class="w-12"></div>
         </div>
         
-        <div class="w-full aspect-video bg-black relative group">
-            <div id="video-container" class="w-full h-full shadow-2xl"></div>
+        <div class="w-full aspect-video bg-black shadow-[0_0_100px_rgba(0,0,0,1)]">
+            <div id="video-container" class="w-full h-full"></div>
         </div>
 
-        <div class="p-8 bg-gradient-to-b from-transparent to-black">
-            <div id="series-controls" class="hidden mb-8 grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[9px] text-zinc-500 font-black uppercase mb-2 block tracking-widest">Season</label>
-                    <select id="season" onchange="updateContent()" class="w-full bg-zinc-900 border border-white/5 p-4 rounded-2xl text-sm outline-none focus:border-green-500 appearance-none"></select>
-                </div>
-                <div>
-                    <label class="text-[9px] text-zinc-500 font-black uppercase mb-2 block tracking-widest">Episode</label>
-                    <select id="episode" onchange="updateContent()" class="w-full bg-zinc-900 border border-white/5 p-4 rounded-2xl text-sm outline-none focus:border-green-500 appearance-none"></select>
-                </div>
+        <div class="p-8 max-w-4xl mx-auto w-full">
+            <div id="series-controls" class="hidden mb-10 grid grid-cols-2 gap-6">
+                <select id="season" onchange="updateContent()" class="bg-zinc-900/50 border border-white/10 p-5 rounded-3xl text-sm outline-none focus:border-yellow-500 appearance-none"></select>
+                <select id="episode" onchange="updateContent()" class="bg-zinc-900/50 border border-white/10 p-5 rounded-3xl text-sm outline-none focus:border-yellow-500 appearance-none"></select>
             </div>
 
-            <div class="mb-8">
-                <p class="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-4">Choose Guyana Server:</p>
-                <div id="servers" class="flex gap-3 overflow-x-auto pb-4 no-scrollbar"></div>
+            <div class="mb-10">
+                <p class="text-[10px] font-black text-green-500 uppercase tracking-[0.4em] mb-5">Digital Guyana Nodes:</p>
+                <div id="servers" class="flex gap-4 overflow-x-auto pb-4 no-scrollbar"></div>
             </div>
             
-            <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-light italic mb-10"></p>
+            <p id="m-desc" class="text-base text-zinc-400 leading-relaxed font-light italic border-l-2 border-red-600 pl-6"></p>
             
-            <footer class="mt-10 text-center py-6 border-t border-white/5">
-                <p class="text-[9px] text-zinc-600 uppercase font-black tracking-[0.5em] mb-2">Developed by</p>
-                <p class="text-xl font-black italic tracking-tighter gy-gradient-text uppercase">José Vival</p>
+            <footer class="mt-20 text-center pb-10">
+                <div class="w-20 h-1 bg-gradient-to-r from-red-600 via-yellow-400 to-green-600 mx-auto mb-6"></div>
+                <p class="text-[10px] text-zinc-600 uppercase font-black tracking-[0.8em] mb-2">Lead Developer</p>
+                <p class="text-2xl font-black italic tracking-tighter gy-gradient-text uppercase">José Vival</p>
             </footer>
         </div>
     </div>
@@ -168,13 +159,13 @@
                 const r = await fetch(`${API_URL}${endpoint}`);
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { console.error("Network error"); }
+            } catch (e) { console.error("Error loading"); }
         }
 
         function draw(list) {
             document.getElementById('grid').innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id})">
-                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover">
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover">
                 </div>
             `).join('');
             lucide.createIcons();
@@ -182,8 +173,8 @@
 
         function changeMode(m) {
             currentMode = m;
-            document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active' : 'text-zinc-600 text-[11px] font-black uppercase tracking-widest';
-            document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active' : 'text-zinc-600 text-[11px] font-black uppercase tracking-widest';
+            document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active text-xs font-black uppercase tracking-[0.2em]' : 'text-zinc-600 text-xs font-black uppercase tracking-[0.2em]';
+            document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active text-xs font-black uppercase tracking-[0.2em]' : 'text-zinc-600 text-xs font-black uppercase tracking-[0.2em]';
             load();
         }
 
@@ -191,12 +182,12 @@
             activeId = id;
             const item = localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description provided for this title.";
+            document.getElementById('m-desc').innerText = item.overview || "No description provided.";
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:60}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">SEASON ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">EPISODE ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -210,14 +201,13 @@
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
-            // New Server List with GYSERVER
             const providers = [
                 { n: "⚡ GY-SERVER PRO", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
-                { n: "🌐 GLOBAL NODE V2", u: currentMode === 'movie' ? `https://moviesapi.club/movie/${activeId}` : `https://moviesapi.club/tv/${activeId}-${s}-${e}` }
+                { n: "🌐 GLOBAL V2", u: currentMode === 'movie' ? `https://moviesapi.club/movie/${activeId}` : `https://moviesapi.club/tv/${activeId}-${s}-${e}` }
             ];
 
             document.getElementById('servers').innerHTML = providers.map((pv, i) => `
-                <button onclick="play('${pv.u}', this)" class="px-8 py-4 rounded-2xl text-[10px] font-black uppercase border transition-all whitespace-nowrap ${i===0?'bg-yellow-500 border-yellow-500 text-black shadow-lg shadow-yellow-500/20':'bg-zinc-900 border-white/5 text-zinc-400'}">
+                <button onclick="play('${pv.u}', this)" class="px-10 py-5 rounded-3xl text-[10px] font-black uppercase border transition-all whitespace-nowrap ${i===0?'bg-green-600 border-green-600 text-white shadow-xl shadow-green-900/40':'bg-zinc-900 border-white/5 text-zinc-500'}">
                     ${pv.n}
                 </button>
             `).join('');
@@ -228,16 +218,16 @@
         function play(url, btn) {
             if(btn) {
                 document.querySelectorAll('#servers button').forEach(b => {
-                    b.classList.remove('bg-yellow-500', 'border-yellow-500', 'text-black', 'shadow-lg');
-                    b.classList.add('bg-zinc-900', 'border-white/5', 'text-zinc-400');
+                    b.classList.remove('bg-green-600', 'border-green-600', 'text-white', 'shadow-xl');
+                    b.classList.add('bg-zinc-900', 'border-white/5', 'text-zinc-500');
                 });
-                btn.classList.replace('bg-zinc-900', 'bg-yellow-500');
-                btn.classList.add('text-black', 'shadow-lg');
+                btn.classList.replace('bg-zinc-900', 'bg-green-600');
+                btn.classList.add('text-white', 'shadow-xl');
             }
             document.getElementById('video-container').innerHTML = `
                 <div id="v-load" class="flex flex-col items-center justify-center h-full bg-black">
-                    <div class="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="mt-4 text-[10px] font-black uppercase text-yellow-500 tracking-[0.3em]">Connecting to GYSERVER...</p>
+                    <div class="w-14 h-14 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="mt-6 text-[10px] font-black uppercase text-green-500 tracking-[0.5em]">Digitalizing Stream...</p>
                 </div>
                 <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-load').remove();"></iframe>
             `;
@@ -253,9 +243,9 @@
                         document.getElementById('ad-layer').style.display = 'flex';
                         let t = 4;
                         const it = setInterval(() => {
-                            document.getElementById('skip-btn').innerText = `ACCESS IN ${t}S`;
+                            document.getElementById('skip-btn').innerText = `READY IN ${t}S`;
                             t--;
-                            if(t < 0) { clearInterval(it); document.getElementById('skip-btn').innerText = "STREAM NOW"; window.resAd = res; }
+                            if(t < 0) { clearInterval(it); document.getElementById('skip-btn').innerText = "WATCH NOW"; window.resAd = res; }
                         }, 1000);
                     } else res();
                 } catch(e) { res(); }
