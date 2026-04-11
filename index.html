@@ -3,41 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Guyana Digital Cinema | Pro</title>
+    <title>Guyana Digital Cinema | Multi-Source</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;600;900&display=swap');
-        
         :root { --gy-red: #ce1126; --gy-gold: #fcd116; --gy-green: #009e49; }
-
-        body { 
-            background: #000; color: #fff; font-family: 'Inter', sans-serif; 
-            -webkit-tap-highlight-color: transparent; overflow-x: hidden; margin: 0;
-        }
-
-        nav { background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); }
-
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; }
+        nav { background: rgba(0,0,0,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); }
         .poster-card { 
-            transition: all 0.3s ease; aspect-ratio: 2/3; border-radius: 12px; 
-            overflow: hidden; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1); aspect-ratio: 2/3; 
+            border-radius: 12px; overflow: hidden; background: #111; border: 1px solid rgba(255,255,255,0.05); 
         }
-        .poster-card:hover { transform: translateY(-5px); border-color: var(--gy-gold); }
-
-        .modal { 
-            display: none; position: fixed; inset: 0; background: #000; 
-            z-index: 1000; flex-direction: column; 
-        }
+        .poster-card:active { transform: scale(0.95); }
+        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
         .modal.active { display: flex; }
-
-        .gy-gradient-text {
-            background: linear-gradient(90deg, var(--gy-red), var(--gy-gold), var(--gy-green));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        .tab-active { color: var(--gy-gold); border-bottom: 2px solid var(--gy-gold); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
+        .gy-gradient-text { background: linear-gradient(90deg, var(--gy-red), var(--gy-gold), var(--gy-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tab-active { color: var(--gy-gold); border-bottom: 2px solid var(--gy-gold); font-weight: 900; }
+        .shimmer { background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         iframe { background: #000; border: none; width: 100%; height: 100%; }
     </style>
 </head>
@@ -51,55 +35,38 @@
                 <span class="text-[8px] text-zinc-600 font-bold uppercase tracking-widest border-l border-zinc-800 pl-2">by José Vival</span>
             </div>
         </div>
-        
         <div class="relative w-1/2 max-w-[400px]">
-            <input type="text" id="search" 
-                onkeydown="if(event.key==='Enter') searchGlobal()" 
-                placeholder="Search movies or series..." 
-                class="w-full bg-white/5 rounded-full py-3 px-11 text-xs border border-white/10 outline-none focus:border-yellow-500 transition-all text-white">
+            <input type="text" id="search" onkeydown="if(event.key==='Enter') searchGlobal()" placeholder="Search movies or series..." class="w-full bg-white/5 rounded-full py-3 px-11 text-xs border border-white/10 outline-none focus:border-yellow-500 text-white">
             <i data-lucide="search" onclick="searchGlobal()" class="absolute left-4 top-3 w-4 h-4 text-zinc-500 cursor-pointer"></i>
         </div>
     </nav>
 
-    <div class="flex gap-10 px-8 py-4 sticky top-[85px] z-40 bg-black">
-        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] font-black uppercase tracking-[0.2em]">Movies</button>
-        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em]">TV Shows</button>
+    <div class="flex gap-10 px-8 py-4 sticky top-[85px] z-40 bg-black/95">
+        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] uppercase tracking-[0.2em]">Movies</button>
+        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-600 text-[10px] uppercase tracking-[0.2em]">TV Shows</button>
     </div>
 
-    <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5 p-5 min-h-[50vh]"></main>
-
-    <a href="https://wa.me/5927005167" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-[#25d366] rounded-full flex items-center justify-center z-50 shadow-lg">
-        <i data-lucide="message-circle" class="text-white w-7 h-7"></i>
-    </a>
+    <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-5 min-h-[60vh]"></main>
 
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-4 flex items-center justify-between border-b border-white/5">
-            <button onclick="closePlayer()" class="p-2 hover:bg-white/5 rounded-full">
-                <i data-lucide="x" class="w-6 h-6 text-zinc-400"></i>
-            </button>
+        <div class="p-4 flex items-center justify-between border-b border-white/5 bg-black">
+            <button onclick="closePlayer()" class="p-2 hover:bg-white/5 rounded-full"><i data-lucide="x" class="w-6 h-6 text-zinc-400"></i></button>
             <span class="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-500" id="m-title">Playing</span>
             <div class="w-10"></div>
         </div>
-        
-        <div class="w-full aspect-video bg-black">
-            <div id="video-container" class="w-full h-full"></div>
-        </div>
-
+        <div class="w-full aspect-video bg-black"><div id="video-container" class="w-full h-full"></div></div>
         <div class="p-6 max-w-5xl mx-auto w-full">
             <div id="series-controls" class="hidden mb-8 grid grid-cols-2 gap-3">
                 <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
                 <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
             </div>
-
             <div class="mb-8">
-                <p class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-3">Premium Servers (No Ads):</p>
-                <div id="servers" class="flex gap-3 overflow-x-auto pb-2 no-scrollbar"></div>
+                <p class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-3">Available Sources:</p>
+                <div id="servers" class="flex gap-3 overflow-x-auto pb-2"></div>
             </div>
-            
-            <div class="bg-zinc-900/50 p-6 rounded-2xl">
-                <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed italic border-l-2 border-green-600 pl-4"></p>
+            <div class="bg-zinc-900/50 p-6 rounded-2xl border-l-4 border-green-600">
+                <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed italic"></p>
             </div>
-            
             <footer class="mt-16 text-center pb-10">
                 <p class="text-[9px] text-zinc-700 uppercase font-bold tracking-[0.5em] mb-2">Guyana Digital Cinema Pro</p>
                 <p class="text-lg font-bold tracking-widest text-white uppercase" style="font-family: 'Syncopate', sans-serif;">by <span class="gy-gradient-text">José Vival</span></p>
@@ -108,51 +75,52 @@
     </div>
 
     <script>
-        const TMDB_KEY = "ead4764062402287c2b60882e9b04751"; 
+        // Sistema Multi-Key para evitar bloqueos
+        const KEYS = ["ead4764062402287c2b60882e9b04751", "522b4210abc61e27ef48b9f046467389"];
+        let currentKeyIndex = 0;
         let currentMode = 'movie';
         let activeId = null;
 
-        // Función de carga mejorada
-        async function loadInitial() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-500 animate-pulse uppercase tracking-[0.3em] text-[10px]">Loading Catalog...</div>`;
-            
+        async function fetchFromTMDB(endpoint) {
+            const url = `https://api.themoviedb.org/3${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${KEYS[currentKeyIndex]}&language=en-US`;
             try {
-                const type = currentMode === 'movie' ? 'movie' : 'tv';
-                const r = await fetch(`https://api.themoviedb.org/3/${type}/popular?api_key=${TMDB_KEY}&language=en-US&page=1`);
-                const data = await r.json();
-                if(data.results) {
-                    draw(data.results);
+                const response = await fetch(url);
+                if (!response.ok && currentKeyIndex < KEYS.length - 1) {
+                    currentKeyIndex++; // Cambiar a llave de respaldo
+                    return fetchFromTMDB(endpoint);
                 }
-            } catch (e) { 
-                grid.innerHTML = `<p class="col-span-full text-center py-20 text-red-500 uppercase font-bold">Error loading catalog. Check connection.</p>`;
+                return await response.json();
+            } catch (e) {
+                console.error("Source failed, trying alternative...");
+                return null;
             }
         }
 
-        async function searchGlobal() {
-            const query = document.getElementById('search').value;
-            if(!query) return loadInitial();
-            
+        async function loadInitial() {
             const grid = document.getElementById('grid');
-            grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-500 animate-pulse uppercase tracking-[0.3em] text-[10px]">Searching...</div>`;
+            grid.innerHTML = Array(12).fill('<div class="poster-card shimmer"></div>').join('');
             
-            try {
-                const type = currentMode === 'movie' ? 'movie' : 'tv';
-                const r = await fetch(`https://api.themoviedb.org/3/search/${type}?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=en-US`);
-                const data = await r.json();
-                draw(data.results);
-            } catch (e) { console.error("Search Error"); }
+            const type = currentMode === 'movie' ? 'movie' : 'tv';
+            const data = await fetchFromTMDB(`/${type}/popular`);
+            if (data && data.results) draw(data.results);
+            else grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-600 uppercase tracking-widest">Connection Error. Please Refresh.</div>`;
+        }
+
+        async function searchGlobal() {
+            const q = document.getElementById('search').value;
+            if (!q) return loadInitial();
+            
+            const type = currentMode === 'movie' ? 'movie' : 'tv';
+            const data = await fetchFromTMDB(`/search/${type}?query=${encodeURIComponent(q)}`);
+            if (data && data.results) draw(data.results);
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list || list.length === 0) {
-                grid.innerHTML = `<p class="col-span-full text-center py-20 text-zinc-500 uppercase font-bold tracking-widest">No results found</p>`;
-                return;
-            }
             grid.innerHTML = list.map(m => `
-                <div class="poster-card shadow-lg" onclick="openPlayer(${m.id}, '${(m.title || m.name || "Untitled").replace(/'/g, "")}', '${(m.overview || "No description").replace(/'/g, "")}')">
-                    <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w500'+m.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'}" class="w-full h-full object-cover">
+                <div class="poster-card" onclick="openPlayer(${m.id}, '${(m.title || m.name || "Untitled").replace(/'/g, "")}', '${(m.overview || "No plot data").replace(/'/g, "")}')">
+                    <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w500'+m.poster_path : 'https://via.placeholder.com/500x750?text=No+Image'}" 
+                         class="w-full h-full object-cover" loading="lazy" onload="this.style.opacity=1" style="opacity:0; transition: opacity 0.5s;">
                 </div>
             `).join('');
             lucide.createIcons();
@@ -160,9 +128,8 @@
 
         function changeMode(m) {
             currentMode = m;
-            document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active text-[10px] font-black uppercase tracking-[0.2em]' : 'text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em]';
-            document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active text-[10px] font-black uppercase tracking-[0.2em]' : 'text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em]';
-            document.getElementById('search').value = "";
+            document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active text-[10px] uppercase tracking-[0.2em]' : 'text-zinc-600 text-[10px] uppercase tracking-[0.2em]';
+            document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active text-[10px] uppercase tracking-[0.2em]' : 'text-zinc-600 text-[10px] uppercase tracking-[0.2em]';
             loadInitial();
         }
 
@@ -173,8 +140,8 @@
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:25}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:60}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -187,43 +154,32 @@
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
-            const providers = [
-                { n: "🚀 ULTRA SERVER", u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}/${s}/${e}` },
-                { n: "🌐 GLOBAL LINE", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` }
+            // MULTIPLE VIDEO PROVIDERS
+            const sources = [
+                { n: "⚡ ULTRA (No Ads)", u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}/${s}/${e}` },
+                { n: "🌐 GLOBAL", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
+                { n: "🛡️ SECURE", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` }
             ];
 
-            document.getElementById('servers').innerHTML = providers.map((pv, i) => `
-                <button onclick="play('${pv.u}', this)" class="px-6 py-3 rounded-xl text-[9px] font-black uppercase border transition-all ${i===0?'bg-yellow-600 border-yellow-600 text-black':'bg-zinc-900 border-white/5 text-zinc-500'}">
-                    ${pv.n}
+            document.getElementById('servers').innerHTML = sources.map((sv, i) => `
+                <button onclick="play('${sv.u}', this)" class="px-6 py-3 rounded-xl text-[9px] font-black uppercase border transition-all whitespace-nowrap ${i===0?'bg-yellow-600 border-yellow-600 text-black':'bg-zinc-900 border-white/5 text-zinc-400'}">
+                    ${sv.n}
                 </button>
             `).join('');
-            play(providers[0].u);
+            play(sources[0].u);
         }
 
         function play(url, btn) {
             if(btn) {
-                document.querySelectorAll('#servers button').forEach(b => {
-                    b.classList.remove('bg-yellow-600', 'text-black');
-                    b.classList.add('bg-zinc-900', 'text-zinc-500');
-                });
+                document.querySelectorAll('#servers button').forEach(b => { b.classList.remove('bg-yellow-600', 'text-black'); b.classList.add('bg-zinc-900', 'text-zinc-400'); });
                 btn.classList.add('bg-yellow-600', 'text-black');
             }
-            document.getElementById('video-container').innerHTML = `
-                <iframe src="${url}" allowfullscreen 
-                sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>`;
+            document.getElementById('video-container').innerHTML = `<iframe src="${url}" allowfullscreen sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>`;
         }
 
-        function closePlayer() { 
-            document.getElementById('player-modal').classList.remove('active'); 
-            document.getElementById('video-container').innerHTML = ""; 
-            document.body.style.overflow = 'auto';
-        }
+        function closePlayer() { document.getElementById('player-modal').classList.remove('active'); document.getElementById('video-container').innerHTML = ""; document.body.style.overflow = 'auto'; }
 
-        // Ejecutar carga al abrir
-        window.addEventListener('DOMContentLoaded', () => {
-            loadInitial();
-            lucide.createIcons();
-        });
+        window.onload = loadInitial;
     </script>
 </body>
 </html>
