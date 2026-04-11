@@ -21,12 +21,13 @@
         .gy-gradient-text { background: linear-gradient(90deg, var(--gy-red), var(--gy-gold), var(--gy-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .tab-active { color: var(--gy-gold); border-bottom: 2px solid var(--gy-gold); font-weight: 900; }
         iframe { width: 100%; height: 100%; border: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="pt-28 pb-10">
 
     <nav class="flex items-center justify-between p-5 fixed top-0 w-full z-50">
-        <div class="flex flex-col" onclick="location.reload()">
+        <div class="flex flex-col cursor-pointer" onclick="location.reload()">
             <h1 class="text-white font-black text-xl italic uppercase tracking-tighter leading-none">Guyana Digital</h1>
             <span class="text-[9px] font-bold text-green-500 tracking-[0.2em] uppercase">Nazareth Cinema Pro</span>
         </div>
@@ -43,7 +44,7 @@
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-6"></main>
 
-    <div id="player-modal" class="modal overflow-y-auto">
+    <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
         <div class="p-4 flex items-center justify-between bg-black border-b border-white/5">
             <button onclick="closePlayer()" class="p-2"><i data-lucide="chevron-left"></i></button>
             <span class="font-black text-[10px] uppercase tracking-widest text-zinc-500" id="m-title">Playing</span>
@@ -52,8 +53,8 @@
         <div class="w-full aspect-video bg-black" id="video-container"></div>
         <div class="p-8 max-w-5xl mx-auto w-full">
             <div id="series-controls" class="hidden mb-8 grid grid-cols-2 gap-4">
-                <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white"></select>
-                <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white"></select>
+                <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
+                <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
             </div>
             <p class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-4">Select Fast Provider:</p>
             <div id="servers" class="flex gap-3 overflow-x-auto pb-4 no-scrollbar"></div>
@@ -64,7 +65,7 @@
     </div>
 
     <script>
-        const API_URL = "https://mi-servidor-cine.onrender.com"; // CAMBIA ESTO POR TU URL DE RENDER
+        const API_URL = "https://mi-servidor-cine.onrender.com";
         let localData = [];
         let currentMode = 'movie';
         let activeId = null;
@@ -81,15 +82,13 @@
             } catch (e) { console.error("Server Down"); }
         }
 
-        // BUSCADOR GLOBAL: Conecta con tu ruta /buscar
         async function searchGlobal() {
             const q = document.getElementById('search').value;
             if(q.length < 2) return load();
-
             try {
                 const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode}`);
                 const results = await r.json();
-                localData = results; // Actualizamos los datos locales para poder abrirlos
+                localData = results;
                 draw(results);
             } catch (e) { console.error("Search failed"); }
         }
@@ -125,8 +124,8 @@
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:25}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:60}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -138,8 +137,6 @@
         function updateContent() {
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
-            
-            // 5 PROVEEDORES PARA QUE NUNCA FALLE
             const providers = [
                 { n: "⚡ ULTRA", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
                 { n: "🌐 GLOBAL", u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}/${s}/${e}` },
@@ -158,10 +155,20 @@
 
         function play(url, btn) {
             if(btn) {
-                document.querySelectorAll('#servers button').forEach(b => { b.classList.remove('bg-green-600', 'text-white'); b.classList.add('bg-zinc-900', 'text-zinc-500'); });
+                document.querySelectorAll('#servers button').forEach(b => { 
+                    b.classList.remove('bg-green-600', 'text-white'); 
+                    b.classList.add('bg-zinc-900', 'text-zinc-500'); 
+                });
                 btn.classList.add('bg-green-600', 'text-white');
             }
-            document.getElementById('video-container').innerHTML = `<iframe src="${url}" allowfullscreen sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>`;
+            // CIRUGÍA DE SANDBOX APLICADA AQUÍ:
+            document.getElementById('video-container').innerHTML = `
+                <iframe 
+                    src="${url}" 
+                    allowfullscreen 
+                    allow="autoplay; encrypted-media" 
+                    sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+                ></iframe>`;
         }
 
         function closePlayer() { 
@@ -170,7 +177,7 @@
             document.body.style.overflow = 'auto';
         }
 
-        window.onload = load;
+        window.onload = () => { load(); lucide.createIcons(); };
     </script>
 </body>
 </html>
