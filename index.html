@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -11,22 +11,46 @@
         :root { --gy-red: #ce1126; --gy-gold: #fcd116; --gy-green: #009e49; }
         body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
         nav { background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
         .poster-card { 
             transition: all 0.3s ease; aspect-ratio: 2/3; border-radius: 15px; 
             overflow: hidden; background: #111; border: 1px solid rgba(255,255,255,0.1); 
         }
         .poster-card:hover { transform: translateY(-5px); border-color: var(--gy-gold); }
+        
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
         .modal.active { display: flex; }
-        .gy-gradient-text { background: linear-gradient(90deg, var(--gy-red), var(--gy-gold), var(--gy-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
         .tab-active { color: var(--gy-gold); border-bottom: 2px solid var(--gy-gold); font-weight: 900; }
-        iframe { width: 100%; height: 100%; border: none; }
+        iframe { width: 100%; height: 100%; border: none; background: #000; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* Estilos para la X en Pantalla Completa */
+        #close-fullscreen {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        /* Detectar cuando el contenedor está en Fullscreen para mostrar la X */
+        #video-container:fullscreen #close-fullscreen,
+        #video-container:-webkit-full-screen #close-fullscreen {
+            display: block;
+        }
     </style>
 </head>
 <body class="pt-28 pb-10">
 
     <nav class="flex items-center justify-between p-5 fixed top-0 w-full z-50">
-        <div class="flex flex-col" onclick="location.reload()">
+        <div class="flex flex-col cursor-pointer" onclick="location.reload()">
             <h1 class="text-white font-black text-xl italic uppercase tracking-tighter leading-none">Guyana Digital</h1>
             <span class="text-[9px] font-bold text-green-500 tracking-[0.2em] uppercase">Nazareth Cinema Pro</span>
         </div>
@@ -43,55 +67,49 @@
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-6"></main>
 
-    <div id="player-modal" class="modal overflow-y-auto">
+    <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
         <div class="p-4 flex items-center justify-between bg-black border-b border-white/5">
             <button onclick="closePlayer()" class="p-2"><i data-lucide="chevron-left"></i></button>
             <span class="font-black text-[10px] uppercase tracking-widest text-zinc-500" id="m-title">Playing</span>
             <div class="w-10"></div>
         </div>
-        <div class="w-full aspect-video bg-black" id="video-container"></div>
+        
+        <div class="w-full aspect-video bg-black relative" id="video-container">
+            <button id="close-fullscreen" onclick="exitFull()"><i data-lucide="x"></i></button>
+            <div id="iframe-slot" class="w-full h-full"></div>
+        </div>
+        
         <div class="p-8 max-w-5xl mx-auto w-full">
             <div id="series-controls" class="hidden mb-8 grid grid-cols-2 gap-4">
-                <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white"></select>
-                <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white"></select>
+                <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
+                <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
             </div>
-            <p class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-4">Select Fast Provider:</p>
+            
+            <p class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-4">Selecciona Servidor (Toca 2 veces si sale anuncio):</p>
             <div id="servers" class="flex gap-3 overflow-x-auto pb-4 no-scrollbar"></div>
-            <div class="bg-zinc-900/50 p-6 rounded-2xl border-l-4 border-red-600">
+            
+            <div class="bg-zinc-900/50 p-6 rounded-2xl border-l-4 border-red-600 mt-4">
                 <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed italic"></p>
             </div>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://mi-servidor-cine.onrender.com";
+        const API_URL = "https://mi-servidor-cine.onrender.com"; // TU URL DE RENDER
         let localData = [];
         let currentMode = 'movie';
         let activeId = null;
         let searchTimeout;
 
-        // ✅ SANDBOX PERMISSIONS — todos los permisos que los reproductores externos necesitan
-        const SANDBOX_PERMS = [
-            "allow-scripts",
-            "allow-same-origin",
-            "allow-forms",
-            "allow-pointer-lock",
-            "allow-top-navigation",
-            "allow-popups",                  // ← necesario para reproductores como vidsrc
-            "allow-popups-to-escape-sandbox", // ← permite que popups del player funcionen
-            "allow-presentation",            // ← necesario para pantalla completa (fullscreen)
-            "allow-downloads"                // ← evita bloqueos al intentar descargar subtítulos, etc.
-        ].join(" ");
-
         async function load() {
             const grid = document.getElementById('grid');
-            grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-500 uppercase text-xs tracking-widest">Loading Catalog...</div>';
+            grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-500 uppercase text-xs">Cargando...</div>';
             try {
                 const endpoint = currentMode === 'movie' ? '/populares' : '/series';
                 const r = await fetch(`${API_URL}${endpoint}`);
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { console.error("Server Down"); }
+            } catch (e) { console.error("Error cargando catálogo"); }
         }
 
         async function searchGlobal() {
@@ -102,7 +120,7 @@
                 const results = await r.json();
                 localData = results;
                 draw(results);
-            } catch (e) { console.error("Search failed"); }
+            } catch (e) { console.error("Error en búsqueda"); }
         }
 
         function debounceSearch() {
@@ -112,10 +130,10 @@
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list.length) { grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-500">No results found.</div>'; return; }
+            if(!list.length) { grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-500">No hay resultados.</div>'; return; }
             grid.innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id})">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/500x750?text=No+Image'">
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/500x750?text=Sin+Imagen'">
                 </div>
             `).join('');
             lucide.createIcons();
@@ -132,12 +150,12 @@
             activeId = id;
             const item = localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description.";
+            document.getElementById('m-desc').innerText = item.overview || "Sin descripción disponible.";
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Temporada ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episodio ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -151,11 +169,9 @@
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
             const providers = [
-                { n: "⚡ ULTRA",    u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
-                { n: "🌐 GLOBAL",   u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}/${s}/${e}` },
-                { n: "💎 PREMIUM",  u: currentMode === 'movie' ? `https://moviesapi.club/movie/${activeId}` : `https://moviesapi.club/tv/${activeId}-${s}-${e}` },
-                { n: "📡 MIRROR 1", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` },
-                { n: "📡 MIRROR 2", u: currentMode === 'movie' ? `https://vidsrc.to/embed/movie/${activeId}` : `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` }
+                { n: "🌐 GLOBAL", u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}/${s}/${e}` },
+                { n: "⚡ ULTRA", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
+                { n: "📡 MIRROR", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` }
             ];
 
             document.getElementById('servers').innerHTML = providers.map((pv, i) => `
@@ -163,35 +179,42 @@
                     ${pv.n}
                 </button>
             `).join('');
-            play(providers[0].u);
+            // No iniciamos play automático para evitar anuncios inmediatos al abrir modal
         }
 
-        // ✅ FUNCIÓN PLAY CORREGIDA — usa SANDBOX_PERMS completo + allow="autoplay; fullscreen; encrypted-media"
         function play(url, btn) {
             if(btn) {
-                document.querySelectorAll('#servers button').forEach(b => {
-                    b.classList.remove('bg-green-600', 'text-white');
-                    b.classList.add('bg-zinc-900', 'text-zinc-500');
+                document.querySelectorAll('#servers button').forEach(b => { 
+                    b.classList.remove('bg-green-600', 'text-white'); 
+                    b.classList.add('bg-zinc-900', 'text-zinc-500'); 
                 });
                 btn.classList.add('bg-green-600', 'text-white');
             }
-            document.getElementById('video-container').innerHTML = `
-                <iframe 
-                    src="${url}" 
-                    allowfullscreen 
-                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                    sandbox="${SANDBOX_PERMS}"
-                    referrerpolicy="no-referrer-when-downgrade"
-                ></iframe>`;
+            
+            const container = document.getElementById('video-container');
+            const slot = document.getElementById('iframe-slot');
+
+            // 1. Inyectar Iframe
+            slot.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+            lucide.createIcons();
+
+            // 2. Disparar Pantalla Completa
+            if (container.requestFullscreen) { container.requestFullscreen(); }
+            else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
+        }
+
+        function exitFull() {
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
         }
 
         function closePlayer() { 
             document.getElementById('player-modal').classList.remove('active'); 
-            document.getElementById('video-container').innerHTML = ""; 
+            document.getElementById('iframe-slot').innerHTML = ""; 
             document.body.style.overflow = 'auto';
         }
 
-        window.onload = load;
+        window.onload = () => { load(); lucide.createIcons(); };
     </script>
 </body>
 </html>
