@@ -9,15 +9,22 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .poster-card { transition: all 0.3s ease; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #111; border: 1px solid #222; }
+        .poster-card { transition: all 0.3s ease; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #111; border: 1px solid #222; position: relative; }
         .poster-card:active { transform: scale(0.95); }
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
         .modal.active { display: flex; }
         #ad-layer { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
         ::-webkit-scrollbar { display: none; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
         .tab-active { color: #ef4444; border-bottom: 2px solid #ef4444; }
         .guyana-flag { width: 24px; height: 16px; border-radius: 2px; object-fit: cover; }
+        
+        .floating-support {
+            position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
+            background-color: #25d366; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 100; transition: transform 0.3s ease;
+        }
+        iframe { background: #000; }
     </style>
 </head>
 <body class="pb-10">
@@ -25,72 +32,68 @@
     <div id="ad-layer">
         <div class="text-center p-6">
             <i data-lucide="shield-check" class="w-16 h-16 text-red-600 mx-auto mb-4 animate-pulse"></i>
-            <h2 class="text-xl font-black uppercase italic tracking-tighter">Verifying Access</h2>
-            <p class="text-[10px] text-zinc-500 uppercase mt-2">Connecting to Nazareth Secure Nodes</p>
-            <button id="skip-btn" onclick="closeAd()" class="bg-white text-black px-10 py-3 rounded-full font-black mt-6 tracking-widest text-xs uppercase">Loading...</button>
+            <h2 class="text-xl font-black uppercase italic tracking-tighter text-white">Security Check</h2>
+            <p class="text-[9px] text-zinc-500 uppercase mt-2 tracking-widest">Verifying Guyana Premium Access</p>
+            <button id="skip-btn" onclick="closeAd()" class="bg-white text-black px-10 py-3 rounded-full font-black mt-6 tracking-widest text-xs uppercase">Wait...</button>
         </div>
     </div>
 
     <nav class="flex items-center justify-between p-5 sticky top-0 bg-black/95 backdrop-blur-md z-50 border-b border-zinc-900">
         <div class="flex items-center gap-2" onclick="location.reload()">
             <h1 class="text-red-600 font-black text-2xl italic uppercase cursor-pointer tracking-tighter">Nazareth</h1>
-            <img src="https://flagcdn.com/gy.svg" class="guyana-flag" alt="Guyana Flag">
+            <img src="https://flagcdn.com/gy.svg" class="guyana-flag" alt="GY">
         </div>
         <div class="relative w-1/2">
-            <input type="text" id="search" placeholder="Search movies..." class="w-full bg-zinc-900 rounded-full py-2 px-10 text-xs border border-zinc-800 outline-none focus:border-red-600">
+            <input type="text" id="search" placeholder="Search..." class="w-full bg-zinc-900 rounded-full py-2 px-10 text-xs border border-zinc-800 outline-none focus:border-red-600">
             <i data-lucide="search" class="absolute left-3.5 top-2.5 w-4 h-4 text-zinc-500"></i>
         </div>
     </nav>
 
     <div class="flex gap-6 px-5 py-3 sticky top-[73px] bg-black z-40 border-b border-zinc-900">
         <button onclick="changeMode('movie')" id="btn-movie" class="tab-active pb-1 text-[10px] font-black uppercase tracking-widest">Movies</button>
-        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 pb-1 text-[10px] font-black uppercase tracking-widest">TV Series</button>
+        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 pb-1 text-[10px] font-black uppercase tracking-widest">Series</button>
     </div>
 
     <div id="loading" class="text-center py-20"><div class="animate-spin rounded-full h-8 w-8 border-t-2 border-red-600 mx-auto"></div></div>
     <main id="grid" class="grid grid-cols-3 gap-2 p-2"></main>
 
+    <a href="https://wa.me/5927005167" target="_blank" class="floating-support">
+        <i data-lucide="message-circle" class="text-white w-7 h-7"></i>
+    </a>
+
     <div id="player-modal" class="modal overflow-y-auto">
         <div class="p-4 flex items-center bg-zinc-950 border-b border-zinc-900">
             <button onclick="closePlayer()" class="p-2 bg-zinc-900 rounded-full"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-            <span class="font-bold truncate px-4 text-xs uppercase italic tracking-wider" id="m-title">Loading...</span>
+            <span class="font-bold truncate px-4 text-[10px] uppercase italic tracking-widest text-zinc-400" id="m-title">Loading...</span>
         </div>
         
-        <div class="w-full aspect-video bg-black relative shadow-2xl">
+        <div class="w-full aspect-video bg-black relative shadow-2xl overflow-hidden">
             <div id="video-container" class="w-full h-full"></div>
         </div>
 
         <div class="p-6">
-            <div class="flex items-start gap-3 mb-6 bg-red-600/10 p-4 rounded-xl border border-red-600/20">
-                <i data-lucide="globe" class="w-5 h-5 text-red-500 shrink-0"></i>
-                <div class="text-[11px] text-zinc-300 font-medium leading-tight">
-                    <span class="text-red-500 font-black uppercase block mb-1">Guyana English Support</span>
-                    By default, content loads in English. If subtitles are needed, click the <b>CC</b> button in the player.
-                </div>
-            </div>
-
             <div id="series-controls" class="hidden mb-6 grid grid-cols-2 gap-3">
                 <div>
-                    <label class="text-[8px] text-zinc-500 font-black uppercase mb-1 block tracking-widest">Season</label>
+                    <label class="text-[8px] text-zinc-500 font-black uppercase mb-1 block">Season</label>
                     <select id="season" onchange="updateContent()" class="w-full bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-xs outline-none focus:border-red-600"></select>
                 </div>
                 <div>
-                    <label class="text-[8px] text-zinc-500 font-black uppercase mb-1 block tracking-widest">Episode</label>
+                    <label class="text-[8px] text-zinc-500 font-black uppercase mb-1 block">Episode</label>
                     <select id="episode" onchange="updateContent()" class="w-full bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-xs outline-none focus:border-red-600"></select>
                 </div>
             </div>
 
             <div id="servers-container" class="space-y-4 mb-6">
-                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Select Server:</p>
-                <div id="servers" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+                <p class="text-[9px] font-black text-red-600 uppercase tracking-[0.2em]">Nazareth High-Speed Nodes:</p>
+                <div id="servers" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
             </div>
             
             <hr class="border-zinc-900 mb-6">
-            <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-medium"></p>
+            <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed"></p>
             
             <footer class="mt-8 text-center border-t border-zinc-900 pt-6">
-                <p class="text-[9px] text-zinc-600 uppercase font-black tracking-widest">Developed by</p>
-                <p class="text-red-600 font-black text-xs uppercase italic">Nazareth / José Gibraltareño</p>
+                <p class="text-[9px] text-zinc-600 uppercase font-black tracking-widest">Project Lead</p>
+                <p class="text-red-600 font-black text-xs uppercase italic tracking-tighter">Nazareth / José Gibraltareño</p>
             </footer>
         </div>
     </div>
@@ -102,17 +105,19 @@
         let activeId = null;
 
         async function load() {
-            const endpoint = currentMode === 'movie' ? '/populares' : '/series';
-            const r = await fetch(`${API_URL}${endpoint}`);
-            localData = await r.json();
-            draw(localData);
+            try {
+                const endpoint = currentMode === 'movie' ? '/populares' : '/series';
+                const r = await fetch(`${API_URL}${endpoint}`);
+                localData = await r.json();
+                draw(localData);
+            } catch (e) { console.error("Fetch error"); }
             document.getElementById('loading').style.display = 'none';
         }
 
         function draw(list) {
             document.getElementById('grid').innerHTML = list.map(m => `
-                <div class="poster-card" onclick="openPlayer(${m.id})">
-                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/342x513?text=No+Image'">
+                <div class="poster-card shadow-lg shadow-black" onclick="openPlayer(${m.id})">
+                    <img src="https://image.tmdb.org/t/p/w342${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
             `).join('');
             lucide.createIcons();
@@ -128,12 +133,12 @@
         async function openPlayer(id) {
             activeId = id;
             const item = localData.find(m => m.id == id);
-            document.getElementById('m-title').innerText = item.title || item.name;
-            document.getElementById('m-desc').innerText = item.overview || "No description available.";
+            document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
+            document.getElementById('m-desc').innerText = item.overview || "No description provided.";
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:25}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
                 document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
@@ -148,18 +153,18 @@
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
-            // English-first global providers
+            // New Stable Server Array for Guyana
             const providers = [
-                { n: "ENGLISH PRO 1", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` },
-                { n: "ENGLISH PRO 2", u: currentMode === 'movie' ? `https://vidsrc.to/embed/movie/${activeId}` : `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` },
-                { n: "GLOBAL SERVER", u: currentMode === 'movie' ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}` }
+                { n: "NAZARETH G1", u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}-${s}-${e}` },
+                { n: "NAZARETH G2", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
+                { n: "NAZARETH G3", u: currentMode === 'movie' ? `https://moviesapi.club/movie/${activeId}` : `https://moviesapi.club/tv/${activeId}-${s}-${e}` }
             ];
 
             document.getElementById('servers').innerHTML = providers.map((pv, i) => `
-                <button onclick="play('${pv.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i===0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900 border-zinc-800'} whitespace-nowrap transition-all">
+                <button onclick="play('${pv.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i===0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20 text-white':'bg-zinc-900 border-zinc-800 text-zinc-500'} whitespace-nowrap transition-all">
                     ${pv.n}
                 </button>
-            `).join('') + `<a href="https://wa.me/5927005167" target="_blank" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600 whitespace-nowrap">REPORT ERROR</a>`;
+            `).join('');
             
             play(providers[0].u);
         }
@@ -167,18 +172,18 @@
         function play(url, btn) {
             if(btn) {
                 document.querySelectorAll('#servers button').forEach(b => {
-                    b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg', 'shadow-red-600/20');
-                    b.classList.add('bg-zinc-900', 'border-zinc-800');
+                    b.classList.remove('bg-red-600', 'border-red-600', 'shadow-lg', 'shadow-red-600/20', 'text-white');
+                    b.classList.add('bg-zinc-900', 'border-zinc-800', 'text-zinc-500');
                 });
                 btn.classList.replace('bg-zinc-900', 'bg-red-600');
-                btn.classList.add('border-red-600', 'shadow-lg', 'shadow-red-600/20');
+                btn.classList.add('border-red-600', 'shadow-lg', 'shadow-red-600/20', 'text-white');
             }
             document.getElementById('video-container').innerHTML = `
-                <div id="v-l" class="flex flex-col items-center justify-center h-full bg-zinc-950 text-center">
-                    <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-red-600 mb-3"></div>
-                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Connecting Nazareth Cloud...</p>
+                <div id="v-loading" class="flex flex-col items-center justify-center h-full bg-zinc-950">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-red-600 mb-4"></div>
+                    <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest italic">Igniting Stream...</p>
                 </div>
-                <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-l').remove();"></iframe>
+                <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-loading').remove();"></iframe>
             `;
         }
 
@@ -192,9 +197,9 @@
                         document.getElementById('ad-layer').style.display = 'flex';
                         let t = 5;
                         const it = setInterval(() => {
-                            document.getElementById('skip-btn').innerText = `UNLOCKING IN ${t}S`;
+                            document.getElementById('skip-btn').innerText = `ACCESSING IN ${t}S`;
                             t--;
-                            if(t < 0) { clearInterval(it); document.getElementById('skip-btn').innerText = "ENTER CONTENT"; window.resAd = res; }
+                            if(t < 0) { clearInterval(it); document.getElementById('skip-btn').innerText = "WATCH NOW"; window.resAd = res; }
                         }, 1000);
                     } else res();
                 } catch(e) { res(); }
