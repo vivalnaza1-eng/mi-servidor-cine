@@ -24,7 +24,6 @@
             margin: 0;
         }
 
-        /* Nav Glassmorphism */
         nav {
             background: rgba(0,0,0,0.85);
             backdrop-filter: blur(20px);
@@ -59,18 +58,9 @@
             filter: drop-shadow(0 0 5px var(--gy-gold));
         }
 
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
-        }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Loading spinner */
-        .loader { width: 24px; height: 24px; border: 3px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        iframe { background: #000; border: none; }
     </style>
 </head>
 <body class="pt-28 pb-10">
@@ -84,7 +74,7 @@
             </div>
         </div>
         <div class="relative w-1/2 max-w-[300px]">
-            <input type="text" id="search" oninput="searchMedia()" placeholder="Search movies..." class="w-full bg-white/5 rounded-2xl py-3 px-11 text-xs border border-white/10 outline-none focus:border-green-500 transition-all text-white">
+            <input type="text" id="search" oninput="searchMedia()" placeholder="Search more movies..." class="w-full bg-white/5 rounded-2xl py-3 px-11 text-xs border border-white/10 outline-none focus:border-green-500 transition-all text-white">
             <i data-lucide="search" class="absolute left-4 top-3 w-4 h-4 text-zinc-500"></i>
         </div>
     </nav>
@@ -95,14 +85,6 @@
     </div>
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-6"></main>
-
-    <div id="loading-trigger" class="flex justify-center py-10 opacity-0">
-        <span class="loader"></span>
-    </div>
-
-    <a href="https://wa.me/5927005167" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-[#25d366] rounded-full flex items-center justify-center z-50 shadow-[0_10px_30px_rgba(37,211,102,0.3)] hover:scale-110 transition-transform">
-        <i data-lucide="message-circle" class="text-white w-7 h-7"></i>
-    </a>
 
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
         <div class="p-6 flex items-center justify-between sticky top-0 bg-black/90 backdrop-blur-xl z-50">
@@ -127,58 +109,36 @@
             </div>
 
             <div class="mb-10">
-                <p class="text-[9px] font-black text-green-500 uppercase tracking-[0.4em] mb-4 opacity-70">Server Selection:</p>
+                <p class="text-[9px] font-black text-green-500 uppercase tracking-[0.4em] mb-4 opacity-70">Multiple Providers:</p>
                 <div id="servers" class="flex gap-3 overflow-x-auto pb-2 no-scrollbar"></div>
             </div>
             
             <div class="bg-white/5 p-6 rounded-3xl border border-white/5">
                 <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-light italic border-l-2 border-red-600 pl-4"></p>
             </div>
-            
-            <footer class="mt-20 text-center pb-12">
-                <div class="w-16 h-[2px] bg-zinc-800 mx-auto mb-6"></div>
-                <p class="text-[9px] text-zinc-600 uppercase font-bold tracking-[0.5em] mb-3">Guyana Digital Cinema Pro</p>
-                <p class="text-xl font-bold tracking-widest text-white uppercase" style="font-family: 'Syncopate', sans-serif;">by <span class="gy-gradient-text">José Vival</span></p>
-            </footer>
         </div>
     </div>
 
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
         let localData = [];
-        let currentPage = 1;
         let currentMode = 'movie';
         let activeId = null;
-        let isLoading = false;
-        let allLoaded = false;
 
-        async function load(isNextPage = false) {
-            if (isLoading || allLoaded) return;
-            isLoading = true;
-            document.getElementById('loading-trigger').style.opacity = "1";
-
+        // ESTRATEGIA: Carga masiva de múltiples páginas de tu servidor
+        async function load() {
             try {
                 const endpoint = currentMode === 'movie' ? '/populares' : '/series';
-                // Agregamos el parámetro de página a tu endpoint de Render
-                const r = await fetch(`${API_URL}${endpoint}?page=${currentPage}`);
-                const newData = await r.json();
-
-                if (newData.length === 0) {
-                    allLoaded = true;
-                } else {
-                    if (isNextPage) {
-                        localData = [...localData, ...newData];
-                    } else {
-                        localData = newData;
-                    }
-                    draw(localData);
-                    currentPage++;
-                }
+                // Intentamos traer varias páginas para tener "más películas"
+                const pages = [1, 2, 3]; 
+                const requests = pages.map(p => fetch(`${API_URL}${endpoint}?page=${p}`).then(res => res.json()));
+                const results = await Promise.all(requests);
+                
+                // Unimos todos los resultados en una sola lista gigante
+                localData = results.flat();
+                draw(localData);
             } catch (e) { 
-                console.error("Error loading data");
-            } finally {
-                isLoading = false;
-                document.getElementById('loading-trigger').style.opacity = "0";
+                console.error("Error cargando múltiples fuentes");
             }
         }
 
@@ -186,7 +146,7 @@
             const grid = document.getElementById('grid');
             grid.innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id})">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/500x750?text=No+Image'">
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
             `).join('');
             lucide.createIcons();
@@ -194,21 +154,12 @@
 
         function searchMedia() {
             const q = document.getElementById('search').value.toLowerCase();
-            if (q === "") {
-                draw(localData);
-                return;
-            }
             const f = localData.filter(m => (m.title || m.name || "").toLowerCase().includes(q));
             draw(f);
         }
 
         function changeMode(m) {
-            if (currentMode === m) return;
             currentMode = m;
-            currentPage = 1;
-            localData = [];
-            allLoaded = false;
-            document.getElementById('grid').innerHTML = "";
             document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active text-[10px] font-black uppercase tracking-[0.2em]' : 'text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em]';
             document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active text-[10px] font-black uppercase tracking-[0.2em]' : 'text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em]';
             load();
@@ -217,15 +168,13 @@
         async function openPlayer(id) {
             activeId = id;
             const item = localData.find(m => m.id == id);
-            if (!item) return;
-            
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description available.";
+            document.getElementById('m-desc').innerText = item.overview || "No description.";
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:25}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:60}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:100}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -237,12 +186,17 @@
         function updateContent() {
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
+            
+            // ESTRATEGIA: Implementación de 4 PROVEEDORES distintos
             const providers = [
-                { n: "⚡ PREMIUM", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
-                { n: "🌐 GLOBAL", u: currentMode === 'movie' ? `https://moviesapi.club/movie/${activeId}` : `https://moviesapi.club/tv/${activeId}-${s}-${e}` }
+                { n: "🚀 SERVER ULTRA", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
+                { n: "🌐 SERVER GLOBAL", u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}/${s}/${e}` },
+                { n: "💎 PREMIUM VIP", u: currentMode === 'movie' ? `https://moviesapi.club/movie/${activeId}` : `https://moviesapi.club/tv/${activeId}-${s}-${e}` },
+                { n: "📡 MIRROR HD", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` }
             ];
+
             document.getElementById('servers').innerHTML = providers.map((pv, i) => `
-                <button onclick="play('${pv.u}', this)" class="px-6 py-3 rounded-xl text-[9px] font-black uppercase border transition-all ${i===0?'bg-green-600 border-green-600 text-white shadow-lg shadow-green-900/40':'bg-zinc-900 border-white/5 text-zinc-500'}">
+                <button onclick="play('${pv.u}', this)" class="whitespace-nowrap px-6 py-3 rounded-xl text-[9px] font-black uppercase border transition-all ${i===0?'bg-green-600 border-green-600 text-white shadow-lg shadow-green-900/40':'bg-zinc-900 border-white/5 text-zinc-500'}">
                     ${pv.n}
                 </button>
             `).join('');
@@ -257,7 +211,7 @@
                 });
                 btn.classList.add('bg-green-600', 'text-white');
             }
-            document.getElementById('video-container').innerHTML = `<iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
+            document.getElementById('video-container').innerHTML = `<iframe src="${url}" class="w-full h-full" allowfullscreen sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>`;
         }
 
         function closePlayer() { 
@@ -265,13 +219,6 @@
             document.getElementById('video-container').innerHTML = ""; 
             document.body.style.overflow = 'auto';
         }
-
-        // Lógica de Scroll Infinito
-        window.addEventListener('scroll', () => {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-                load(true);
-            }
-        });
 
         window.onload = () => { load(); lucide.createIcons(); };
     </script>
