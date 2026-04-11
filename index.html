@@ -42,13 +42,6 @@
         <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 pb-1 text-[10px] font-black uppercase tracking-widest">Series</button>
     </div>
 
-    <div class="flex gap-2 px-5 py-4 overflow-x-auto no-scrollbar">
-        <button onclick="filterGenre(28)" class="bg-zinc-900 border border-zinc-800 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase whitespace-nowrap">Acción</button>
-        <button onclick="filterGenre(27)" class="bg-zinc-900 border border-zinc-800 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase whitespace-nowrap">Terror</button>
-        <button onclick="filterGenre(35)" class="bg-zinc-900 border border-zinc-800 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase whitespace-nowrap">Comedia</button>
-        <button onclick="filterGenre(878)" class="bg-zinc-900 border border-zinc-800 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase whitespace-nowrap">Sci-Fi</button>
-    </div>
-
     <div id="loading" class="text-center py-20"><div class="animate-spin rounded-full h-8 w-8 border-t-2 border-red-600 mx-auto"></div></div>
     <main id="grid" class="grid grid-cols-3 gap-2 p-2"></main>
 
@@ -64,10 +57,10 @@
 
         <div class="p-6">
             <div class="flex items-start gap-3 mb-6 bg-red-600/10 p-4 rounded-xl border border-red-600/20">
-                <i data-lucide="help-circle" class="w-5 h-5 text-red-500 shrink-0"></i>
+                <i data-lucide="info" class="w-5 h-5 text-red-500 shrink-0"></i>
                 <p class="text-[11px] text-zinc-300 font-medium leading-tight">
-                    <span class="text-red-500 font-black uppercase block mb-1">¿Video lento o en otro idioma?</span>
-                    Usa el <strong class="text-white italic underline">botón flotante azul</strong> dentro del video para cambiar de servidor o pista de audio.
+                    <span class="text-red-500 font-black uppercase block mb-1">Guía de Audio</span>
+                    Si el video está en otro idioma, prueba con los otros proveedores o usa el <strong>botón flotante</strong> del reproductor.
                 </p>
             </div>
 
@@ -82,7 +75,11 @@
                 </div>
             </div>
 
-            <div id="servers" class="flex flex-col gap-3 mb-6"></div>
+            <div id="servers-container" class="space-y-4 mb-6">
+                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Proveedores Disponibles:</p>
+                <div id="servers" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+            </div>
+            
             <hr class="border-zinc-900 mb-6">
             <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-medium"></p>
         </div>
@@ -113,32 +110,16 @@
 
         function changeMode(m) {
             currentMode = m;
-            document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active pb-1 text-[10px] font-black uppercase' : 'text-zinc-500 pb-1 text-[10px] font-black uppercase';
-            document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active pb-1 text-[10px] font-black uppercase' : 'text-zinc-500 pb-1 text-[10px] font-black uppercase';
+            document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active pb-1 text-[10px] font-black uppercase tracking-widest' : 'text-zinc-500 pb-1 text-[10px] font-black uppercase tracking-widest';
+            document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active pb-1 text-[10px] font-black uppercase tracking-widest' : 'text-zinc-500 pb-1 text-[10px] font-black uppercase tracking-widest';
             load();
-        }
-
-        async function filterGenre(id) {
-            const r = await fetch(`${API_URL}/genero/${id}?type=${currentMode}`);
-            localData = await r.json();
-            draw(localData);
         }
 
         async function openPlayer(id) {
             activeId = id;
             const item = localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = item.title || item.name;
-            
-            // Añadir tip debajo de la sinopsis
-            const sinopsis = item.overview || "Sin descripción disponible.";
-            document.getElementById('m-desc').innerHTML = `
-                ${sinopsis}
-                <div class="mt-6 p-3 bg-white/5 rounded-lg border border-white/10">
-                    <p class="text-[10px] text-zinc-500 italic">
-                        <strong>Tip:</strong> Si prefieres subtítulos o audio original, selecciona la opción "ENGLISH / SUBS" o usa el menú interno del video.
-                    </p>
-                </div>
-            `;
+            document.getElementById('m-desc').innerText = item.overview || "Sin descripción.";
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
@@ -157,33 +138,21 @@
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
-            const serverOptions = [
-                { 
-                    n: "ESPAÑOL LATINO", 
-                    u: currentMode === 'movie' ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}`,
-                    icon: "languages"
-                },
-                { 
-                    n: "ENGLISH / SUBS", 
-                    u: currentMode === 'movie' ? `https://vidsrc.to/embed/movie/${activeId}` : `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}`,
-                    icon: "subtitles"
-                }
+            // NUEVA LISTA DE PROVEEDORES
+            const providers = [
+                { n: "LATINO PRO", u: currentMode === 'movie' ? `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1` : `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1&s=${s}&e=${e}` },
+                { n: "OPCIÓN 2", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` },
+                { n: "OPCIÓN 3", u: currentMode === 'movie' ? `https://vidsrc.pro/embed/movie/${activeId}` : `https://vidsrc.pro/embed/tv/${activeId}/${s}/${e}` },
+                { n: "GLOBAL", u: currentMode === 'movie' ? `https://vidsrc.to/embed/movie/${activeId}` : `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` }
             ];
 
-            document.getElementById('servers').innerHTML = `
-                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                    ${serverOptions.map((sv, i) => `
-                        <button onclick="play('${sv.u}', this)" class="flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i==0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900 border-zinc-800'} whitespace-nowrap transition-all">
-                            <i data-lucide="${sv.icon}" class="w-3 h-3"></i>
-                            ${sv.n}
-                        </button>
-                    `).join('')}
-                    <a href="https://wa.me/5927005167" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600 whitespace-nowrap">REPORTAR</a>
-                </div>
-            `;
+            document.getElementById('servers').innerHTML = providers.map((pv, i) => `
+                <button onclick="play('${pv.u}', this)" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase border ${i==0?'bg-red-600 border-red-600 shadow-lg shadow-red-600/20':'bg-zinc-900 border-zinc-800'} whitespace-nowrap transition-all">
+                    ${pv.n}
+                </button>
+            `).join('') + `<a href="https://wa.me/5927005167" class="px-6 py-3 rounded-xl text-[10px] font-black uppercase bg-green-600/10 text-green-500 border border-green-600 whitespace-nowrap">REPORTAR</a>`;
             
-            play(serverOptions[0].u);
-            lucide.createIcons();
+            play(providers[0].u);
         }
 
         function play(url, btn) {
@@ -193,12 +162,12 @@
                     b.classList.add('bg-zinc-900', 'border-zinc-800');
                 });
                 btn.classList.replace('bg-zinc-900', 'bg-red-600');
-                btn.classList.replace('border-zinc-800', 'border-red-600');
+                btn.classList.add('border-red-600', 'shadow-lg', 'shadow-red-600/20');
             }
             document.getElementById('video-container').innerHTML = `
                 <div id="v-l" class="flex flex-col items-center justify-center h-full bg-zinc-950 text-center">
                     <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-red-600 mb-3"></div>
-                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Cargando cine... 😘</p>
+                    <p class="text-[10px] font-bold uppercase italic tracking-tighter text-zinc-500">Conectando con el servidor...</p>
                 </div>
                 <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-l').remove();"></iframe>
             `;
