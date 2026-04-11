@@ -23,19 +23,37 @@
             overflow-x: hidden;
         }
 
-        /* Botón Flotante del Creador (Esquina Inferior Izquierda ahora) */
+        /* Botón Flotante del Creador (Lobo de Guyana) */
         .creator-badge {
             position: fixed; bottom: 25px; left: 25px; z-index: 100;
-            background: rgba(0,0,0,0.8); border: 1.5px solid var(--gy-gold);
-            padding: 8px 15px; border-radius: 50px; display: flex; align-items: center; gap: 10px;
-            backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(252, 209, 22, 0.3);
+            background: rgba(0,0,0,0.9); 
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), 
+                              linear-gradient(90deg, var(--gy-red), var(--gy-gold), var(--gy-green));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            padding: 5px 15px 5px 5px; border-radius: 50px; display: flex; align-items: center; gap: 12px;
+            backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
-            max-width: 45px; white-space: nowrap; overflow: hidden;
+            max-width: 54px; white-space: nowrap; overflow: hidden;
         }
-        .creator-badge:hover { max-width: 220px; border-color: var(--gy-green); }
-        .creator-dot { width: 10px; height: 10px; background: var(--gy-red); border-radius: 50%; animation: blink 1.5s infinite; }
+        .creator-badge:hover { max-width: 240px; }
+        
+        /* Contenedor del Lobo */
+        .wolf-container {
+            width: 40px; height: 40px; min-width: 40px;
+            background: linear-gradient(45deg, var(--gy-red), var(--gy-gold));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 1.5px solid rgba(255,255,255,0.2);
+            animation: pulse-wolf 2s infinite;
+        }
+        .wolf-icon { width: 100%; height: 100%; object-fit: cover; }
 
-        @keyframes blink { 50% { opacity: 0.3; } }
+        @keyframes pulse-wolf {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(252, 209, 22, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(252, 209, 22, 0); }
+            100% { transform: scale(1); }
+        }
 
         .poster-card { 
             transition: all 0.4s ease; aspect-ratio: 2/3; border-radius: 20px; 
@@ -75,10 +93,13 @@
 <body class="pt-24 pb-10">
 
     <div class="creator-badge group">
-        <div class="creator-dot"></div>
-        <span class="text-[10px] font-black uppercase tracking-widest text-white opacity-0 group-hover:opacity-100 transition-opacity">
-            Desarrollado por <span class="text-yellow-400">José Vival</span>
-        </span>
+        <div class="wolf-container">
+            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=wolf&backgroundColor=fcd116" alt="Wolf" class="wolf-icon">
+        </div>
+        <div class="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <span class="text-[8px] text-zinc-500 font-bold uppercase tracking-tighter">Creator & Developer</span>
+            <span class="text-[11px] font-black uppercase text-white">José <span class="text-yellow-400">Vival</span></span>
+        </div>
     </div>
 
     <nav class="flex items-center justify-between p-6 fixed top-0 w-full bg-black/60 backdrop-blur-xl z-50 border-b border-white/5">
@@ -178,54 +199,4 @@
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
                 document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">TEMPORADA ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">EPISODIO ${i+1}</option>`).join('');
-            } else {
-                document.getElementById('series-controls').classList.add('hidden');
-            }
-
-            updateContent();
-            document.getElementById('player-modal').classList.add('active');
-        }
-
-        function updateContent() {
-            const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
-            const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
-            
-            const providers = [
-                { n: "⚡ GY-SERVER PRO", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
-                { n: "🌐 GLOBAL V2", u: currentMode === 'movie' ? `https://moviesapi.club/movie/${activeId}` : `https://moviesapi.club/tv/${activeId}-${s}-${e}` }
-            ];
-
-            document.getElementById('servers').innerHTML = providers.map((pv, i) => `
-                <button onclick="play('${pv.u}', this)" class="px-10 py-5 rounded-3xl text-[10px] font-black uppercase border transition-all whitespace-nowrap ${i===0?'bg-green-600 border-green-600 text-white shadow-xl shadow-green-900/40':'bg-zinc-900 border-white/5 text-zinc-500'}">
-                    ${pv.n}
-                </button>
-            `).join('');
-            
-            play(providers[0].u);
-        }
-
-        function play(url, btn) {
-            if(btn) {
-                document.querySelectorAll('#servers button').forEach(b => {
-                    b.classList.remove('bg-green-600', 'border-green-600', 'text-white', 'shadow-xl');
-                    b.classList.add('bg-zinc-900', 'border-white/5', 'text-zinc-500');
-                });
-                btn.classList.replace('bg-zinc-900', 'bg-green-600');
-                btn.classList.add('text-white', 'shadow-xl');
-            }
-            document.getElementById('video-container').innerHTML = `
-                <div id="v-load" class="flex flex-col items-center justify-center h-full bg-black">
-                    <div class="w-14 h-14 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="mt-6 text-[10px] font-black uppercase text-green-500 tracking-[0.5em]">Conectando a GY-SERVER...</p>
-                </div>
-                <iframe src="${url}" class="w-full h-full hidden" frameborder="0" allowfullscreen onload="this.classList.remove('hidden'); document.getElementById('v-load').remove();"></iframe>
-            `;
-        }
-
-        function closePlayer() { document.getElementById('player-modal').classList.remove('active'); document.getElementById('video-container').innerHTML = ""; }
-
-        window.onload = load;
-    </script>
-</body>
-</html>
+                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">EPISODIO
