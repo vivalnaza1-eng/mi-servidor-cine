@@ -18,9 +18,8 @@
         .poster-card:hover { transform: translateY(-5px); border-color: var(--gy-gold); }
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; }
         .modal.active { display: flex; }
-        .gy-gradient-text { background: linear-gradient(90deg, var(--gy-red), var(--gy-gold), var(--gy-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .tab-active { color: var(--gy-gold); border-bottom: 2px solid var(--gy-gold); font-weight: 900; }
-        iframe { width: 100%; height: 100%; border: none; }
+        iframe { width: 100%; height: 100%; border: none; background: #000; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -45,20 +44,24 @@
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-6"></main>
 
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-4 flex items-center justify-between bg-black border-b border-white/5">
-            <button onclick="closePlayer()" class="p-2"><i data-lucide="chevron-left"></i></button>
+        <div class="p-4 flex items-center justify-between bg-black border-b border-white/5 sticky top-0 z-[1001]">
+            <button onclick="closePlayer()" class="p-2 bg-white/5 rounded-lg"><i data-lucide="chevron-left"></i></button>
             <span class="font-black text-[10px] uppercase tracking-widest text-zinc-500" id="m-title">Playing</span>
             <div class="w-10"></div>
         </div>
+        
         <div class="w-full aspect-video bg-black" id="video-container"></div>
+        
         <div class="p-8 max-w-5xl mx-auto w-full">
             <div id="series-controls" class="hidden mb-8 grid grid-cols-2 gap-4">
                 <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
                 <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-xl text-xs text-white outline-none"></select>
             </div>
+            
             <p class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest mb-4">Select Fast Provider:</p>
             <div id="servers" class="flex gap-3 overflow-x-auto pb-4 no-scrollbar"></div>
-            <div class="bg-zinc-900/50 p-6 rounded-2xl border-l-4 border-red-600">
+            
+            <div class="bg-zinc-900/50 p-6 rounded-2xl border-l-4 border-red-600 mt-4">
                 <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed italic"></p>
             </div>
         </div>
@@ -120,7 +123,7 @@
             activeId = id;
             const item = localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description.";
+            document.getElementById('m-desc').innerText = item.overview || "No description available.";
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
@@ -137,6 +140,7 @@
         function updateContent() {
             const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
+            
             const providers = [
                 { n: "⚡ ULTRA", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
                 { n: "🌐 GLOBAL", u: currentMode === 'movie' ? `https://autoembed.to/movie/tmdb/${activeId}` : `https://autoembed.to/tv/tmdb/${activeId}/${s}/${e}` },
@@ -161,14 +165,15 @@
                 });
                 btn.classList.add('bg-green-600', 'text-white');
             }
-            // CIRUGÍA DE SANDBOX APLICADA AQUÍ:
+            
+            // SOLUCIÓN FINAL: Eliminamos el atributo sandbox por completo.
+            // Esto permite que el video cargue en CUALQUIER móvil sin bloqueos.
             document.getElementById('video-container').innerHTML = `
                 <iframe 
                     src="${url}" 
                     allowfullscreen 
-                    allow="autoplay; encrypted-media" 
-                    sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
-                ></iframe>`;
+                    allow="autoplay; encrypted-media">
+                </iframe>`;
         }
 
         function closePlayer() { 
