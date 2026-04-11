@@ -24,14 +24,12 @@
             overflow-x: hidden; 
         }
 
-        /* Glassmorphism Header */
         nav { 
             background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
 
-        /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -55,10 +53,8 @@
             z-index: 10;
         }
 
-        /* Custom Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* Modal Design */
         .modal { 
             display: none; 
             position: fixed; 
@@ -72,7 +68,10 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Fullscreen Controls */
+        /* Fullscreen & Iframe Fix */
+        #iframe-slot { position: relative; width: 100%; height: 100%; }
+        #iframe-slot iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
+
         #close-fullscreen {
             display: none;
             position: absolute;
@@ -114,6 +113,17 @@
         .name { font-size: 11px; font-weight: 600; color: white; }
 
         .tab-active { color: white; border-bottom: 3px solid var(--gy-red); font-weight: 800; }
+
+        /* Ad Banner Style */
+        .ad-container {
+            width: 100%;
+            background: #111;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px dashed rgba(255,255,255,0.1);
+            text-align: center;
+        }
     </style>
 </head>
 <body class="pt-24">
@@ -155,12 +165,16 @@
             </div>
             
             <div class="mb-6">
-                <h2 class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Select Server</h2>
+                <h2 class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Server List</h2>
                 <div id="servers" class="flex gap-3 overflow-x-auto no-scrollbar"></div>
             </div>
             
             <div class="bg-zinc-900/40 p-6 rounded-xl border border-white/5">
-                <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-light"></p>
+                <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-light mb-4"></p>
+                
+                <div class="ad-container">
+                    <iframe src="https://mi-servidor-cine.onrender.com/publicidad" style="width:100%; height:100px; border:none; overflow:hidden;"></iframe>
+                </div>
             </div>
         </div>
     </div>
@@ -180,7 +194,7 @@
     </div>
 
     <script>
-        const API_URL = "https://mi-servidor-cine.onrender.com"; // UPDATE WITH YOUR RENDER URL
+        const API_URL = "https://mi-servidor-cine.onrender.com";
         let localData = [];
         let currentMode = 'movie';
         let activeId = null;
@@ -188,7 +202,7 @@
 
         async function load() {
             const grid = document.getElementById('grid');
-            grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-600 animate-pulse">LOADING CINEMA...</div>';
+            grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-600 animate-pulse uppercase text-xs">Loading Cinema...</div>';
             try {
                 const endpoint = currentMode === 'movie' ? '/populares' : '/series';
                 const r = await fetch(`${API_URL}${endpoint}`);
@@ -239,8 +253,8 @@
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -254,25 +268,17 @@
             const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
             
             const providers = [
-                { n: "⚡ ULTRA SERVER", u: currentMode === 'movie' ? `https://www.2embed.cc/embed/${activeId}` : `https://www.2embed.cc/embedtv/${activeId}&s=${s}&e=${e}` },
                 { n: "📡 MIRROR SERVER", u: currentMode === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` }
             ];
 
             document.getElementById('servers').innerHTML = providers.map((pv, i) => `
-                <button onclick="play('${pv.u}', this)" class="whitespace-nowrap px-8 py-3 rounded-lg text-[10px] font-bold uppercase border transition-all ${i===0?'bg-white text-black border-white shadow-lg':'bg-zinc-900 border-white/5 text-zinc-400 hover:text-white'}">
+                <button onclick="play('${pv.u}', this)" class="whitespace-nowrap px-8 py-3 rounded-lg text-[10px] font-bold uppercase border bg-white text-black border-white shadow-lg">
                     ${pv.n}
                 </button>
             `).join('');
         }
 
         function play(url, btn) {
-            if(btn) {
-                document.querySelectorAll('#servers button').forEach(b => { 
-                    b.classList.remove('bg-white', 'text-black'); 
-                    b.classList.add('bg-zinc-900', 'text-zinc-400'); 
-                });
-                btn.classList.add('bg-white', 'text-black');
-            }
             const container = document.getElementById('video-container');
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
             
