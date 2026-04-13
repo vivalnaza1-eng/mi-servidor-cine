@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Guyana Digital Cinema | Nazareth Pro</title>
     
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Nazareth Pro">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -18,175 +12,105 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap');
+        :root { --gy-gold: #fcd116; --gy-red: #ce1126; --bg-black: #080808; }
+
+        body { background-color: var(--bg-black); color: white; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        :root { 
-            --gy-gold: #fcd116; 
-            --gy-red: #ce1126;
-            --bg-black: #080808;
-            --card-bg: #121212;
-        }
-
-        body { 
-            background-color: var(--bg-black); 
-            color: white; 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            overflow-x: hidden; 
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        nav { 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 100%);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+        /* Glass Navbar */
+        nav { background: rgba(8, 8, 8, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .poster-card { 
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            aspect-ratio: 2/3; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            background: var(--card-bg); 
-            border: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
-            position: relative;
+            aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; 
+            background: #121212; border: 1px solid rgba(255,255,255,0.05);
         }
-
-        .poster-card:hover { 
-            transform: scale(1.03) translateY(-5px); 
-            border-color: var(--gy-gold);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #121212 25%, #1a1a1a 50%, #121212 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .modal { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: var(--bg-black); 
-            z-index: 1000; 
-            flex-direction: column; 
-            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal.active { display: flex; }
-
-        #iframe-slot { position: relative; width: 100%; height: 100%; background: black; }
-        #iframe-slot iframe { width: 100%; height: 100%; border: none; }
+        .poster-card:hover { transform: scale(1.03); border-color: var(--gy-gold); }
 
         .tab-active { color: white; border-bottom: 3px solid var(--gy-red); font-weight: 800; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: var(--bg-black); z-index: 1000; flex-direction: column; animation: slideUp 0.4s ease; }
+        .modal.active { display: flex; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .btn-server {
-            background: #1a1a1a;
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: bold;
+        .upcoming-badge {
+            background: var(--gy-red);
+            color: white;
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-weight: 900;
             text-transform: uppercase;
-            flex: 1;
-            transition: all 0.2s;
-        }
-        .btn-server.active {
-            background: white;
-            color: black;
-            border-color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Bandera Estilo Glass */
-        .gy-flag-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255,255,255,0.05);
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
-<body class="pt-24">
+<body class="pt-28">
 
-    <nav class="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 fixed top-0 w-full z-50 gap-4">
-        <div class="flex items-center gap-4 cursor-pointer" onclick="location.reload()">
-            <div class="gy-flag-badge">
-                <img src="https://flagcdn.com/w40/gy.png" alt="Guyana" class="w-6 h-4 object-cover rounded-sm shadow-sm">
+    <nav class="p-4 fixed top-0 w-full z-50 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://flagcdn.com/w40/gy.png" class="w-6 h-4 rounded-sm shadow-md">
+                <h1 class="font-black text-xl italic italic">GUYANA DIGITAL</h1>
             </div>
-            <div>
-                <h1 class="text-white font-black text-xl md:text-2xl italic tracking-tighter leading-none">GUYANA DIGITAL</h1>
-                <span class="text-[9px] font-bold text-green-500 tracking-[0.2em] uppercase">Nazareth Cinema Pro</span>
+            <div class="relative w-40">
+                <input type="text" id="search" oninput="debounceSearch()" placeholder="Search..." class="w-full bg-white/10 rounded-full py-2 px-8 text-xs outline-none focus:bg-white/20 transition-all">
+                <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-zinc-500"></i>
             </div>
         </div>
-        <div class="relative w-full md:w-64">
-            <input type="text" id="search" oninput="debounceSearch()" placeholder="Search movies or series..." class="w-full bg-white/10 rounded-full py-2.5 px-10 text-xs outline-none text-white border border-transparent focus:border-white/20 transition-all">
-            <i data-lucide="search" class="absolute left-4 top-3 w-4 h-4 text-zinc-500"></i>
+        
+        <div class="flex gap-6 overflow-x-auto no-scrollbar border-t border-white/5 pt-3">
+            <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] uppercase tracking-widest whitespace-nowrap">Movies</button>
+            <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] uppercase tracking-widest whitespace-nowrap">TV Shows</button>
+            <button onclick="changeMode('upcoming')" id="btn-upcoming" class="text-zinc-500 text-[10px] uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
+                <i data-lucide="calendar" class="w-3 h-3"></i> Upcoming
+            </button>
+            <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
+                <i data-lucide="heart" class="w-3 h-3"></i> My List
+            </button>
         </div>
     </nav>
 
-    <div class="flex gap-6 px-8 py-4 sticky top-[120px] md:top-[88px] z-40 bg-black/80 backdrop-blur-md overflow-x-auto no-scrollbar border-b border-white/5">
-        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] uppercase tracking-widest whitespace-nowrap pb-1">Movies</button>
-        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap pb-1">TV Shows</button>
-        <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 pb-1">
-            <i data-lucide="heart" class="w-3 h-3"></i> My List
-        </button>
-    </div>
-
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
 
-    <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/95 z-50 border-b border-white/10">
-            <button onclick="closePlayer()" class="p-2 hover:bg-white/10 rounded-full transition-all active:scale-90"><i data-lucide="arrow-left"></i></button>
-            <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[180px]" id="m-title">Loading...</span>
-            <button id="fav-toggle-btn" class="p-2 rounded-full active:scale-125 transition-transform"><i data-lucide="heart" id="fav-icon"></i></button>
+    <div id="player-modal" class="modal overflow-y-auto">
+        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/90 z-50 border-b border-white/10">
+            <button onclick="closePlayer()" class="p-2"><i data-lucide="arrow-left"></i></button>
+            <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[150px]" id="m-title">Loading...</span>
+            <button id="fav-toggle-btn" class="p-2"><i data-lucide="heart" id="fav-icon"></i></button>
         </div>
-        
-        <div class="w-full aspect-video bg-black relative shadow-2xl" id="video-container">
-            <div id="iframe-slot"></div>
+
+        <div id="video-area" class="w-full aspect-video bg-black relative shadow-2xl">
+            <div id="iframe-slot" class="w-full h-full"></div>
         </div>
-        
-        <div class="p-6 max-w-4xl mx-auto w-full">
-            <div id="series-controls" class="hidden mb-6 grid grid-cols-2 gap-4">
-                <div class="flex flex-col gap-2">
-                    <label class="text-[9px] font-bold text-zinc-500 uppercase ml-1">Season</label>
-                    <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
+
+        <div class="p-6 max-w-2xl mx-auto w-full">
+            <div id="play-ui">
+                <div id="series-controls" class="hidden grid grid-cols-2 gap-4 mb-6">
+                    <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white"></select>
+                    <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white"></select>
                 </div>
-                <div class="flex flex-col gap-2">
-                    <label class="text-[9px] font-bold text-zinc-500 uppercase ml-1">Episode</label>
-                    <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
+                
+                <div class="flex gap-2 mb-6" id="server-list">
+                    <button onclick="setServer(0)" class="flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl active:scale-95 transition-all">SERVER 1</button>
+                    <button onclick="setServer(1)" class="flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl active:scale-95 transition-all">SERVER 2</button>
                 </div>
-            </div>
-            
-            <div class="mb-6">
-                <h2 class="text-zinc-500 text-[9px] font-black uppercase tracking-[0.2em] mb-3">Optimize Connection</h2>
-                <div class="flex gap-2" id="server-list">
-                    <button onclick="setServer(0)" class="btn-server active" id="srv-0">Server 1</button>
-                    <button onclick="setServer(1)" class="btn-server" id="srv-1">Server 2</button>
-                    <button onclick="setServer(2)" class="btn-server" id="srv-2">Server 3</button>
-                </div>
+
+                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl active:scale-95 transition-all">
+                    <i data-lucide="play" class="w-4 h-4 fill-current"></i> Play Now
+                </button>
             </div>
 
-            <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl active:scale-95 transition-all">
-                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Start Streaming
-            </button>
+            <div id="upcoming-ui" class="hidden text-center py-6">
+                <div class="inline-block px-4 py-2 bg-zinc-900 border border-gy-gold/30 rounded-full mb-4">
+                    <span class="text-gy-gold text-[10px] font-black uppercase tracking-tighter">Coming Soon to Guyana Digital</span>
+                </div>
+                <p class="text-zinc-500 text-xs mb-2">Expected Release Date:</p>
+                <p id="release-date" class="text-white font-bold text-lg mb-6"></p>
+            </div>
             
-            <div class="bg-zinc-900/40 p-6 rounded-2xl border border-white/5">
-                <h3 class="text-[10px] font-bold uppercase mb-2 text-zinc-300">Overview</h3>
+            <div class="bg-zinc-900/40 p-5 rounded-2xl border border-white/5">
                 <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed font-light"></p>
             </div>
         </div>
@@ -194,142 +118,74 @@
 
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
-        const ADS_URL = "https://www.profitablecpmratenetwork.com/jpp1ah70?key=2362ad52be7ddb0ad6207c0ceb1443af";
-        
         let localData = [];
         let favorites = JSON.parse(localStorage.getItem('gy_favs')) || [];
         let currentMode = 'movie';
         let activeId = null;
-        let selectedServer = 0;
-        let searchTimeout;
 
-        AOS.init({ duration: 600, once: true });
+        AOS.init({ duration: 600 });
 
         async function load() {
             const grid = document.getElementById('grid');
-            if(currentMode === 'fav') {
-                draw(favorites);
-                return;
-            }
+            grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-500 text-xs uppercase animate-pulse">Loading...</div>';
+            
+            if(currentMode === 'fav') { draw(favorites); return; }
 
-            grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card skeleton"></div>`).join('');
             try {
-                const endpoint = currentMode === 'movie' ? '/populares' : '/series';
+                // Si el modo es upcoming, usamos una ruta de "estrenos" o "populares"
+                const endpoint = currentMode === 'upcoming' ? '/populares' : (currentMode === 'movie' ? '/populares' : '/series');
                 const r = await fetch(`${API_URL}${endpoint}`);
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { grid.innerHTML = "Server connection error."; }
+            } catch (e) { grid.innerHTML = "Error."; }
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list.length) { 
-                grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-600 text-[10px] font-bold uppercase tracking-widest">No results found in ${currentMode}</div>`; 
-                return; 
-            }
+            if(!list.length) { grid.innerHTML = "Empty."; return; }
             
             grid.innerHTML = list.map((m, i) => `
-                <div class="poster-card" data-aos="fade-up" data-aos-delay="${(i % 6) * 50}" onclick="openPlayer(${m.id}, ${list === favorites})">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                <div class="poster-card relative" data-aos="fade-up" onclick="openPlayer(${m.id}, ${list === favorites})">
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover">
+                    ${currentMode === 'upcoming' ? '<span class="upcoming-badge">Soon</span>' : ''}
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        async function openPlayer(id, fromFavs = false) {
-            if (navigator.vibrate) navigator.vibrate(30);
+        function openPlayer(id, fromFavs) {
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
-            if(!item) return;
-
-            document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "Description not available.";
             
-            const isFav = favorites.some(f => f.id == id);
-            document.getElementById('fav-icon').style.fill = isFav ? "#ce1126" : "none";
-            document.getElementById('fav-icon').style.color = isFav ? "#ce1126" : "currentColor";
-            document.getElementById('fav-toggle-btn').onclick = () => toggleFavorite(item);
-
-            if(currentMode === 'tv' || item.name) {
-                document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:40}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+            document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
+            document.getElementById('m-desc').innerText = item.overview;
+            
+            // Lógica UI para "Upcoming"
+            if(currentMode === 'upcoming') {
+                document.getElementById('play-ui').classList.add('hidden');
+                document.getElementById('upcoming-ui').classList.remove('hidden');
+                document.getElementById('release-date').innerText = item.release_date || "Coming Soon 2026";
             } else {
-                document.getElementById('series-controls').classList.add('hidden');
+                document.getElementById('play-ui').classList.remove('hidden');
+                document.getElementById('upcoming-ui').classList.add('hidden');
             }
 
             document.getElementById('player-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function toggleFavorite(item) {
-            const index = favorites.findIndex(f => f.id == item.id);
-            if(index > -1) favorites.splice(index, 1);
-            else favorites.push(item);
-            localStorage.setItem('gy_favs', JSON.stringify(favorites));
-            openPlayer(item.id, currentMode === 'fav');
-        }
-
-        function setServer(idx) {
-            selectedServer = idx;
-            document.querySelectorAll('.btn-server').forEach((b, i) => {
-                b.className = i === idx ? 'btn-server active' : 'btn-server';
-            });
-        }
-
-        function initPlay() {
-            const s = document.getElementById('season').value || 1;
-            const e = document.getElementById('episode').value || 1;
-            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
-            
-            const servers = [
-                isTV ? `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` : `https://vidsrc.me/embed/movie?tmdb=${activeId}`,
-                isTV ? `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` : `https://vidsrc.to/embed/movie/${activeId}`,
-                isTV ? `https://embed.su/embed/tv/${activeId}/${s}/${e}` : `https://embed.su/embed/movie/${activeId}`
-            ];
-
-            // Ad Window
-            window.open(ADS_URL, '_blank');
-
-            const container = document.getElementById('video-container');
-            document.getElementById('iframe-slot').innerHTML = `<iframe src="${servers[selectedServer]}" allowfullscreen allow="autoplay"></iframe>`;
-            
-            setTimeout(() => {
-                if (container.requestFullscreen) container.requestFullscreen();
-                else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-            }, 500);
         }
 
         function changeMode(m) {
             currentMode = m;
-            ['movie', 'tv', 'fav'].forEach(mode => {
-                document.getElementById(`btn-${mode}`).className = m === mode ? 'tab-active text-[10px] uppercase tracking-widest pb-1' : 'text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white pb-1';
-            });
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
+            document.getElementById(`btn-${m}`).classList.add('tab-active');
             load();
         }
 
-        function closePlayer() { 
-            document.getElementById('player-modal').classList.remove('active'); 
-            document.getElementById('iframe-slot').innerHTML = ""; 
-            document.body.style.overflow = 'auto';
-            if(currentMode === 'fav') load();
+        function closePlayer() {
+            document.getElementById('player-modal').classList.remove('active');
+            document.getElementById('iframe-slot').innerHTML = "";
         }
 
-        async function searchGlobal() {
-            const q = document.getElementById('search').value;
-            if(q.length < 2) return load();
-            const type = currentMode === 'fav' ? 'movie' : currentMode;
-            const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${type}`);
-            localData = await r.json();
-            draw(localData);
-        }
-
-        function debounceSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(searchGlobal, 500);
-        }
-
-        window.onload = () => { load(); lucide.createIcons(); };
+        window.onload = load;
     </script>
 </body>
 </html>
