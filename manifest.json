@@ -1,14 +1,14 @@
 {
-  "name": "Nazareth Cinema Pro",
-  "short_name": "Nazareth Pro",
+  "name": "Guyana Digital Cinema",
+  "short_name": "Guyana Digital",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080808",
-  "theme_color": "#ce1126",
+  "theme_color": "#080808",
   "icons": [
     {
-      "src": "https://mi-servidor-cine.onrender.com/logo.png",
-      "sizes": "192x192",
+      "src": "https://flagcdn.com/w160/gy.png",
+      "sizes": "160x160",
       "type": "image/png"
     }
   ]
