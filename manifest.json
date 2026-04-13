@@ -1,14 +1,20 @@
 {
   "name": "Guyana Digital Cinema",
-  "short_name": "Guyana Digital",
+  "short_name": "GD Cinema",
+  "description": "Watch movies and series in Guyana",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#080808",
-  "theme_color": "#080808",
+  "background_color": "#050505",
+  "theme_color": "#00f2ff",
   "icons": [
     {
-      "src": "https://flagcdn.com/w160/gy.png",
-      "sizes": "160x160",
+      "src": "mapa-guyana.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "mapa-guyana.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
