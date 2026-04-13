@@ -26,7 +26,6 @@
         }
         .poster-card:hover { transform: scale(1.03); border-color: var(--gy-gold); }
 
-        /* SKELETON ANIMATION */
         .skeleton {
             background: linear-gradient(90deg, #121212 25%, #1a1a1a 50%, #121212 75%);
             background-size: 200% 100%;
@@ -52,6 +51,8 @@
             text-transform: uppercase;
             font-weight: 600;
         }
+
+        .gy-flag-mini { width: 14px; height: auto; border-radius: 2px; }
     </style>
 </head>
 <body class="pt-28 pb-10">
@@ -63,7 +64,10 @@
                     <i data-lucide="clapperboard" class="text-black w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="font-black text-xl italic tracking-tighter leading-none">GUYANA DIGITAL</h1>
+                    <h1 class="font-black text-xl italic tracking-tighter leading-none flex items-center gap-2">
+                        GUYANA DIGITAL
+                        <img src="https://flagcdn.com/w40/gy.png" class="gy-flag-mini">
+                    </h1>
                     <span class="text-[8px] text-gy-gold font-bold tracking-[3px] uppercase">Cinema Pro</span>
                 </div>
             </div>
