@@ -151,15 +151,19 @@
 
         AOS.init({ duration: 600, once: true });
 
-        // --- LÓGICA DE ANUNCIOS ---
+        // --- LÓGICA DE ANUNCIOS (MODO SEGUNDO PLANO) ---
         async function showAd() {
             try {
                 const r = await fetch(`${API_URL}/get-ads`);
                 const ads = await r.json();
                 if (ads.enabled && ads.video_ad_start) {
-                    window.open(ads.video_ad_start, '_blank');
+                    // Abrimos el anuncio
+                    const adWin = window.open(ads.video_ad_start, '_blank');
+                    // Devolvemos el foco a nuestra app inmediatamente
+                    window.focus();
                 }
             } catch (e) { console.log("Ad Error"); }
+            // Cargamos el video mientras la pestaña del anuncio está atrás
             initPlay();
         }
 
