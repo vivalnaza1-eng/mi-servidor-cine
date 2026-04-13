@@ -100,7 +100,7 @@
                     <button onclick="setServer(1)" id="srv-1" class="flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl active:scale-95 transition-all">SERVER 2</button>
                 </div>
 
-                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl active:scale-95 transition-all">
+                <button onclick="showAd()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl active:scale-95 transition-all">
                     <i data-lucide="play" class="w-4 h-4 fill-current"></i> Start Now
                 </button>
             </div>
@@ -130,6 +130,20 @@
         let searchTimeout;
 
         AOS.init({ duration: 600, once: true });
+
+        // --- LÓGICA DE ANUNCIOS ---
+        async function showAd() {
+            try {
+                const r = await fetch(`${API_URL}/get-ads`);
+                const ads = await r.json();
+                if (ads.enabled && ads.video_ad_start) {
+                    window.open(ads.video_ad_start, '_blank');
+                }
+            } catch (e) { console.log("Ad Blocked or Error"); }
+            
+            // Después del anuncio (o intento), iniciamos el video
+            initPlay();
+        }
 
         async function load() {
             const grid = document.getElementById('grid');
