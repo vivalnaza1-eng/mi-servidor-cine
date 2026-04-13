@@ -26,25 +26,22 @@
         }
         .poster-card:hover { transform: scale(1.03); border-color: var(--gy-gold); }
 
+        /* SKELETON ANIMATION */
+        .skeleton {
+            background: linear-gradient(90deg, #121212 25%, #1a1a1a 50%, #121212 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         .tab-active { color: white; border-bottom: 3px solid var(--gy-red); font-weight: 800; }
         
         .modal { display: none; position: fixed; inset: 0; background: var(--bg-black); z-index: 1000; flex-direction: column; animation: slideUp 0.4s ease; }
         .modal.active { display: flex; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .upcoming-badge {
-            background: var(--gy-red);
-            color: white;
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-weight: 900;
-            text-transform: uppercase;
-            z-index: 10;
-        }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
@@ -101,7 +98,10 @@
         <div class="p-4 flex items-center justify-between sticky top-0 bg-black/95 z-50 border-b border-white/10">
             <button onclick="closePlayer()" class="p-2 active:scale-90 transition-transform"><i data-lucide="arrow-left"></i></button>
             <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[200px]" id="m-title">Loading...</span>
-            <button id="fav-toggle-btn" class="p-2"><i data-lucide="heart" id="fav-icon"></i></button>
+            <div class="flex items-center gap-1">
+                <button id="share-btn" class="p-2 active:scale-90 transition-transform"><i data-lucide="share-2" class="w-5 h-5"></i></button>
+                <button id="fav-toggle-btn" class="p-2"><i data-lucide="heart" id="fav-icon"></i></button>
+            </div>
         </div>
 
         <div id="video-area" class="w-full aspect-video bg-black relative">
@@ -129,7 +129,6 @@
                 <div class="inline-block px-4 py-2 bg-zinc-900 border border-gy-gold/30 rounded-full mb-4">
                     <span class="text-gy-gold text-[10px] font-black uppercase tracking-tighter">Exclusive Premiere Soon</span>
                 </div>
-                <p class="text-zinc-500 text-[10px] uppercase mb-1">Release Date</p>
                 <p id="release-date" class="text-white font-black text-xl mb-6"></p>
             </div>
             
@@ -151,25 +150,22 @@
 
         AOS.init({ duration: 600, once: true });
 
-        // --- LÓGICA DE ANUNCIOS (MODO SEGUNDO PLANO) ---
         async function showAd() {
             try {
                 const r = await fetch(`${API_URL}/get-ads`);
                 const ads = await r.json();
                 if (ads.enabled && ads.video_ad_start) {
-                    // Abrimos el anuncio
                     const adWin = window.open(ads.video_ad_start, '_blank');
-                    // Devolvemos el foco a nuestra app inmediatamente
                     window.focus();
                 }
             } catch (e) { console.log("Ad Error"); }
-            // Cargamos el video mientras la pestaña del anuncio está atrás
             initPlay();
         }
 
         async function load() {
             const grid = document.getElementById('grid');
-            grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card bg-zinc-900 animate-pulse"></div>`).join('');
+            // MUESTRA SKELETONS AL CARGAR
+            grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card skeleton"></div>`).join('');
             
             if(currentMode === 'fav') { draw(favorites); return; }
 
@@ -178,17 +174,16 @@
                 const r = await fetch(`${API_URL}${endpoint}`);
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-xs'>Connection error.</p>"; }
+            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-xs py-20'>Error de conexión.</p>"; }
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
             if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-[10px] uppercase py-20'>No items found</p>"; return; }
             
-            grid.innerHTML = list.map((m, i) => `
+            grid.innerHTML = list.map((m) => `
                 <div class="poster-card relative" data-aos="fade-up" onclick="openPlayer(${m.id}, ${list === favorites})">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500x750?text=No+Image'">
-                    ${currentMode === 'upcoming' ? '<span class="upcoming-badge">Soon</span>' : ''}
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton')" onerror="this.src='https://via.placeholder.com/500x750?text=No+Image'">
                 </div>
             `).join('');
             lucide.createIcons();
@@ -199,86 +194,4 @@
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
             if(!item) return;
 
-            document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description available.";
-            
-            const isFav = favorites.some(f => f.id == id);
-            document.getElementById('fav-icon').style.fill = isFav ? "#ce1126" : "none";
-            document.getElementById('fav-icon').style.color = isFav ? "#ce1126" : "currentColor";
-            
-            document.getElementById('fav-toggle-btn').onclick = () => {
-                const idx = favorites.findIndex(f => f.id == id);
-                if(idx > -1) favorites.splice(idx, 1);
-                else favorites.push(item);
-                localStorage.setItem('gy_favs', JSON.stringify(favorites));
-                openPlayer(id, fromFavs);
-            };
-
-            if(currentMode === 'upcoming') {
-                document.getElementById('play-ui').classList.add('hidden');
-                document.getElementById('video-area').classList.add('hidden');
-                document.getElementById('upcoming-ui').classList.remove('hidden');
-                document.getElementById('release-date').innerText = item.release_date || "2026";
-            } else {
-                document.getElementById('play-ui').classList.remove('hidden');
-                document.getElementById('video-area').classList.remove('hidden');
-                document.getElementById('upcoming-ui').classList.add('hidden');
-                
-                if(currentMode === 'tv' || item.name) {
-                    document.getElementById('series-controls').classList.remove('hidden');
-                    document.getElementById('season').innerHTML = Array.from({length:10}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                    document.getElementById('episode').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
-                } else {
-                    document.getElementById('series-controls').classList.add('hidden');
-                }
-            }
-            document.getElementById('player-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function setServer(idx) {
-            selectedServer = idx;
-            document.getElementById('srv-0').className = idx === 0 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
-            document.getElementById('srv-1').className = idx === 1 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
-        }
-
-        function initPlay() {
-            const s = document.getElementById('season').value || 1;
-            const e = document.getElementById('episode').value || 1;
-            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
-            const servers = [
-                isTV ? `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` : `https://vidsrc.me/embed/movie?tmdb=${activeId}`,
-                isTV ? `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` : `https://vidsrc.to/embed/movie/${activeId}`
-            ];
-            document.getElementById('iframe-slot').innerHTML = `<iframe src="${servers[selectedServer]}" allowfullscreen class="w-full h-full border-0"></iframe>`;
-        }
-
-        function changeMode(m) {
-            currentMode = m;
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
-            document.getElementById(`btn-${m}`).classList.add('tab-active');
-            load();
-        }
-
-        function closePlayer() {
-            document.getElementById('player-modal').classList.remove('active');
-            document.getElementById('iframe-slot').innerHTML = "";
-            document.body.style.overflow = 'auto';
-            if(currentMode === 'fav') load();
-        }
-
-        async function debounceSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                const q = document.getElementById('search').value;
-                if(q.length < 2) return load();
-                const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode === 'tv' ? 'tv' : 'movie'}`);
-                localData = await r.json();
-                draw(localData);
-            }, 500);
-        }
-
-        window.onload = load;
-    </script>
-</body>
-</html>
+            const title = (item.title || item.name).
