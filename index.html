@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -22,7 +22,7 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; 
             background: #121212; border: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
+            cursor: pointer; position: relative;
         }
         .poster-card:hover { transform: scale(1.03); border-color: var(--gy-gold); }
 
@@ -99,7 +99,7 @@
             <button onclick="closePlayer()" class="p-2 active:scale-90 transition-transform"><i data-lucide="arrow-left"></i></button>
             <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[200px]" id="m-title">Loading...</span>
             <div class="flex items-center gap-1">
-                <button id="share-btn" class="p-2 active:scale-90 transition-transform"><i data-lucide="share-2" class="w-5 h-5"></i></button>
+                <button id="share-btn" class="p-2 active:scale-90 transition-transform"><i data-lucide="share-2" class="w-5 h-5 text-white"></i></button>
                 <button id="fav-toggle-btn" class="p-2"><i data-lucide="heart" id="fav-icon"></i></button>
             </div>
         </div>
@@ -155,7 +155,7 @@
                 const r = await fetch(`${API_URL}/get-ads`);
                 const ads = await r.json();
                 if (ads.enabled && ads.video_ad_start) {
-                    const adWin = window.open(ads.video_ad_start, '_blank');
+                    window.open(ads.video_ad_start, '_blank');
                     window.focus();
                 }
             } catch (e) { console.log("Ad Error"); }
@@ -164,7 +164,6 @@
 
         async function load() {
             const grid = document.getElementById('grid');
-            // MUESTRA SKELETONS AL CARGAR
             grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card skeleton"></div>`).join('');
             
             if(currentMode === 'fav') { draw(favorites); return; }
@@ -172,20 +171,31 @@
             try {
                 const endpoint = currentMode === 'upcoming' ? '/proximamente' : (currentMode === 'movie' ? '/populares' : '/series');
                 const r = await fetch(`${API_URL}${endpoint}`);
+                if (!r.ok) throw new Error();
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-xs py-20'>Error de conexión.</p>"; }
+            } catch (e) { 
+                grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-xs py-20'>Connection error.</p>"; 
+            }
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-[10px] uppercase py-20'>No items found</p>"; return; }
+            if(!list || !list.length) { 
+                grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-[10px] uppercase py-20'>No items found</p>"; 
+                return; 
+            }
             
-            grid.innerHTML = list.map((m) => `
-                <div class="poster-card relative" data-aos="fade-up" onclick="openPlayer(${m.id}, ${list === favorites})">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton')" onerror="this.src='https://via.placeholder.com/500x750?text=No+Image'">
+            grid.innerHTML = list.map((m) => {
+                const poster = m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+                return `
+                <div class="poster-card skeleton relative" onclick="openPlayer(${m.id}, ${list === favorites})">
+                    <img src="${poster}" class="w-full h-full object-cover opacity-0 transition-opacity duration-500" 
+                         onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('skeleton')"
+                         onerror="this.parentElement.classList.remove('skeleton')">
                 </div>
-            `).join('');
+                `;
+            }).join('');
             lucide.createIcons();
         }
 
@@ -194,4 +204,96 @@
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
             if(!item) return;
 
-            const title = (item.title || item.name).
+            const title = (item.title || item.name).toUpperCase();
+            document.getElementById('m-title').innerText = title;
+            document.getElementById('m-desc').innerText = item.overview || "No description available.";
+            
+            document.getElementById('share-btn').onclick = () => {
+                if (navigator.share) {
+                    navigator.share({ title: title, text: 'Watch this on Guyana Digital!', url: window.location.href });
+                } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert("Link copied!");
+                }
+            };
+
+            const isFav = favorites.some(f => f.id == id);
+            document.getElementById('fav-icon').style.fill = isFav ? "#ce1126" : "none";
+            document.getElementById('fav-icon').style.color = isFav ? "#ce1126" : "currentColor";
+            
+            document.getElementById('fav-toggle-btn').onclick = () => {
+                const idx = favorites.findIndex(f => f.id == id);
+                if(idx > -1) favorites.splice(idx, 1);
+                else favorites.push(item);
+                localStorage.setItem('gy_favs', JSON.stringify(favorites));
+                openPlayer(id, fromFavs);
+            };
+
+            if(currentMode === 'upcoming') {
+                document.getElementById('play-ui').classList.add('hidden');
+                document.getElementById('video-area').classList.add('hidden');
+                document.getElementById('upcoming-ui').classList.remove('hidden');
+                document.getElementById('release-date').innerText = item.release_date || "Coming Soon";
+            } else {
+                document.getElementById('play-ui').classList.remove('hidden');
+                document.getElementById('video-area').classList.remove('hidden');
+                document.getElementById('upcoming-ui').classList.add('hidden');
+                
+                if(currentMode === 'tv' || item.name) {
+                    document.getElementById('series-controls').classList.remove('hidden');
+                    document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                    document.getElementById('episode').innerHTML = Array.from({length:40}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                } else {
+                    document.getElementById('series-controls').classList.add('hidden');
+                }
+            }
+            document.getElementById('player-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function setServer(idx) {
+            selectedServer = idx;
+            document.getElementById('srv-0').className = idx === 0 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
+            document.getElementById('srv-1').className = idx === 1 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
+        }
+
+        function initPlay() {
+            const s = document.getElementById('season').value || 1;
+            const e = document.getElementById('episode').value || 1;
+            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
+            const servers = [
+                isTV ? `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` : `https://vidsrc.me/embed/movie?tmdb=${activeId}`,
+                isTV ? `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` : `https://vidsrc.to/embed/movie/${activeId}`
+            ];
+            document.getElementById('iframe-slot').innerHTML = `<iframe src="${servers[selectedServer]}" allowfullscreen class="w-full h-full border-0"></iframe>`;
+        }
+
+        function changeMode(m) {
+            currentMode = m;
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
+            document.getElementById(`btn-${m}`).classList.add('tab-active');
+            load();
+        }
+
+        function closePlayer() {
+            document.getElementById('player-modal').classList.remove('active');
+            document.getElementById('iframe-slot').innerHTML = "";
+            document.body.style.overflow = 'auto';
+            if(currentMode === 'fav') load();
+        }
+
+        async function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                const q = document.getElementById('search').value;
+                if(q.length < 2) return load();
+                const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode === 'tv' ? 'tv' : 'movie'}`);
+                localData = await r.json();
+                draw(localData);
+            }, 500);
+        }
+
+        window.onload = load;
+    </script>
+</body>
+</html>
