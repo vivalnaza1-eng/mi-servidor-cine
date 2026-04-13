@@ -119,6 +119,32 @@
 
         .tab-active { color: white; border-bottom: 3px solid var(--gy-red); font-weight: 800; }
 
+        /* Estilo Botón Instalar */
+        #install-btn {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--gy-red);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(206, 17, 38, 0.4);
+            border: 2px solid rgba(255,255,255,0.1);
+            align-items: center;
+            gap: 8px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+        }
+
         .ad-container {
             width: 100%;
             background: #111;
@@ -182,6 +208,10 @@
         </div>
     </div>
 
+    <button id="install-btn">
+        <i data-lucide="download"></i> Get App
+    </button>
+
     <div id="creator-credits">
         <img src="https://flagcdn.com/w40/gy.png" alt="Guyana Flag" class="rounded-sm">
         <div class="credit-info">
@@ -191,7 +221,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <span class="role">Collab:</span>
-                <span class="name">Aaron </span>
+                <span class="name">Aaron (Gemini)</span>
             </div>
         </div>
     </div>
@@ -204,6 +234,7 @@
         let currentMode = 'movie';
         let activeId = null;
         let searchTimeout;
+        let deferredPrompt;
 
         async function load() {
             const grid = document.getElementById('grid');
@@ -287,18 +318,16 @@
         }
 
         function play(url) {
-            // 1. Abre anuncio en popup controlado
-            window.open(ADS_URL, '_blank', 'width=400,height=500');
+            // Manejo de anuncios para que no rompa el APK
+            window.open(ADS_URL, 'AdWindow', 'width=400,height=500');
             
-            // 2. Carga video
             const container = document.getElementById('video-container');
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
             
-            // 3. Intento de Fullscreen automático
             setTimeout(() => {
                 if (container.requestFullscreen) { container.requestFullscreen(); }
                 else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
-            }, 500);
+            }, 800);
         }
 
         function exitFull() {
@@ -311,6 +340,22 @@
             document.getElementById('iframe-slot').innerHTML = ""; 
             document.body.style.overflow = 'auto';
         }
+
+        // Lógica de Instalación (PWA)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-btn').style.display = 'flex';
+        });
+
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('install-btn').style.display = 'none';
+            }
+        });
 
         window.onload = () => { load(); lucide.createIcons(); };
     </script>
