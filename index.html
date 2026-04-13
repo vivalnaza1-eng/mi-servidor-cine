@@ -8,12 +8,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Nazareth Pro">
-    
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2503/2503508.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap');
         
@@ -35,33 +37,37 @@
 
         nav { 
             background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-            backdrop-filter: blur(10px);
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .poster-card { 
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             aspect-ratio: 2/3; 
             border-radius: 12px; 
             overflow: hidden; 
             background: var(--card-bg); 
             border: 1px solid rgba(255,255,255,0.05);
-            animation: fadeInUp 0.6s ease-out forwards;
-            opacity: 0;
             cursor: pointer;
+            position: relative;
         }
 
         .poster-card:hover { 
-            transform: scale(1.05); 
+            transform: scale(1.03) translateY(-5px); 
             border-color: var(--gy-gold);
-            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .skeleton {
+            background: linear-gradient(90deg, #121212 25%, #1a1a1a 50%, #121212 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
 
         .modal { 
             display: none; 
@@ -70,32 +76,18 @@
             background: var(--bg-black); 
             z-index: 1000; 
             flex-direction: column; 
-            animation: fadeIn 0.3s ease;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .modal.active { display: flex; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal.active { display: flex; }
 
         #iframe-slot { position: relative; width: 100%; height: 100%; background: black; }
         #iframe-slot iframe { width: 100%; height: 100%; border: none; }
-
-        #close-fullscreen {
-            display: none;
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 12px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        #video-container:fullscreen #close-fullscreen,
-        #video-container:-webkit-full-screen #close-fullscreen {
-            display: block;
-        }
 
         #creator-credits {
             position: fixed;
@@ -104,18 +96,13 @@
             z-index: 100;
             background: rgba(15, 15, 15, 0.8);
             backdrop-filter: blur(15px);
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 14px;
             border: 1px solid rgba(255,255,255,0.1);
             display: flex;
             align-items: center;
-            gap: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+            gap: 10px;
         }
-
-        .credit-info { display: flex; flex-direction: column; }
-        .role { font-size: 9px; font-weight: 900; color: var(--gy-gold); text-transform: uppercase; letter-spacing: 1px; }
-        .name { font-size: 11px; font-weight: 600; color: white; }
 
         .tab-active { color: white; border-bottom: 3px solid var(--gy-red); font-weight: 800; }
 
@@ -126,32 +113,16 @@
             right: 20px;
             z-index: 1001;
             background: var(--gy-red);
-            color: white;
             padding: 12px 20px;
             border-radius: 50px;
             font-weight: 800;
-            font-size: 12px;
-            text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(206, 17, 38, 0.4);
-            border: 2px solid rgba(255,255,255,0.1);
-            align-items: center;
-            gap: 8px;
+            font-size: 11px;
             animation: bounce 2s infinite;
         }
 
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-10px);}
-        }
-
-        .ad-container {
-            width: 100%;
-            background: #111;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 20px;
-            border: 1px dashed rgba(255,255,255,0.1);
-            text-align: center;
+            0%, 100% {transform: translateY(0);}
+            50% {transform: translateY(-10px);}
         }
     </style>
 </head>
@@ -176,14 +147,13 @@
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
 
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/90 z-50">
+        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/90 z-50 border-bottom border-white/10">
             <button onclick="closePlayer()" class="p-2 hover:bg-white/10 rounded-full transition-colors"><i data-lucide="arrow-left"></i></button>
             <span class="font-bold text-xs uppercase tracking-widest" id="m-title">Loading...</span>
             <div class="w-10"></div>
         </div>
         
         <div class="w-full aspect-video bg-black relative shadow-2xl" id="video-container">
-            <button id="close-fullscreen" onclick="exitFull()"><i data-lucide="x"></i></button>
             <div id="iframe-slot"></div>
         </div>
         
@@ -194,34 +164,28 @@
             </div>
             
             <div class="mb-6">
-                <h2 class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Server List</h2>
-                <div id="servers" class="flex gap-3 overflow-x-auto no-scrollbar"></div>
+                <h2 class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Play Option</h2>
+                <div id="servers" class="flex gap-3"></div>
             </div>
             
             <div class="bg-zinc-900/40 p-6 rounded-xl border border-white/5">
                 <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-light mb-4"></p>
-                <div class="ad-container">
-                    <iframe src="https://mi-servidor-cine.onrender.com/publicidad" style="width:100%; height:100px; border:none; overflow:hidden;"></iframe>
+                <div class="w-full h-[100px] bg-zinc-900 rounded-lg flex items-center justify-center overflow-hidden border border-white/5">
+                    <iframe src="https://mi-servidor-cine.onrender.com/publicidad" style="width:100%; height:100%; border:none;"></iframe>
                 </div>
             </div>
         </div>
     </div>
 
-    <button id="install-btn">
-        <i data-lucide="download"></i> Get App
+    <button id="install-btn" class="flex items-center gap-2">
+        <i data-lucide="download" class="w-4 h-4"></i> INSTALL APP
     </button>
 
     <div id="creator-credits">
-        <img src="https://flagcdn.com/w40/gy.png" alt="Guyana Flag" class="rounded-sm">
-        <div class="credit-info">
-            <div class="flex items-center gap-2">
-                <span class="role">Creator:</span>
-                <span class="name">José Vival</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="role">Collab:</span>
-                <span class="name">Aaron (Gemini)</span>
-            </div>
+        <img src="https://flagcdn.com/w40/gy.png" alt="Guyana" class="w-6 h-4 object-cover rounded-sm">
+        <div class="flex flex-col">
+            <span class="text-[8px] font-black text-[#fcd116] uppercase">Nazareth Pro</span>
+            <span class="text-[10px] font-bold text-white">By José Vival</span>
         </div>
     </div>
 
@@ -235,9 +199,16 @@
         let searchTimeout;
         let deferredPrompt;
 
+        // Inicializar Animaciones
+        AOS.init({ duration: 800, once: true });
+
         async function load() {
             const grid = document.getElementById('grid');
-            grid.innerHTML = '<div class="col-span-full text-center py-20 text-zinc-600 animate-pulse uppercase text-xs">Loading Cinema...</div>';
+            // 1. SKELETON LOADERS
+            grid.innerHTML = Array(12).fill(0).map(() => `
+                <div class="poster-card skeleton"></div>
+            `).join('');
+
             try {
                 const endpoint = currentMode === 'movie' ? '/populares' : '/series';
                 const r = await fetch(`${API_URL}${endpoint}`);
@@ -265,9 +236,16 @@
         function draw(list) {
             const grid = document.getElementById('grid');
             if(!list.length) { grid.innerHTML = '<div class="col-span-full text-center py-20">No results found.</div>'; return; }
+            
             grid.innerHTML = list.map((m, i) => `
-                <div class="poster-card" style="animation-delay: ${i * 0.05}s" onclick="openPlayer(${m.id})">
+                <div class="poster-card" 
+                     data-aos="fade-up" 
+                     data-aos-delay="${(i % 6) * 100}" 
+                     onclick="openPlayer(${m.id})">
                     <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                    <div class="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
+                        <p class="text-[10px] font-bold truncate">${m.title || m.name}</p>
+                    </div>
                 </div>
             `).join('');
             lucide.createIcons();
@@ -281,6 +259,9 @@
         }
 
         async function openPlayer(id) {
+            // 2. VIBRACIÓN HÁPTICA
+            if (navigator.vibrate) navigator.vibrate(40);
+
             activeId = id;
             const item = localData.find(m => m.id == id);
             if(!item) return;
@@ -290,8 +271,8 @@
             
             if(currentMode === 'tv') {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:40}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -309,26 +290,28 @@
                 : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}`;
 
             document.getElementById('servers').innerHTML = `
-                <button onclick="play('${mirrorUrl}')" class="whitespace-nowrap px-8 py-3 rounded-lg text-[10px] font-bold uppercase border bg-white text-black border-white shadow-lg flex items-center gap-2 active:scale-95 transition-transform">
-                    <i data-lucide="play" class="w-3 h-3 fill-current"></i> Watch Now
+                <button onclick="play('${mirrorUrl}')" class="w-full py-4 rounded-xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-xl">
+                    <i data-lucide="play" class="w-4 h-4 fill-current"></i> Start Movie
                 </button>
             `;
             lucide.createIcons();
         }
 
         function play(url) {
-            window.open(ADS_URL, 'AdWindow', 'width=400,height=500');
+            // 3. PUBLICIDAD LIMPIA
+            const adTrigger = document.createElement('a');
+            adTrigger.href = ADS_URL;
+            adTrigger.target = "_blank";
+            adTrigger.rel = "noopener noreferrer";
+            adTrigger.click();
+
             const container = document.getElementById('video-container');
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+            
             setTimeout(() => {
-                if (container.requestFullscreen) { container.requestFullscreen(); }
-                else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
-            }, 800);
-        }
-
-        function exitFull() {
-            if (document.exitFullscreen) { document.exitFullscreen(); }
-            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                if (container.requestFullscreen) container.requestFullscreen();
+                else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+            }, 500);
         }
 
         function closePlayer() { 
@@ -336,20 +319,6 @@
             document.getElementById('iframe-slot').innerHTML = ""; 
             document.body.style.overflow = 'auto';
         }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-btn').style.display = 'flex';
-        });
-
-        document.getElementById('install-btn').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt = null;
-                document.getElementById('install-btn').style.display = 'none';
-            }
-        });
 
         window.onload = () => { load(); lucide.createIcons(); };
     </script>
