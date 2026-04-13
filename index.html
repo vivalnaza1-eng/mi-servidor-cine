@@ -6,6 +6,13 @@
     <meta name="referrer" content="no-referrer">
     <title>Guyana Digital Cinema | Nazareth Pro</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00f2ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GD Cinema">
+    <link rel="apple-touch-icon" href="mapa-guyana.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -178,6 +185,13 @@
         let activeId = null;
         let selectedServer = 0;
         let searchTimeout;
+
+        // REGISTRO DE SERVICE WORKER PARA INSTALACIÓN
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Error:', err));
+            });
+        }
 
         AOS.init({ duration: 800, once: true });
 
