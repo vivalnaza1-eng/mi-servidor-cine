@@ -12,35 +12,75 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap');
-        :root { --gy-gold: #fcd116; --gy-red: #ce1126; --bg-black: #080808; }
-
-        body { background-color: var(--bg-black); color: white; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        nav { background: rgba(8, 8, 8, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        :root { 
+            --gy-gold: #fcd116; 
+            --gy-red: #ce1126; 
+            --bg-black: #080808; 
+        }
+
+        body { 
+            background-color: var(--bg-black); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        nav { 
+            background: rgba(8, 8, 8, 0.95); 
+            backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
 
         .poster-card { 
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; 
-            background: #121212; border: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer; position: relative;
+            aspect-ratio: 2/3; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            background: #121212; 
+            border: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer; 
+            position: relative;
         }
-        .poster-card:hover { transform: scale(1.03); border-color: var(--gy-gold); }
+        
+        .poster-card:hover { 
+            transform: scale(1.03); 
+            border-color: var(--gy-gold); 
+        }
 
         .skeleton {
             background: linear-gradient(90deg, #121212 25%, #1a1a1a 50%, #121212 75%);
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite;
         }
+
         @keyframes shimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
 
-        .tab-active { color: white; border-bottom: 3px solid var(--gy-red); font-weight: 800; }
+        .tab-active { 
+            color: white; 
+            border-bottom: 3px solid var(--gy-red); 
+            font-weight: 800; 
+        }
         
-        .modal { display: none; position: fixed; inset: 0; background: var(--bg-black); z-index: 1000; flex-direction: column; animation: slideUp 0.4s ease; }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: var(--bg-black); 
+            z-index: 1000; 
+            flex-direction: column; 
+            animation: slideUp 0.4s ease; 
+        }
+        
         .modal.active { display: flex; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        @keyframes slideUp { 
+            from { transform: translateY(100%); } 
+            to { transform: translateY(0); } 
+        }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
@@ -52,10 +92,11 @@
             font-weight: 600;
         }
 
-        /* Estilos ajustados para el logo */
-        .logo-container { display: flex; align-items: center; gap: 8px; shrink: 0; }
-        .map-icon { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(252, 209, 22, 0.2)); }
-        .flag-icon { width: 18px; border-radius: 2px; }
+        /* Efecto de pulso suave al logo */
+        .logo-container:active img {
+            transform: scale(0.9);
+            transition: 0.2s;
+        }
     </style>
 </head>
 <body class="pt-32 pb-10">
@@ -63,15 +104,13 @@
     <nav class="p-4 fixed top-0 w-full z-50 flex flex-col gap-4">
         <div class="flex items-center justify-between gap-2">
             
-            <div class="logo-container cursor-pointer" onclick="location.reload()">
-                <img src="https://img.icons8.com/ios-filled/50/fcd116/guyana.png" class="map-icon" alt="Guyana Map">
+            <div class="logo-container cursor-pointer flex items-center gap-3" onclick="location.reload()">
+                <img src="mapa-guyana.png" class="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(252,209,22,0.3)]" alt="Guyana Logo">
                 
                 <div class="flex flex-col">
                     <h1 class="font-black text-lg italic tracking-tighter leading-none">GUYANA DIGITAL</h1>
                     <span class="text-[7px] text-gy-gold font-bold tracking-[2px] uppercase">Cinema Pro</span>
                 </div>
-
-                <img src="https://flagcdn.com/w40/gy.png" class="flag-icon" alt="Guyana Flag">
             </div>
 
             <div class="relative flex-1 max-w-[140px] md:max-w-64">
@@ -79,197 +118,3 @@
                 <i data-lucide="search" class="absolute left-3 top-2.5 w-3 h-3 text-zinc-500"></i>
             </div>
         </div>
-        
-        <div class="flex gap-6 overflow-x-auto no-scrollbar border-t border-white/5 pt-3">
-            <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] uppercase tracking-widest whitespace-nowrap">Movies</button>
-            <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] uppercase tracking-widest whitespace-nowrap">TV Shows</button>
-            <button onclick="changeMode('upcoming')" id="btn-upcoming" class="text-zinc-500 text-[10px] uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
-                <i data-lucide="calendar" class="w-3 h-3"></i> Upcoming
-            </button>
-            <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] uppercase tracking-widest whitespace-nowrap flex items-center gap-2">
-                <i data-lucide="heart" class="w-3 h-3"></i> My List
-            </button>
-        </div>
-    </nav>
-
-    <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
-
-    <footer class="text-center py-10">
-        <div class="flex flex-col items-center gap-2">
-            <img src="https://flagcdn.com/w40/gy.png" class="w-4 opacity-50 grayscale">
-            <p class="footer-credit">By José Vival</p>
-        </div>
-    </footer>
-
-    <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/95 z-50 border-b border-white/10">
-            <button onclick="closePlayer()" class="p-2 active:scale-90 transition-transform"><i data-lucide="arrow-left"></i></button>
-            <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[200px]" id="m-title">Loading...</span>
-            <div class="flex items-center gap-1">
-                <button id="share-btn" class="p-2 active:scale-90 transition-transform"><i data-lucide="share-2" class="w-5 h-5 text-white"></i></button>
-                <button id="fav-toggle-btn" class="p-2"><i data-lucide="heart" id="fav-icon"></i></button>
-            </div>
-        </div>
-
-        <div id="video-area" class="w-full aspect-video bg-black relative">
-            <div id="iframe-slot" class="w-full h-full"></div>
-        </div>
-
-        <div class="p-6 max-w-2xl mx-auto w-full">
-            <div id="play-ui">
-                <div id="series-controls" class="hidden grid grid-cols-2 gap-4 mb-6">
-                    <select id="season" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
-                    <select id="episode" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
-                </div>
-                
-                <div class="flex gap-2 mb-6" id="server-list">
-                    <button onclick="setServer(0)" id="srv-0" class="flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl">SERVER 1</button>
-                    <button onclick="setServer(1)" id="srv-1" class="flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl">SERVER 2</button>
-                </div>
-
-                <button onclick="showAd()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl">
-                    <i data-lucide="play" class="w-4 h-4 fill-current"></i> Start Now
-                </button>
-            </div>
-
-            <div id="upcoming-ui" class="hidden text-center py-10">
-                <div class="inline-block px-4 py-2 bg-zinc-900 border border-gy-gold/30 rounded-full mb-4">
-                    <span class="text-gy-gold text-[10px] font-black uppercase">Premiere Soon</span>
-                </div>
-                <p id="release-date" class="text-white font-black text-xl mb-6"></p>
-            </div>
-            
-            <div class="bg-zinc-900/40 p-5 rounded-2xl border border-white/5">
-                <h3 class="text-[9px] font-bold text-zinc-500 uppercase mb-2 tracking-widest">Description</h3>
-                <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed"></p>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = "https://mi-servidor-cine.onrender.com";
-        let localData = [];
-        let favorites = JSON.parse(localStorage.getItem('gy_favs')) || [];
-        let currentMode = 'movie';
-        let activeId = null;
-        let selectedServer = 0;
-        let searchTimeout;
-
-        AOS.init({ duration: 600, once: true });
-
-        async function showAd() {
-            try {
-                const r = await fetch(`${API_URL}/get-ads`);
-                const ads = await r.json();
-                if (ads.enabled && ads.video_ad_start) {
-                    window.open(ads.video_ad_start, '_blank');
-                    window.focus();
-                }
-            } catch (e) { console.log("Ad Error"); }
-            initPlay();
-        }
-
-        async function load() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card skeleton"></div>`).join('');
-            if(currentMode === 'fav') { draw(favorites); return; }
-            try {
-                const endpoint = currentMode === 'upcoming' ? '/proximamente' : (currentMode === 'movie' ? '/populares' : '/series');
-                const r = await fetch(`${API_URL}${endpoint}`);
-                localData = await r.json();
-                draw(localData);
-            } catch (e) { 
-                grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-xs py-20'>Error de conexión.</p>"; 
-            }
-        }
-
-        function draw(list) {
-            const grid = document.getElementById('grid');
-            if(!list || !list.length) { 
-                grid.innerHTML = "<p class='col-span-full text-center text-zinc-600 text-[10px] py-20 uppercase'>No se encontraron resultados</p>"; 
-                return; 
-            }
-            grid.innerHTML = list.map((m) => {
-                const poster = m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
-                return `<div class="poster-card skeleton relative" onclick="openPlayer(${m.id}, ${list === favorites})">
-                    <img src="${poster}" class="w-full h-full object-cover opacity-0 transition-opacity duration-500" onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('skeleton')">
-                </div>`;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        function openPlayer(id, fromFavs) {
-            activeId = id;
-            const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
-            if(!item) return;
-            const title = (item.title || item.name).toUpperCase();
-            document.getElementById('m-title').innerText = title;
-            document.getElementById('m-desc').innerText = item.overview || "No hay descripción.";
-            
-            const isFav = favorites.some(f => f.id == id);
-            document.getElementById('fav-icon').style.fill = isFav ? "#ce1126" : "none";
-            document.getElementById('fav-icon').style.color = isFav ? "#ce1126" : "currentColor";
-            
-            if(currentMode === 'upcoming') {
-                document.getElementById('play-ui').classList.add('hidden');
-                document.getElementById('video-area').classList.add('hidden');
-                document.getElementById('upcoming-ui').classList.remove('hidden');
-                document.getElementById('release-date').innerText = item.release_date || "Coming Soon";
-            } else {
-                document.getElementById('play-ui').classList.remove('hidden');
-                document.getElementById('video-area').classList.remove('hidden');
-                document.getElementById('upcoming-ui').classList.add('hidden');
-                if(currentMode === 'tv' || item.name) {
-                    document.getElementById('series-controls').classList.remove('hidden');
-                    document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                    document.getElementById('episode').innerHTML = Array.from({length:40}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
-                } else {
-                    document.getElementById('series-controls').classList.add('hidden');
-                }
-            }
-            document.getElementById('player-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function setServer(idx) {
-            selectedServer = idx;
-            document.getElementById('srv-0').className = idx === 0 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
-            document.getElementById('srv-1').className = idx === 1 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
-        }
-
-        function initPlay() {
-            const s = document.getElementById('season').value || 1;
-            const e = document.getElementById('episode').value || 1;
-            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
-            const src = isTV ? `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` : `https://vidsrc.me/embed/movie?tmdb=${activeId}`;
-            document.getElementById('iframe-slot').innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
-        }
-
-        function changeMode(m) {
-            currentMode = m;
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
-            document.getElementById(`btn-${m}`).classList.add('tab-active');
-            load();
-        }
-
-        function closePlayer() {
-            document.getElementById('player-modal').classList.remove('active');
-            document.getElementById('iframe-slot').innerHTML = "";
-            document.body.style.overflow = 'auto';
-        }
-
-        async function debounceSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                const q = document.getElementById('search').value;
-                if(q.length < 2) return load();
-                const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode === 'tv' ? 'tv' : 'movie'}`);
-                localData = await r.json();
-                draw(localData);
-            }, 500);
-        }
-
-        window.onload = load;
-    </script>
-</body>
-</html>
