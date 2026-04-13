@@ -53,24 +53,28 @@
         }
 
         .gy-flag-mini { width: 14px; height: auto; border-radius: 2px; }
+        .gy-map-mini { width: 18px; height: auto; opacity: 0.8; }
     </style>
 </head>
-<body class="pt-28 pb-10">
-
-    <nav class="p-4 fixed top-0 w-full z-50 flex flex-col gap-4">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
-                <div class="w-10 h-10 bg-gradient-to-tr from-gy-red to-gy-gold rounded-xl flex items-center justify-center shadow-lg">
-                    <i data-lucide="clapperboard" class="text-black w-6 h-6"></i>
+<body class="pt-32 pb-10"> <nav class="p-4 fixed top-0 w-full z-50 flex flex-col gap-4">
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer shrink-0" onclick="location.reload()">
+                <div class="flex items-center justify-center p-1 bg-zinc-900 rounded-lg">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDQgMzg0Ij48cGF0aCBmaWxsPSIjZWRlZGVkIiBkPSJNMjQzLjI4IDEwOS44MmMtLjE2LTIuNy4wOC01LjU2LjUzLTguMjguMjktMi4xLS40Ny0zLjY5LTIuMzItNC40NS0zLjIyLTEuMzEtMy4wMS0xLjg0LS44NC00Ljg5LjE2LS4yMy4zNC0uNDUuNDgtLjctLjItLjM3LS40MS0uNzYtLjYzLTEuMTItLjU5LS45Ny0xLjM5LTEuNzQtMi40LTIuMTUtLjMzLS4xNC0uNzQtLjI3LTEuMDktLjI0LS45Ni4wNi0xLjkxLjItMi44NS4zOC0xLjczLjM0LTMuNDkuNDQtNS4yNC4xNC0uNjYtLjExLTEuMzEtLjM4LTEuOTUtLjY1LTEuNC0uNjEtMi43OS0uOTItNC4xMy0uOTYtLjk2LjAtMS45Mi4yOS0yLjg5LjU5LTEuNjguNTItMy4zMS42OC00Ljk3LjM5LS44Ny0uMTYtMS43My0uNDgtMi41OS0uODMtMS43LS42OS0zLjM4LTEuMTUtNS4wNC0uOTYtLjk2LjEtMS45My40OS0yLjg4Ljk4LTIuMDEgMS4wNS00LjA3IDEuNzctNi4yNCAxLjctLjk2LS4wNC0xLjk0LS4wNC0yLjg5LjIyLTEuNTYuNDMtMy4xMS42NC00LjY2LjY1LTMuMjkuMTEtNi41NS0uNDEtOS44Mi0uODgtLjc0LS4xLTEuNDktLjMxLTIuMjEtLjUzLTEuOTEtLjYtMy44LTEuMDUtNS43LS45Ni0uOTUuMDQtMS44Ni4zOC0yLjc0LjgxLS44NS40Mi0xLjgxLjc1LTIuNzcuODctMS45Mi4yMy0zLjg0LjE2LTUuNzUtLjIxLTIuNjUtLjUyLTUuMjUtMS4xNy03LjkxLTEuNjYtLjkzLS4xNy0xLjg0LS40MS0yLjc1LS42NC0xLjE4LS4zLTIuMzYtLjY0LTMuNTEtMS4wNS0uNTYtLjI0LTEuMDgtLjQ5LTEuNTEtLjktMS45My0xLjgzLTQuMDMtMy4xLTUuNjMtNC42OC0xLjAyLTEuMDEtMi4xNi0xLjY5LTMuMzctMi4zLTIuNDQtMS4yMy01LjAyLTIuMjQtNy41Ni0zLjIyLTEuNjItLjYyLTMuMjctMS4xNy00Ljk0LTEuNjEtLjk0LS4yNS0xLjg5LS40Ni0yLjg0LS42Ny0yLjUxLS41NC01LjA0LS45Mi03LjYtLjk5LS45Ni0uMDMtMS45Mi4xOS0yLjg4LjUyLTIuMDYuNy00LjExIDEuMjQtNi4yIDEuMTEtLjk2LS4wNi0xLjkyLjA1LTIuODguMjEtLjk4LjE3LTEuOTguMjQtMi45OC4yLTUuOTQtLjIyLTExLjg4LS4yOS0xNy44LS4xMy01Ljk0LjE2LTExLjg4LjQ0LTE3LjgxLjcxLS44NS4wNC0xLjcxLjA1LTIuNTUuMDctNy4zMy4xNS0xNC42Ni4zMS0yMS45Ny42Ny0uMzkuMDItLjc4LjA1LTEuMTYuMDgtMy4wNS4yNi02LjEuMDItOS4xNS0uMzctMS4wNC0uMTQtMi4wOS0uMjgtMy4xNC0uMTEtLjcxLjExLTEuNDIuMzItMi4xMy41NC0zLjc4IDEuMTgtNy42OCAxLjI1LTExLjU4Ljc0LTUuODUtLjc4LTExLjc1LTEuMjItMTcuNjUtMS4yNy04Ljk2LS4wNy0xNy45Mi4yNi0yNi44NiAxLjEzLTIuOTUuMjktNS45LjI2LTguODUuMDgtLjc5LS4wNS0xLjU5LS4yNi0yLjM5LS40Ny0xLjkxLS40OC0zLjgxLS44Ni01LjcxLS45Ni0uOTUtLjA1LTEuODguMTUtMi44LjUtMS45OS43NS00LjAyIDEuMTItNi4wNiAxLjA3LS45Ni0uMDItMS45Mi4xNi0yLjg4LjUyLTEuNjkuNjItMy4zMy45OS01LjA4LjkyLS44My0uMDYtMS42Ni0uMy0yLjQ5LS41NS0xLjIxLS4zNi0yLjQzLS43NS0zLjYyLTEuMTQtMy42NS0xLjIxLTcuNDUtMi4xNy0xMS4zLTIuNjYtLjk2LS4xMi0xLjkzLS4xNy0yLjg4LS4yNy0zLjM4LS4zNC02Ljc4LS41LTEwLjE3LS42OC01Ljk0LS4zMS0xMS45LS4xNi0xNy44NS4yMS0uNzYuMDUtMS41MS4yNi0yLjI3LjQ3LTEuNDkuNC0yLjk4LjU0LTQuNDcuNDctMi4wMi0uMDktNC4wNC4wOC02LjA2LjMzLS45Ni4xMi0xLjkyLjQ4LTIuODguNzgtNC4zIDIuMTgtOC42NSAzLjk4LTEzIDQuOTMtLjk2LjIxLTEuOTIuMTUtMi44Ny4wOC0xLjkzLS4xNC0zLjg2LjA5LTUuNzkuMzQtLjk2LjEzLTEuOTQuNTQtMi44Ny45Mi0xLjQ0LjU4LTIuOTMgMS4wMi00LjQ4IDEuMjItLjk3LjE0LTEuOTYuMTYtMi45NS4xNC0yLjk4LS4wNy01Ljk1LjI1LTguOTEuNjctLjk2LjEzLTEuOTQuNC0yLjg4LjY4LTQuODIgMS40Ny05LjY0IDEuNDgtMTQuNDYgMC0uOTYtLjY5LTIuMTItMS4xMS0zLjM3LTEuMzUtMS4xOS0uMjItMi4zOC0uMzMtMy41Ny0uMzQtMy4wOS0uMDQtNi4xOC0uMTYtOS4yNy0uNDEtLjk2LS4wOC0xLjkyLS4wNS0yLjg3LjEtLjc5LjEyLTEuNTcuMjgtMi4zNS40Ny0yLjE4LjUyLTQuMzUgMS4wMS02LjU0IDEuMjEtLjk2LjA5LTEuOTMuMjItMi44OC4zNi00LjMgMS4yMy04LjUyIDIuNzUtMTIuNzcgMy43OC0yLjAxLjQ5LTQuMDUuMzQtNi4wNS4wMi0uOTYtLjE1LTEuOTEtLjM0LTIuODctLjQ3LTQuNzctLjg0LTkuNTQtMS4xMy0xNC4zNS0uODktLjk2LjA1LTEuODcuMzItMi43Ni42NS0zLjc4IDEuNDEtNy42MyAyLjYtMTEuNTMgMi45Ni05LjAyIDEuNTYtMTguMTIgMS45LTI3LjI2IDEuNjYtOS4wNy0uMjUtMTguMTUtLjE1LTI3LjIzLjMtMS45OC4xLTMuOTYuMzktNS45NC43My0uOTYuMTYtMS45NS4zMy0yLjk1LjMtNC4zNS0uMTctOC42NC43OC0xMi44IDIuMDgtLjk5LjMxLTEuOTguNTQtMi45OS42My0yLjk4LjM0LTUuOTUuNC04LjkxLjI1LS45Ni0uMDUtMS45Mi4wNy0yLjg4LjI0LTEuMDcuMTktMi4xNC4zOC0zLjIzLjQ4LTIuNTIuMjMtNS4wNS4xLTcuNTYtLjIyLS45Ni0uMDMtMS45Mi4wNy0yLjg3LjI3LTMuNjUuNzYtNy4zNSAxLjA5LTExLjA2Ljk0LS44NC0uMDMtMS42OS0uMzctMi41My0uNTQtMy4xOS0uNjQtNi4zOS0xLjQxLTkuNTUtMi4yOS0uNTgtLjE2LTEuMTYtLjMzLTEuNzMtLjUtLjk3LS4yNy0xLjk0LS41NC0yLjkxLS44LTMuNDMtLjg5LTYuODQtMS44Ni0xMC4yNy0yLjc0LS41Ny0uMTUtMS4xMy0uMzctMS42OC0uNi00LjM1LTEuODctOC43NC0yLjI5LTEzLjI1LTEuNTItMS45NS4zMy0zLjg4IDEuMTgtNS44MiAyLjE0LTQuNjMgMi4yNy05LjQgNC4zNS0xNC4yOCA1LjYyLS44OC4yMy0xLjgyLjI3LTIuNzUuMTktNC4xMS0uMzktOC4yNi0uNDItMTIuMzgtLjAzLTQuMzEuNC04LjYzIDEuMzktMTIuOTMgMi41MS0uNjkuMTgtMS4zNy4zNC0yLjAyLjUyLTIuNi43MS01LjE0IDEuNDMtNy42NyAyLjI1LTEuNjguNTUtMy4zOC45Ni01LjEyIDEuMTctLjk2LjA0LTEuODkuMjItMi44LjUzLTIuOTIgMS4wNC01Ljg3IDEuNzctOC45MSAyLjAxLS45Ni4wOC0xLjkzLjE3LTIuODguMjEtMS4xMy4wNS0yLjI4LjE3LTMuNDMuMjEtNC4wNC4xLTguMTYuMzUtMTIuMTkuOTYtLjg4LjEzLTEuNzQuMjEtMi41OS4yNS0xLjMxLjA2LTIuNjMuMDktMy45Ni4wNC04LjM4LS4yNy0xNi43NS0xLjIxLTI1LjA5LTEuMzUtNS45NS0uMDYtMTEuOS0uNzEtMTcuNzUtMS40LTIuOTYtLjM1LTYtLjIyLTguOTIuMDQtLjk2LjA4LTEuOTMuMjYtMi44OC41NC0zLjMzLjk5LTYuNjYgMS44OS0xMC4wOCAyLjI5LS45Ni4xMS0xLjkzLjE2LTIuODguMTctNi45NS4wNC0xMy45LS4xNi0yMC44NS4xMi01Ljk0LjIzLTExLjg4IDEuMDQtMTcuNzYgMi4wMS0xLjk5LjMzLTMuOTkuMzctNS45OS4yLTEuOTQtLjE2LTMuODgtLjMzLTUuODEtLjQ3LTQuOTMtLjM3LTkuOTItMS4wOC0xNC44OC0uOTYtLjk1LjA0LTEuODguMzUtMi43OC43NS0xLjE3LjUyLTIuMzYgMS4wMS0zLjYyIDEuMjctLjk2LjE5LTEuOTQuMjUtMi45Mi4xNy01Ljk4LS40OC0xMS45NS0uNTctMTcuOTQtLjY4LTIuMDEtLjA0LTQuMDMtLjM3LTYuMDUtLjcyLS44Ny0uMTUtMS43NC0uNDktMi42Mi0uODMtMS45LS43NC0zLjc4LTEuNDEtNS43LTEuNy0uOTUtLjA0LTEuODkuMTItMi44LjQxLTEuMzQuNDMtMi43LjczLTQuMTEuODktLjk2LjExLTEuOTUuMTItMi45My4wNS00LjkyLS4zOS05Ljg0LS41OC0xNC43OC0uOTYtLjk1LS4wOC0xLjg5LjExLTIuODMuNTYtLjk4LjQ3LTEuOTkgMS4wNC0zLjA3IDEuNDctMS44Ny43Ni0zLjgyIDEuNDktNS44MiAxLjg5LS45Ni4yLTIuMDQuMjEtMy4wMy4wNS0xLjk5LS4zLTMuOTctLjE3LTUuOTUuMTEtLjk2LjA0LTEuOTEtLjAzLTIuODctLjExLS45OC0uMS0xLjk5LS4xNi0yLjk4LS4wNy0zLjM1LjMtNi43NC45MS0xMC4wOCIDEuMTEtLjgyLjA1LTEuNjQuMjUtMi40NS40NC0zLjQ4LjgxLTYuOTggMS41LTExLjUgMi4yOS0uOTkuMTctMS45OC4wNi0yLjk2LS4wOC0xLjk3LS4yNy0zLjk0LS4zNS01LjkyLS4yNS0uOTUuMDUtMS45MS4yMi0yLjg1LjQ5LTEuMDkuMzEtMi4yMi41NS0zLjMzLjcxLTMuMjguNDUtNi41NC4yOC05Ljc4LS4xMy0uOTUtLjE0LTEuOTItLjM0LTIuODktLjU4LTQuNTMtMS4xMy04Ljg2LTIuNzgtMTMuMjMtNC42OC0uODMtLjM2LTEuNzEtLjU4LTIuNTktLjYxLTIuOTUtLjEzLTUuOTIuNDQtOC44OCAxLjA1LTEuMTYuMjQtMi4zMy41LTMuNDIuODktLjQ4LjE3LS45Mi4zOS0xLjM1LjY1LTEuOTMuMTEtMy45MS4zNC01LjkyLjU5LS45Ny4xMi0xLjk0LjI5LTIuODkuNTUtMS44OS41Mi0zLjczIDEuMDMtNS41NCAxLjc4LS44Mi4zMy0xLjY0LjctMi40NSAxLjE0LTMuMTEgMS43My02LjMyIDMuMTMtOS41NSA0LjUxLS43Ni4zMi0xLjUyLjcyLTIuMjggMS4xMi0zLjQ0IDEuNzYtNy4wOCAzLjEtMTAuNyA0LjQ5LS45LjM1LTEuODUuNTktMi44LjY4LTQuODggMS4xMi05Ljc3IDIuMjQtMTQuNjYgMi45Ni0yLjUxLjU0LTUuMDUuNjYtNy42LjcxLS45Ni0uMDMtMS45Mi4wNi0yLjg4LjIyLTEuOTEuMzUtMy44MS42Mi01LjcxLjczLTQuODUuMjQtOS43Mi43OC0xNC41NiAxLjQ4Ljk2LjA5IDEuOTIuMDMgMi44OC0uMDQgMS45My0uMTQgMy44Ni4wMSA1Ljc5LjE4IDEuMTYuMSAyLjMyLjE5IDMuNDkuMTkgMi4zMy4wNCA0LjY2LS4wNyA2Ljk5LS4yNi43NS0uMDYgMS41LS4zNCAyLjI2LS41NiAxLjc1LS41MSAzLjUzLS44MSA1LjMxLS44OC44My0uMDMgMS42Ni4xMSAyLjQ5LjMtMS44OSAxLjA4LTMuNzggMi4wOC01LjY5IDMuMDctNC41OCAyLjM4LTkuMDUgNS4wNS0xMy45MSA2Ljg2LTEuOTEuNzEtMy44NCAxLjMzLTUuNzggMS43LS45NS4wNS0xLjkxLjMtMi44Ny43Ny0zLjM4IDEuNjUtNi44NSAzLjEyLTEwLjQgNC4zNS0uODQuMzEtMS43Mi42Mi0yLjU5Ljk1LTMuMjYgMS4yNi02LjY3IDIuMTQtMTAuMTkgMi43Ny0uOTYuMDYtMS45My4wMi0yLjg4LS4xMi0yLjA3LS40MS00LjEzLS42OS02LjIwLS43LS45Ni4wMS0xLjkyLjE1LTIuODcuNDEtMS4zNi4zNy0yLjc0LjYxLTQuMTIuNzMtLjk2LjA4LTEuOTMuMzItMi44OC42Ny00LjAxIDEuNDktOC4wMSAzLjAxLTEyLjAyIDQuNDEtLjk2LjMtMS45MS40Mi0yLjg3LjQ0LTQuMTQtLjE1LTguMjQtLjYxLTEyLjMtMS40Ny0yLjE4LS40OC00LjMzLTEuMDQtNi40Ni0xLjc3LS45Ny0uMjEtMi0uMjktMi45Ny0uMTctNS4wNS41Ny0xMC4wOCAxLjUtMTUuMTkgMi4xNC0uOTUuMTQtMS45LjQtMi44My44My00LjUgMi4wMi05IDIuMjEtMTMuNDcgMS45NC0uODEtLjA1LTEuNjEtLjM0LTIuNDEtLjYyLS41My0uMTktMS4wOC0uNDEtMS42LS42My0yLjU2LTEuMTEtNS4xOC0yLjEzLTcuODEtMy0xLjAxLS4zMy0yLjAyLS42OC0zLjAyLTEuMTEtLjcxLS4zMS0xLjQyLS42Ni0yLjEzLTEuMDUtLjk4LS41NC0xLjk3LTEuMDktMi45Ni0xLjY1LS45Ny0uNTMtMi4wOC0uNzUtMy4xNy0uNzMtMi45Ni4wMy01LjkyIDEuMjMtOC44NyAyLjE5LTQuNDEgMS40LTguODUgMi43NS0xMy4zMyAzLjkzLTIuNzcuNzEtNS41NSAxLjE3LTguMzYgMS40OS05LjIyIDEuMDktMTguNDkgMS45Ny0yNy43NCAyLjcyLTMuNjYuMzEtNy4zMS42LTExLS4yNi0uOTktLjIzLTIuMDEtLjM5LTMuMDItLjQzLTUuMjUtLjMxLTEwLjUxLS43MS0xNS43Ny0uOTYtMS4xLS4wNC0yLjIxLS4wOC0zLjI5LS4yOS0uOTgtLjE5LTEuOTktLjMyLTMuMDEtLjQxLTIuOTYtLjE5LTUuOTMtLjQ1LTguOS0uNjctNC4zMi0uNDctOC42NC0uOTYtMTMgLTEuMzUtNC45NS0uNDEtOS45Mi0uNTctMTQuODgtLjk2LS45NS0uMDYtMS44OC4wOS0yLjgxLjQ3LTEuMjMuNTEtMi40OSAxLjAxLTMuODUgMS4wMS0uOTYuMDEtMS45Mi4yOS0yLjg4Ljk1LTEuOTYgMS4zMy0zLjkzIDIuNjUtNS44OCA0LjAxLS45My42NS0xLjkxIDEuMjktMi45MSAxLjc3LS45NC40Mi0xLjk2LjU3LTIuOTguNTQtNC4xOS0uMDMtOC40LjUzLTEyLjU3IDEuNzctLjgxLjE5LTEuNjkuNTEtMi41MS45NC0yLjc0IDEuNDYtNS40NCAyLjY4LTguMzQgMy42LTEuODcuNTktMy43Ni45NC01LjY2IDEuMDctLjk2LjA0LTEuOTIuMzctMi44OC44My0xLjQzLjY4LTIuODkgMS4zLTMuOTQgMi41LS43Mi44MS0xLjY3IDEuNDUtMi43MiAxLjg5LTEuNjYuNjctMy4zNy45Ni01LjEyIDEuMTctLjk2LjA3LTEuODkuMjUtMi44LjU3LTQuMjkgMS41Mi04LjU5IDIuNzQtMTIuODkgMy43Ny0yLjE4LjUxLTQuMzMgMS4wMy02LjUyIDEuMTEtLjk2LjA1LTEuOTMuMTctMi44OC4zNi00LjI5IDEuMjYtOC41IDIuODUtMTIuNzUgMy44Ny0yLjA3LjYyLTQuMTggLjg1LTYuMzEgMS4wNS0uOTYuMDgtMS45My4xNy0yLjg4LjIxLTEuOTQuMTYtMy44OC4wNS01LjgyLjE1LS45Ni4wNS0xLjkyLjM4LTIuODguNzUtNC4yNyAxLjY5LTguNTggMi45Ny0xMi44OCA0LjMxLS45Ni4zMS0xLjkxLjM3LS44NiAwZSIvPjwvc3ZnPg==" class="gy-map-mini">
                 </div>
+                
                 <div>
                     <h1 class="font-black text-xl italic tracking-tighter leading-none flex items-center gap-2">
                         GUYANA DIGITAL
-                        <img src="https://flagcdn.com/w40/gy.png" class="gy-flag-mini">
                     </h1>
                     <span class="text-[8px] text-gy-gold font-bold tracking-[3px] uppercase">Cinema Pro</span>
                 </div>
+
+                <div class="shrink-0">
+                    <img src="https://flagcdn.com/w40/gy.png" class="gy-flag-mini shadow-md" alt="Guyana Flag">
+                </div>
             </div>
+
             <div class="relative w-40 md:w-64">
                 <input type="text" id="search" oninput="debounceSearch()" placeholder="Search..." class="w-full bg-white/10 rounded-full py-2 px-8 text-xs outline-none focus:bg-white/20 transition-all border border-transparent focus:border-white/10">
                 <i data-lucide="search" class="absolute left-3 top-2.5 w-3.5 h-3.5 text-zinc-500"></i>
@@ -144,7 +148,7 @@
     </div>
 
     <script>
-        // --- AQUÍ ESTÁ TU URL ACTUALIZADA ---
+        // --- VINCULACIÓN CON TU SERVIDOR EN RENDER ---
         const API_URL = "https://mi-servidor-cine.onrender.com";
         
         let localData = [];
@@ -154,22 +158,27 @@
         let selectedServer = 0;
         let searchTimeout;
 
+        // Inicializar animaciones AOS
         AOS.init({ duration: 600, once: true });
 
+        // Lógica de Publicidad
         async function showAd() {
             try {
                 const r = await fetch(`${API_URL}/get-ads`);
                 const ads = await r.json();
                 if (ads.enabled && ads.video_ad_start) {
+                    // Intenta abrir el anuncio en pestaña aparte (nativo en Custom Tabs si se envuelve)
                     window.open(ads.video_ad_start, '_blank');
-                    window.focus();
+                    window.focus(); // Vuelve a enfocar la app
                 }
             } catch (e) { console.log("Ad Error"); }
             initPlay();
         }
 
+        // Carga inicial de datos
         async function load() {
             const grid = document.getElementById('grid');
+            // Mostrar Skeletons (carga)
             grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card skeleton"></div>`).join('');
             
             if(currentMode === 'fav') { draw(favorites); return; }
@@ -185,6 +194,7 @@
             }
         }
 
+        // Dibujar posters en la cuadrícula
         function draw(list) {
             const grid = document.getElementById('grid');
             if(!list || !list.length) { 
@@ -205,6 +215,7 @@
             lucide.createIcons();
         }
 
+        // Abrir el reproductor modal
         function openPlayer(id, fromFavs) {
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
@@ -214,6 +225,7 @@
             document.getElementById('m-title').innerText = title;
             document.getElementById('m-desc').innerText = item.overview || "No description available.";
             
+            // Botón Compartir (API nativa)
             document.getElementById('share-btn').onclick = () => {
                 if (navigator.share) {
                     navigator.share({ title: title, text: 'Watch this on Guyana Digital!', url: window.location.href });
@@ -223,6 +235,7 @@
                 }
             };
 
+            // Lógica de Favoritos
             const isFav = favorites.some(f => f.id == id);
             document.getElementById('fav-icon').style.fill = isFav ? "#ce1126" : "none";
             document.getElementById('fav-icon').style.color = isFav ? "#ce1126" : "currentColor";
@@ -235,6 +248,7 @@
                 openPlayer(id, fromFavs);
             };
 
+            // Configurar UI según modo
             if(currentMode === 'upcoming') {
                 document.getElementById('play-ui').classList.add('hidden');
                 document.getElementById('video-area').classList.add('hidden');
@@ -257,12 +271,14 @@
             document.body.style.overflow = 'hidden';
         }
 
+        // Selección de Servidor
         function setServer(idx) {
             selectedServer = idx;
             document.getElementById('srv-0').className = idx === 0 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
             document.getElementById('srv-1').className = idx === 1 ? 'flex-1 bg-white text-black text-[10px] font-bold py-3 rounded-xl' : 'flex-1 bg-zinc-800 text-white text-[10px] font-bold py-3 rounded-xl';
         }
 
+        // Iniciar reproducción (iFrame)
         function initPlay() {
             const s = document.getElementById('season').value || 1;
             const e = document.getElementById('episode').value || 1;
@@ -274,6 +290,7 @@
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${servers[selectedServer]}" allowfullscreen class="w-full h-full border-0"></iframe>`;
         }
 
+        // Cambiar entre Películas, Series, Upcoming, Favs
         function changeMode(m) {
             currentMode = m;
             document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
@@ -281,6 +298,7 @@
             load();
         }
 
+        // Cerrar Reproductor
         function closePlayer() {
             document.getElementById('player-modal').classList.remove('active');
             document.getElementById('iframe-slot').innerHTML = "";
@@ -288,6 +306,7 @@
             if(currentMode === 'fav') load();
         }
 
+        // Buscador con Debounce (espera 500ms)
         async function debounceSearch() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(async () => {
@@ -299,6 +318,7 @@
             }, 500);
         }
 
+        // Carga Inicial
         window.onload = load;
     </script>
 </body>
