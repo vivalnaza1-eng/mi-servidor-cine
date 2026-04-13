@@ -55,7 +55,6 @@
         .poster-card:hover { 
             transform: scale(1.03) translateY(-5px); 
             border-color: var(--gy-gold);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .skeleton {
@@ -89,40 +88,23 @@
         #iframe-slot { position: relative; width: 100%; height: 100%; background: black; }
         #iframe-slot iframe { width: 100%; height: 100%; border: none; }
 
-        #creator-credits {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 100;
-            background: rgba(15, 15, 15, 0.8);
-            backdrop-filter: blur(15px);
-            padding: 10px 14px;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
         .tab-active { color: white; border-bottom: 3px solid var(--gy-red); font-weight: 800; }
 
-        #install-btn {
-            display: none;
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            z-index: 1001;
-            background: var(--gy-red);
-            padding: 12px 20px;
-            border-radius: 50px;
-            font-weight: 800;
-            font-size: 11px;
-            animation: bounce 2s infinite;
+        .btn-server {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            flex: 1;
+            text-align: center;
         }
-
-        @keyframes bounce {
-            0%, 100% {transform: translateY(0);}
-            50% {transform: translateY(-10px);}
+        .btn-server.active {
+            background: white;
+            color: black;
+            border-color: white;
         }
     </style>
 </head>
@@ -134,58 +116,54 @@
             <span class="text-[10px] font-bold text-green-500 tracking-[0.3em] uppercase">Nazareth Cinema Pro</span>
         </div>
         <div class="relative w-44 md:w-64">
-            <input type="text" id="search" oninput="debounceSearch()" placeholder="Search movies..." class="w-full bg-white/10 rounded-md py-2 px-10 text-xs border border-transparent focus:border-white/20 outline-none text-white">
+            <input type="text" id="search" oninput="debounceSearch()" placeholder="Search..." class="w-full bg-white/10 rounded-md py-2 px-10 text-xs outline-none text-white border border-transparent focus:border-white/20">
             <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-zinc-500"></i>
         </div>
     </nav>
 
-    <div class="flex gap-8 px-8 py-4 sticky top-[80px] z-40 bg-black/80 backdrop-blur-md">
-        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-xs uppercase tracking-widest">Movies</button>
-        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-xs uppercase tracking-widest hover:text-white transition-colors">TV Shows</button>
+    <div class="flex gap-6 px-8 py-4 sticky top-[80px] z-40 bg-black/80 backdrop-blur-md overflow-x-auto no-scrollbar">
+        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] uppercase tracking-widest whitespace-nowrap">Movies</button>
+        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap">TV Shows</button>
+        <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+            <i data-lucide="heart" class="w-3 h-3"></i> My List
+        </button>
     </div>
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
 
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/90 z-50 border-bottom border-white/10">
-            <button onclick="closePlayer()" class="p-2 hover:bg-white/10 rounded-full transition-colors"><i data-lucide="arrow-left"></i></button>
-            <span class="font-bold text-xs uppercase tracking-widest" id="m-title">Loading...</span>
-            <div class="w-10"></div>
+        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/90 z-50 border-b border-white/10">
+            <button onclick="closePlayer()" class="p-2 hover:bg-white/10 rounded-full"><i data-lucide="arrow-left"></i></button>
+            <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[200px]" id="m-title">Loading...</span>
+            <button id="fav-toggle-btn" class="p-2 rounded-full"><i data-lucide="heart" id="fav-icon"></i></button>
         </div>
         
-        <div class="w-full aspect-video bg-black relative shadow-2xl" id="video-container">
+        <div class="w-full aspect-video bg-black relative" id="video-container">
             <div id="iframe-slot"></div>
         </div>
         
-        <div class="p-8 max-w-4xl mx-auto w-full">
-            <div id="series-controls" class="hidden mb-8 grid grid-cols-2 gap-4">
-                <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-lg text-sm text-white outline-none"></select>
-                <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-4 rounded-lg text-sm text-white outline-none"></select>
+        <div class="p-6 max-w-4xl mx-auto w-full">
+            <div id="series-controls" class="hidden mb-6 grid grid-cols-2 gap-4">
+                <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-lg text-xs text-white outline-none"></select>
+                <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-lg text-xs text-white outline-none"></select>
             </div>
             
             <div class="mb-6">
-                <h2 class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Play Option</h2>
-                <div id="servers" class="flex gap-3"></div>
-            </div>
-            
-            <div class="bg-zinc-900/40 p-6 rounded-xl border border-white/5">
-                <p id="m-desc" class="text-sm text-zinc-400 leading-relaxed font-light mb-4"></p>
-                <div class="w-full h-[100px] bg-zinc-900 rounded-lg flex items-center justify-center overflow-hidden border border-white/5">
-                    <iframe src="https://mi-servidor-cine.onrender.com/publicidad" style="width:100%; height:100%; border:none;"></iframe>
+                <h2 class="text-zinc-500 text-[9px] font-black uppercase tracking-[0.2em] mb-3">Select Server</h2>
+                <div class="flex gap-2" id="server-list">
+                    <button onclick="setServer(0)" class="btn-server active" id="srv-0">Server 1</button>
+                    <button onclick="setServer(1)" class="btn-server" id="srv-1">Server 2</button>
+                    <button onclick="setServer(2)" class="btn-server" id="srv-2">Server 3</button>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <button id="install-btn" class="flex items-center gap-2">
-        <i data-lucide="download" class="w-4 h-4"></i> INSTALL APP
-    </button>
-
-    <div id="creator-credits">
-        <img src="https://flagcdn.com/w40/gy.png" alt="Guyana" class="w-6 h-4 object-cover rounded-sm">
-        <div class="flex flex-col">
-            <span class="text-[8px] font-black text-[#fcd116] uppercase">Nazareth Pro</span>
-            <span class="text-[10px] font-bold text-white">By José Vival</span>
+            <button onclick="initPlay()" class="w-full py-4 rounded-xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl active:scale-95 transition-transform">
+                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Play Now
+            </button>
+            
+            <div class="bg-zinc-900/40 p-5 rounded-xl border border-white/5">
+                <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed font-light"></p>
+            </div>
         </div>
     </div>
 
@@ -194,130 +172,134 @@
         const ADS_URL = "https://www.profitablecpmratenetwork.com/jpp1ah70?key=2362ad52be7ddb0ad6207c0ceb1443af";
         
         let localData = [];
+        let favorites = JSON.parse(localStorage.getItem('gy_favs')) || [];
         let currentMode = 'movie';
         let activeId = null;
+        let selectedServer = 0;
         let searchTimeout;
-        let deferredPrompt;
 
-        // Inicializar Animaciones
-        AOS.init({ duration: 800, once: true });
+        AOS.init({ duration: 600, once: true });
 
         async function load() {
             const grid = document.getElementById('grid');
-            // 1. SKELETON LOADERS
-            grid.innerHTML = Array(12).fill(0).map(() => `
-                <div class="poster-card skeleton"></div>
-            `).join('');
+            if(currentMode === 'fav') {
+                draw(favorites);
+                return;
+            }
 
+            grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card skeleton"></div>`).join('');
             try {
                 const endpoint = currentMode === 'movie' ? '/populares' : '/series';
                 const r = await fetch(`${API_URL}${endpoint}`);
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { console.error("API Error"); }
-        }
-
-        async function searchGlobal() {
-            const q = document.getElementById('search').value;
-            if(q.length < 2) return load();
-            try {
-                const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode}`);
-                const results = await r.json();
-                localData = results;
-                draw(results);
-            } catch (e) { console.error("Search Error"); }
-        }
-
-        function debounceSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(searchGlobal, 500);
+            } catch (e) { grid.innerHTML = "Error loading content."; }
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list.length) { grid.innerHTML = '<div class="col-span-full text-center py-20">No results found.</div>'; return; }
+            if(!list.length) { grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-500 text-xs uppercase">No items found</div>`; return; }
             
             grid.innerHTML = list.map((m, i) => `
-                <div class="poster-card" 
-                     data-aos="fade-up" 
-                     data-aos-delay="${(i % 6) * 100}" 
-                     onclick="openPlayer(${m.id})">
+                <div class="poster-card" data-aos="fade-up" data-aos-delay="${(i % 6) * 50}" onclick="openPlayer(${m.id}, ${list === favorites})">
                     <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
-                    <div class="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent">
-                        <p class="text-[10px] font-bold truncate">${m.title || m.name}</p>
-                    </div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        function changeMode(m) {
-            currentMode = m;
-            document.getElementById('btn-movie').className = m === 'movie' ? 'tab-active text-xs uppercase tracking-widest' : 'text-zinc-500 text-xs uppercase tracking-widest hover:text-white';
-            document.getElementById('btn-tv').className = m === 'tv' ? 'tab-active text-xs uppercase tracking-widest' : 'text-zinc-500 text-xs uppercase tracking-widest hover:text-white';
-            load();
-        }
-
-        async function openPlayer(id) {
-            // 2. VIBRACIÓN HÁPTICA
-            if (navigator.vibrate) navigator.vibrate(40);
-
+        async function openPlayer(id, fromFavs = false) {
+            if (navigator.vibrate) navigator.vibrate(30);
             activeId = id;
-            const item = localData.find(m => m.id == id);
+            const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
             if(!item) return;
 
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description available.";
+            document.getElementById('m-desc').innerText = item.overview || "No description.";
             
-            if(currentMode === 'tv') {
+            // Lógica de Favoritos
+            const isFav = favorites.some(f => f.id == id);
+            document.getElementById('fav-icon').style.fill = isFav ? "#ce1126" : "none";
+            document.getElementById('fav-icon').style.color = isFav ? "#ce1126" : "currentColor";
+            document.getElementById('fav-toggle-btn').onclick = () => toggleFavorite(item);
+
+            if(currentMode === 'tv' || item.name) {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:40}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:10}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
-            updateContent();
+
             document.getElementById('player-modal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
-        function updateContent() {
-            const s = currentMode === 'tv' ? document.getElementById('season').value : 1;
-            const e = currentMode === 'tv' ? document.getElementById('episode').value : 1;
-            
-            const mirrorUrl = currentMode === 'movie' 
-                ? `https://vidsrc.me/embed/movie?tmdb=${activeId}` 
-                : `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}`;
-
-            document.getElementById('servers').innerHTML = `
-                <button onclick="play('${mirrorUrl}')" class="w-full py-4 rounded-xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-xl">
-                    <i data-lucide="play" class="w-4 h-4 fill-current"></i> Start Movie
-                </button>
-            `;
-            lucide.createIcons();
+        function toggleFavorite(item) {
+            const index = favorites.findIndex(f => f.id == item.id);
+            if(index > -1) favorites.splice(index, 1);
+            else favorites.push(item);
+            localStorage.setItem('gy_favs', JSON.stringify(favorites));
+            openPlayer(item.id); // Refresh modal icon
         }
 
-        function play(url) {
-            // 3. PUBLICIDAD LIMPIA
-            const adTrigger = document.createElement('a');
-            adTrigger.href = ADS_URL;
-            adTrigger.target = "_blank";
-            adTrigger.rel = "noopener noreferrer";
-            adTrigger.click();
+        function setServer(idx) {
+            selectedServer = idx;
+            document.querySelectorAll('.btn-server').forEach((b, i) => {
+                b.className = i === idx ? 'btn-server active' : 'btn-server';
+            });
+        }
+
+        function initPlay() {
+            const s = document.getElementById('season').value || 1;
+            const e = document.getElementById('episode').value || 1;
+            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
+            
+            const servers = [
+                isTV ? `https://vidsrc.me/embed/tv?tmdb=${activeId}&sea=${s}&epi=${e}` : `https://vidsrc.me/embed/movie?tmdb=${activeId}`,
+                isTV ? `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` : `https://vidsrc.to/embed/movie/${activeId}`,
+                isTV ? `https://embed.su/embed/tv/${activeId}/${s}/${e}` : `https://embed.su/embed/movie/${activeId}`
+            ];
+
+            // Abrir anuncio
+            const ad = document.createElement('a');
+            ad.href = ADS_URL; ad.target = "_blank"; ad.click();
 
             const container = document.getElementById('video-container');
-            document.getElementById('iframe-slot').innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+            document.getElementById('iframe-slot').innerHTML = `<iframe src="${servers[selectedServer]}" allowfullscreen allow="autoplay"></iframe>`;
             
             setTimeout(() => {
                 if (container.requestFullscreen) container.requestFullscreen();
                 else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-            }, 500);
+            }, 400);
+        }
+
+        function changeMode(m) {
+            currentMode = m;
+            ['movie', 'tv', 'fav'].forEach(mode => {
+                document.getElementById(`btn-${mode}`).className = m === mode ? 'tab-active text-[10px] uppercase tracking-widest' : 'text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white';
+            });
+            load();
         }
 
         function closePlayer() { 
             document.getElementById('player-modal').classList.remove('active'); 
             document.getElementById('iframe-slot').innerHTML = ""; 
             document.body.style.overflow = 'auto';
+            if(currentMode === 'fav') load(); // Refresh list if removing from favs
+        }
+
+        async function searchGlobal() {
+            const q = document.getElementById('search').value;
+            if(q.length < 2) return load();
+            const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode === 'fav' ? 'movie' : currentMode}`);
+            localData = await r.json();
+            draw(localData);
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(searchGlobal, 500);
         }
 
         window.onload = () => { load(); lucide.createIcons(); };
