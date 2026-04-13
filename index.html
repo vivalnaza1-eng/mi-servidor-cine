@@ -36,8 +36,8 @@
         }
 
         nav { 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-            backdrop-filter: blur(15px);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 100%);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
@@ -55,6 +55,7 @@
         .poster-card:hover { 
             transform: scale(1.03) translateY(-5px); 
             border-color: var(--gy-gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .skeleton {
@@ -99,32 +100,49 @@
             font-weight: bold;
             text-transform: uppercase;
             flex: 1;
-            text-align: center;
+            transition: all 0.2s;
         }
         .btn-server.active {
             background: white;
             color: black;
             border-color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Bandera Estilo Glass */
+        .gy-flag-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body class="pt-24">
 
-    <nav class="flex items-center justify-between p-6 fixed top-0 w-full z-50">
-        <div class="cursor-pointer" onclick="location.reload()">
-            <h1 class="text-white font-black text-2xl italic tracking-tighter leading-none">GUYANA DIGITAL</h1>
-            <span class="text-[10px] font-bold text-green-500 tracking-[0.3em] uppercase">Nazareth Cinema Pro</span>
+    <nav class="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 fixed top-0 w-full z-50 gap-4">
+        <div class="flex items-center gap-4 cursor-pointer" onclick="location.reload()">
+            <div class="gy-flag-badge">
+                <img src="https://flagcdn.com/w40/gy.png" alt="Guyana" class="w-6 h-4 object-cover rounded-sm shadow-sm">
+            </div>
+            <div>
+                <h1 class="text-white font-black text-xl md:text-2xl italic tracking-tighter leading-none">GUYANA DIGITAL</h1>
+                <span class="text-[9px] font-bold text-green-500 tracking-[0.2em] uppercase">Nazareth Cinema Pro</span>
+            </div>
         </div>
-        <div class="relative w-44 md:w-64">
-            <input type="text" id="search" oninput="debounceSearch()" placeholder="Search..." class="w-full bg-white/10 rounded-md py-2 px-10 text-xs outline-none text-white border border-transparent focus:border-white/20">
-            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-zinc-500"></i>
+        <div class="relative w-full md:w-64">
+            <input type="text" id="search" oninput="debounceSearch()" placeholder="Search movies or series..." class="w-full bg-white/10 rounded-full py-2.5 px-10 text-xs outline-none text-white border border-transparent focus:border-white/20 transition-all">
+            <i data-lucide="search" class="absolute left-4 top-3 w-4 h-4 text-zinc-500"></i>
         </div>
     </nav>
 
-    <div class="flex gap-6 px-8 py-4 sticky top-[80px] z-40 bg-black/80 backdrop-blur-md overflow-x-auto no-scrollbar">
-        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] uppercase tracking-widest whitespace-nowrap">Movies</button>
-        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap">TV Shows</button>
-        <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap flex items-center gap-2">
+    <div class="flex gap-6 px-8 py-4 sticky top-[120px] md:top-[88px] z-40 bg-black/80 backdrop-blur-md overflow-x-auto no-scrollbar border-b border-white/5">
+        <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] uppercase tracking-widest whitespace-nowrap pb-1">Movies</button>
+        <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap pb-1">TV Shows</button>
+        <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white transition-colors whitespace-nowrap flex items-center gap-2 pb-1">
             <i data-lucide="heart" class="w-3 h-3"></i> My List
         </button>
     </div>
@@ -132,24 +150,30 @@
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
 
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/90 z-50 border-b border-white/10">
-            <button onclick="closePlayer()" class="p-2 hover:bg-white/10 rounded-full"><i data-lucide="arrow-left"></i></button>
-            <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[200px]" id="m-title">Loading...</span>
-            <button id="fav-toggle-btn" class="p-2 rounded-full"><i data-lucide="heart" id="fav-icon"></i></button>
+        <div class="p-4 flex items-center justify-between sticky top-0 bg-black/95 z-50 border-b border-white/10">
+            <button onclick="closePlayer()" class="p-2 hover:bg-white/10 rounded-full transition-all active:scale-90"><i data-lucide="arrow-left"></i></button>
+            <span class="font-bold text-[10px] uppercase tracking-widest truncate max-w-[180px]" id="m-title">Loading...</span>
+            <button id="fav-toggle-btn" class="p-2 rounded-full active:scale-125 transition-transform"><i data-lucide="heart" id="fav-icon"></i></button>
         </div>
         
-        <div class="w-full aspect-video bg-black relative" id="video-container">
+        <div class="w-full aspect-video bg-black relative shadow-2xl" id="video-container">
             <div id="iframe-slot"></div>
         </div>
         
         <div class="p-6 max-w-4xl mx-auto w-full">
             <div id="series-controls" class="hidden mb-6 grid grid-cols-2 gap-4">
-                <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-lg text-xs text-white outline-none"></select>
-                <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-lg text-xs text-white outline-none"></select>
+                <div class="flex flex-col gap-2">
+                    <label class="text-[9px] font-bold text-zinc-500 uppercase ml-1">Season</label>
+                    <select id="season" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-[9px] font-bold text-zinc-500 uppercase ml-1">Episode</label>
+                    <select id="episode" onchange="updateContent()" class="bg-zinc-900 border border-white/10 p-3 rounded-xl text-xs text-white outline-none"></select>
+                </div>
             </div>
             
             <div class="mb-6">
-                <h2 class="text-zinc-500 text-[9px] font-black uppercase tracking-[0.2em] mb-3">Select Server</h2>
+                <h2 class="text-zinc-500 text-[9px] font-black uppercase tracking-[0.2em] mb-3">Optimize Connection</h2>
                 <div class="flex gap-2" id="server-list">
                     <button onclick="setServer(0)" class="btn-server active" id="srv-0">Server 1</button>
                     <button onclick="setServer(1)" class="btn-server" id="srv-1">Server 2</button>
@@ -157,11 +181,12 @@
                 </div>
             </div>
 
-            <button onclick="initPlay()" class="w-full py-4 rounded-xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl active:scale-95 transition-transform">
-                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Play Now
+            <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-white text-black flex items-center justify-center gap-3 mb-6 shadow-xl active:scale-95 transition-all">
+                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Start Streaming
             </button>
             
-            <div class="bg-zinc-900/40 p-5 rounded-xl border border-white/5">
+            <div class="bg-zinc-900/40 p-6 rounded-2xl border border-white/5">
+                <h3 class="text-[10px] font-bold uppercase mb-2 text-zinc-300">Overview</h3>
                 <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed font-light"></p>
             </div>
         </div>
@@ -193,12 +218,15 @@
                 const r = await fetch(`${API_URL}${endpoint}`);
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { grid.innerHTML = "Error loading content."; }
+            } catch (e) { grid.innerHTML = "Server connection error."; }
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list.length) { grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-500 text-xs uppercase">No items found</div>`; return; }
+            if(!list.length) { 
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-600 text-[10px] font-bold uppercase tracking-widest">No results found in ${currentMode}</div>`; 
+                return; 
+            }
             
             grid.innerHTML = list.map((m, i) => `
                 <div class="poster-card" data-aos="fade-up" data-aos-delay="${(i % 6) * 50}" onclick="openPlayer(${m.id}, ${list === favorites})">
@@ -215,9 +243,8 @@
             if(!item) return;
 
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description.";
+            document.getElementById('m-desc').innerText = item.overview || "Description not available.";
             
-            // Lógica de Favoritos
             const isFav = favorites.some(f => f.id == id);
             document.getElementById('fav-icon').style.fill = isFav ? "#ce1126" : "none";
             document.getElementById('fav-icon').style.color = isFav ? "#ce1126" : "currentColor";
@@ -225,8 +252,8 @@
 
             if(currentMode === 'tv' || item.name) {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:10}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:40}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else {
                 document.getElementById('series-controls').classList.add('hidden');
             }
@@ -240,7 +267,7 @@
             if(index > -1) favorites.splice(index, 1);
             else favorites.push(item);
             localStorage.setItem('gy_favs', JSON.stringify(favorites));
-            openPlayer(item.id); // Refresh modal icon
+            openPlayer(item.id, currentMode === 'fav');
         }
 
         function setServer(idx) {
@@ -261,9 +288,8 @@
                 isTV ? `https://embed.su/embed/tv/${activeId}/${s}/${e}` : `https://embed.su/embed/movie/${activeId}`
             ];
 
-            // Abrir anuncio
-            const ad = document.createElement('a');
-            ad.href = ADS_URL; ad.target = "_blank"; ad.click();
+            // Ad Window
+            window.open(ADS_URL, '_blank');
 
             const container = document.getElementById('video-container');
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${servers[selectedServer]}" allowfullscreen allow="autoplay"></iframe>`;
@@ -271,13 +297,13 @@
             setTimeout(() => {
                 if (container.requestFullscreen) container.requestFullscreen();
                 else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
-            }, 400);
+            }, 500);
         }
 
         function changeMode(m) {
             currentMode = m;
             ['movie', 'tv', 'fav'].forEach(mode => {
-                document.getElementById(`btn-${mode}`).className = m === mode ? 'tab-active text-[10px] uppercase tracking-widest' : 'text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white';
+                document.getElementById(`btn-${mode}`).className = m === mode ? 'tab-active text-[10px] uppercase tracking-widest pb-1' : 'text-zinc-500 text-[10px] uppercase tracking-widest hover:text-white pb-1';
             });
             load();
         }
@@ -286,13 +312,14 @@
             document.getElementById('player-modal').classList.remove('active'); 
             document.getElementById('iframe-slot').innerHTML = ""; 
             document.body.style.overflow = 'auto';
-            if(currentMode === 'fav') load(); // Refresh list if removing from favs
+            if(currentMode === 'fav') load();
         }
 
         async function searchGlobal() {
             const q = document.getElementById('search').value;
             if(q.length < 2) return load();
-            const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode === 'fav' ? 'movie' : currentMode}`);
+            const type = currentMode === 'fav' ? 'movie' : currentMode;
+            const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${type}`);
             localData = await r.json();
             draw(localData);
         }
