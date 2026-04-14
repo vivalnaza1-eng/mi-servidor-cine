@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GD Cinema">
-    <link rel="apple-touch-icon" href="GYlogo.png">
+    <link rel="apple-touch-icon" href="mapa-guyana.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -116,7 +116,7 @@
     <nav class="p-5 fixed top-12 w-full z-50 flex flex-col gap-5"> 
         <div class="flex items-center justify-between">
             <div class="cursor-pointer flex items-center gap-4" onclick="location.reload()">
-                <img src="GYlogo.png" class="w-12 h-12 object-contain" alt="Logo">
+                <img src="mapa-guyana.png" class="w-12 h-12 object-contain" alt="Logo">
                 <div class="flex flex-col">
                     <h1 class="font-black text-xl italic tracking-tighter leading-none text-white">GUYANA DIGITAL</h1>
                     <span class="text-[10px] text-cyan-400 font-bold tracking-[1px] uppercase mt-1">Essequibo belongs to Guyana 🇬🇾</span>
@@ -144,7 +144,7 @@
     <div id="install-guide" class="modal bg-zinc-950/98 backdrop-blur-2xl p-8 items-center justify-center text-center">
         <div class="max-w-xs w-full">
             <div class="mb-6 flex justify-center">
-                <img src="GYlogo.png" class="w-20 h-20 rounded-2xl shadow-2xl border border-white/10" alt="Logo">
+                <img src="mapa-guyana.png" class="w-20 h-20 rounded-2xl shadow-2xl border border-white/10" alt="Logo">
             </div>
             <h2 class="text-2xl font-black mb-2 italic">INSTALL APP</h2>
             <p class="text-zinc-400 text-sm mb-8 leading-relaxed">Add Guyana Digital Cinema to your home screen for the best experience.</p>
@@ -223,7 +223,6 @@
             });
         }
 
-        // LÓGICA DE INSTALACIÓN
         function checkInstallation() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
             if (!isStandalone) {
@@ -360,7 +359,7 @@
 
         window.onload = () => {
             load();
-            setTimeout(checkInstallation, 3000); // Guía aparece tras 3 segundos
+            setTimeout(checkInstallation, 3000);
         };
     </script>
 </body>
