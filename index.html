@@ -14,8 +14,6 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
@@ -46,7 +44,7 @@
 
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
         <p class="text-[9px] md:text-[11px] font-medium text-zinc-300">
-            <span class="text-cyan-400 font-black mr-2">NOTICE:</span> We are improving the app for you. 🇬🇾✨
+            <span class="text-cyan-400 font-black mr-2">NOTICE:</span> Essequibo belongs to Guyana. 🇬🇾✨
         </p>
     </div>
 
@@ -75,44 +73,44 @@
         <div class="max-w-xs w-full">
             <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl" alt="Logo">
             <h2 class="text-2xl font-black mb-2 italic">INSTALL APP</h2>
-            <p class="text-zinc-400 text-xs mb-8">Add to your home screen for the full cinema experience.</p>
+            <p class="text-zinc-400 text-[10px] mb-8 uppercase tracking-widest italic">Essequibo belongs to Guyana.</p>
             
             <div id="ios-steps" class="hidden space-y-3 text-left mb-8">
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap <span class="font-bold">Share</span> at the bottom.</p>
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Select <span class="font-bold">"Add to Home Screen"</span>.</p>
+                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap <span class="font-bold text-cyan-400">Share</span> at the bottom.</p>
+                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Select <span class="font-bold text-cyan-400">"Add to Home Screen"</span>.</p>
             </div>
 
             <div id="android-steps" class="hidden space-y-3 text-left mb-8">
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap the <span class="font-bold">three dots (⋮)</span> in Chrome.</p>
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Tap <span class="font-bold">"Add to Home Screen"</span> or <span class="font-bold">"Install app"</span>.</p>
+                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap the <span class="font-bold text-cyan-400">three dots (⋮)</span>.</p>
+                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Tap <span class="font-bold text-cyan-400">"Install app"</span> or "Add to Home Screen".</p>
             </div>
 
-            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-[2px] rounded-2xl border border-white/10 shadow-lg">
-                Close / Continue to Web
+            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-[2px] rounded-2xl border border-white/10">
+                Continue to Web
             </button>
         </div>
     </div>
 
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
         <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50">
-            <button onclick="closePlayer()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="chevron-left"></i></button>
-            <span class="font-black text-[10px] uppercase tracking-widest truncate px-4" id="m-title">Loading...</span>
+            <button onclick="closePlayer()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full text-white"><i data-lucide="chevron-left"></i></button>
+            <span class="font-black text-[10px] uppercase tracking-widest truncate px-4 text-white" id="m-title">Loading...</span>
             <button onclick="toggleFavorite()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="heart" id="fav-icon" class="w-4 h-4 text-white"></i></button>
         </div>
-        <div id="video-area" class="w-full aspect-video bg-black">
+        <div id="video-area" class="w-full aspect-video bg-black shadow-2xl">
             <div id="iframe-slot" class="w-full h-full"></div>
         </div>
         <div class="p-6 max-w-xl mx-auto">
             <div id="play-ui">
                 <div id="series-controls" class="hidden grid grid-cols-2 gap-3 mb-6">
-                    <select id="season" class="bg-zinc-900 p-3 rounded-xl text-xs outline-none border border-white/5"></select>
-                    <select id="episode" class="bg-zinc-900 p-3 rounded-xl text-xs outline-none border border-white/5"></select>
+                    <select id="season" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
+                    <select id="episode" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-6">
-                    <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl">SERVER 1</button>
-                    <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl">SERVER 2</button>
+                    <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase">Server 1</button>
+                    <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase">Server 2</button>
                 </div>
-                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg shadow-cyan-500/20 mb-8">PLAY NOW</button>
+                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg shadow-cyan-500/20 mb-8">Play Now</button>
             </div>
             <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl"></p>
         </div>
@@ -120,10 +118,9 @@
 
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
-        const CURRENT_VERSION = "1.0.1"; // <-- CAMBIA ESTO PARA NOTIFICAR ACTUALIZACIÓN
+        const CURRENT_VERSION = "1.0.1"; // <-- CAMBIA ESTO PARA ACTUALIZAR
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
 
-        // VERIFICAR VERSIÓN
         function checkVersion() {
             const savedVersion = localStorage.getItem('app_version');
             if (savedVersion && savedVersion !== CURRENT_VERSION) {
@@ -132,7 +129,6 @@
             localStorage.setItem('app_version', CURRENT_VERSION);
         }
 
-        // INSTALACIÓN
         function checkInstallation() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
             if (!isStandalone) {
@@ -143,7 +139,6 @@
         }
         function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
 
-        // CARGA DE DATOS
         async function load() {
             const grid = document.getElementById('grid');
             grid.innerHTML = Array(8).fill('<div class="poster-card skeleton"></div>').join('');
@@ -153,7 +148,7 @@
                 const r = await fetch(`${API_URL}${ep}`);
                 localData = await r.json();
                 draw(localData);
-            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-xs'>Error connecting...</p>"; }
+            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-xs uppercase'>Connection Error...</p>"; }
         }
 
         function draw(list) {
@@ -161,7 +156,7 @@
             if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase tracking-widest'>Empty List</p>"; return; }
             grid.innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id}, ${list === favorites})">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover">
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
             `).join('');
         }
@@ -170,7 +165,7 @@
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description.";
+            document.getElementById('m-desc').innerText = item.overview || "No description provided.";
             
             if(currentMode === 'tv' || item.name) {
                 document.getElementById('series-controls').classList.remove('hidden');
@@ -194,8 +189,8 @@
 
         function setServer(idx) {
             selectedServer = idx;
-            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
-            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
+            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase';
+            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase';
         }
 
         function toggleFavorite() {
