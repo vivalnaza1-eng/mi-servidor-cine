@@ -83,4 +83,285 @@
         @keyframes pulse-glow {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255, 0.4); }
             70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255,255,255, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255, 0);
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255, 0); }
+        }
+
+        .modal { 
+            display: none; position: fixed; inset: 0; background: #000; z-index: 1000; 
+            flex-direction: column; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .modal.active { display: flex; }
+        
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="pt-44 pb-24">
+
+    <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
+        <p class="text-[9px] md:text-[11px] font-medium text-zinc-300 leading-tight">
+            <span class="text-cyan-400 font-black mr-2">COMMUNITY NOTICE:</span>
+            We are working hard to build this for you. If servers slow down, please be patient. 🇬🇾✨
+        </p>
+    </div>
+
+    <a href="tel:+5927005167" class="floating-donation">
+        <img src="mmg.svg" class="w-8 h-8 object-contain" alt="MMG">
+        <div class="flex flex-col">
+            <span class="text-[8px] font-black uppercase tracking-widest leading-none text-zinc-500">Donations</span>
+            <span class="text-xs font-bold text-black">+592-700-5167</span>
+        </div>
+    </a>
+
+    <nav class="p-5 fixed top-12 w-full z-50 flex flex-col gap-5"> 
+        <div class="flex items-center justify-between">
+            <div class="cursor-pointer flex items-center gap-4" onclick="location.reload()">
+                <img src="GYlogo.png" class="w-12 h-12 object-contain" alt="Logo">
+                <div class="flex flex-col">
+                    <h1 class="font-black text-xl italic tracking-tighter leading-none text-white">GUYANA DIGITAL</h1>
+                    <span class="text-[10px] text-cyan-400 font-bold tracking-[1px] uppercase mt-1">Essequibo belongs to Guyana 🇬🇾</span>
+                </div>
+            </div>
+            <div class="relative max-w-[150px] md:max-w-xs w-full">
+                <input type="text" id="search" oninput="debounceSearch()" placeholder="Search movies..." class="w-full bg-zinc-900/50 rounded-2xl py-3 px-10 text-xs outline-none focus:ring-1 ring-cyan-500/50 border border-white/5 text-white">
+                <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-zinc-500"></i>
+            </div>
+        </div>
+        <div class="flex gap-8 overflow-x-auto no-scrollbar">
+            <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[11px] font-bold uppercase tracking-tighter text-zinc-400">Movies</button>
+            <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[11px] font-bold uppercase tracking-tighter">TV Series</button>
+            <button onclick="changeMode('upcoming')" id="btn-upcoming" class="text-zinc-500 text-[11px] font-bold uppercase tracking-tighter flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Upcoming
+            </button>
+            <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[11px] font-bold uppercase tracking-tighter flex items-center gap-2">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i> My List
+            </button>
+        </div>
+    </nav>
+
+    <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5 p-6"></main>
+
+    <div id="install-guide" class="modal bg-zinc-950/98 backdrop-blur-2xl p-8 items-center justify-center text-center">
+        <div class="max-w-xs w-full">
+            <div class="mb-6 flex justify-center">
+                <img src="GYlogo.png" class="w-20 h-20 rounded-2xl shadow-2xl border border-white/10" alt="Logo">
+            </div>
+            <h2 class="text-2xl font-black mb-2 italic">INSTALL APP</h2>
+            <p class="text-zinc-400 text-sm mb-8 leading-relaxed">Add Guyana Digital Cinema to your home screen for the best experience.</p>
+            
+            <div id="ios-steps" class="hidden space-y-4 text-left">
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div class="bg-cyan-500/20 text-cyan-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs">1</div>
+                    <p class="text-[11px]">Tap the <span class="text-white font-bold">Share button</span> at the bottom of Safari.</p>
+                </div>
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div class="bg-cyan-500/20 text-cyan-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs">2</div>
+                    <p class="text-[11px]">Select <span class="text-white font-bold">"Add to Home Screen"</span>.</p>
+                </div>
+            </div>
+
+            <div id="android-steps" class="hidden space-y-4 text-left">
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div class="bg-cyan-500/20 text-cyan-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs">1</div>
+                    <p class="text-[11px]">Tap the <span class="text-white font-bold">three dots (⋮)</span> in Chrome.</p>
+                </div>
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div class="bg-cyan-500/20 text-cyan-400 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs">2</div>
+                    <p class="text-[11px]">Tap <span class="text-white font-bold">"Install App"</span>.</p>
+                </div>
+            </div>
+
+            <button onclick="closeGuide()" class="mt-10 text-zinc-500 text-[10px] font-bold uppercase tracking-widest border-b border-zinc-800">Close</button>
+        </div>
+    </div>
+
+    <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
+        <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+            <button onclick="closePlayer()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="chevron-left"></i></button>
+            <span class="font-black text-xs uppercase tracking-widest truncate px-4" id="m-title">Loading...</span>
+            <button id="fav-toggle-btn" onclick="toggleFavorite()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="heart" id="fav-icon" class="w-5 h-5"></i></button>
+        </div>
+        <div id="video-area" class="w-full aspect-video bg-black relative">
+            <div id="iframe-slot" class="w-full h-full"></div>
+        </div>
+        <div class="p-8 max-w-3xl mx-auto w-full">
+            <div id="play-ui">
+                <div id="series-controls" class="hidden grid grid-cols-2 gap-4 mb-8 text-white">
+                    <select id="season" class="bg-zinc-900 border border-white/5 p-4 rounded-2xl text-sm outline-none"></select>
+                    <select id="episode" class="bg-zinc-900 border border-white/5 p-4 rounded-2xl text-sm outline-none"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-8">
+                    <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[10px] font-black py-4 rounded-2xl shadow-lg">SERVER 1</button>
+                    <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-400 text-[10px] font-black py-4 rounded-2xl">SERVER 2</button>
+                </div>
+                <button onclick="showAd()" class="w-full py-5 rounded-3xl text-sm font-black uppercase bg-gradient-to-r from-cyan-400 to-blue-600 text-black flex items-center justify-center gap-3 mb-10 shadow-2xl shadow-cyan-500/20 active:scale-95 transition-all">
+                    <i data-lucide="play" class="w-5 h-5 fill-current"></i> PLAY NOW
+                </button>
+            </div>
+            <div id="upcoming-ui" class="hidden text-center py-10 bg-zinc-900/50 rounded-3xl mb-8">
+                <p id="release-date" class="text-white font-black text-3xl italic"></p>
+            </div>
+            <div class="bg-white/5 p-8 rounded-3xl border border-white/5">
+                <h3 class="text-[10px] font-black text-cyan-400 uppercase mb-4 tracking-[3px]">Synopsis</h3>
+                <p id="m-desc" class="text-sm text-zinc-300 leading-relaxed"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://mi-servidor-cine.onrender.com";
+        let localData = [];
+        let favorites = JSON.parse(localStorage.getItem('gy_favs')) || [];
+        let currentMode = 'movie';
+        let activeId = null;
+        let selectedServer = 0;
+        let searchTimeout;
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Error:', err));
+            });
+        }
+
+        // LÓGICA DE INSTALACIÓN
+        function checkInstallation() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            if (!isStandalone) {
+                const guide = document.getElementById('install-guide');
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                guide.classList.add('active');
+                if (isIOS) {
+                    document.getElementById('ios-steps').classList.remove('hidden');
+                } else {
+                    document.getElementById('android-steps').classList.remove('hidden');
+                }
+            }
+        }
+        function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
+
+        AOS.init({ duration: 800, once: true });
+
+        async function showAd() {
+            try {
+                const r = await fetch(`${API_URL}/get-ads`);
+                const ads = await r.json();
+                if (ads.enabled && ads.video_ad_start) { window.open(ads.video_ad_start, '_blank'); }
+            } catch (e) { console.log("Ad Error"); }
+            initPlay();
+        }
+
+        async function load() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = Array(12).fill(0).map(() => `<div class="poster-card skeleton"></div>`).join('');
+            if(currentMode === 'fav') { draw(favorites); return; }
+            try {
+                const endpoint = currentMode === 'upcoming' ? '/proximamente' : (currentMode === 'movie' ? '/populares' : '/series');
+                const r = await fetch(`${API_URL}${endpoint}`);
+                localData = await r.json();
+                draw(localData);
+            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-500'>Connection error.</p>"; }
+        }
+
+        function draw(list) {
+            const grid = document.getElementById('grid');
+            if(!list || !list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-500 uppercase text-xs tracking-widest'>No content found</p>"; return; }
+            grid.innerHTML = list.map((m) => {
+                const poster = m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster';
+                return `<div class="poster-card skeleton" onclick="openPlayer(${m.id}, ${JSON.stringify(list === favorites)})">
+                    <img src="${poster}" class="w-full h-full object-cover opacity-0 transition-opacity duration-700" onload="this.classList.remove('opacity-0'); this.parentElement.classList.remove('skeleton')">
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function openPlayer(id, fromFavs) {
+            activeId = id;
+            const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
+            if(!item) return;
+            document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
+            document.getElementById('m-desc').innerText = item.overview || "No description available.";
+            updateFavIcon();
+            if(currentMode === 'upcoming') {
+                document.getElementById('play-ui').classList.add('hidden');
+                document.getElementById('video-area').classList.add('hidden');
+                document.getElementById('upcoming-ui').classList.remove('hidden');
+                document.getElementById('release-date').innerText = item.release_date || "Coming Soon";
+            } else {
+                document.getElementById('play-ui').classList.remove('hidden');
+                document.getElementById('video-area').classList.remove('hidden');
+                document.getElementById('upcoming-ui').classList.add('hidden');
+                if(currentMode === 'tv' || item.name) {
+                    document.getElementById('series-controls').classList.remove('hidden');
+                    document.getElementById('season').innerHTML = Array.from({length:20}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                    document.getElementById('episode').innerHTML = Array.from({length:50}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                } else { document.getElementById('series-controls').classList.add('hidden'); }
+            }
+            document.getElementById('player-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function initPlay() {
+            const s = document.getElementById('season').value || 1;
+            const e = document.getElementById('episode').value || 1;
+            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
+            const srv1 = isTV ? `https://vidsrc.xyz/embed/tv?tmdb=${activeId}&season=${s}&episode=${e}` : `https://vidsrc.xyz/embed/movie?tmdb=${activeId}`;
+            const srv2 = isTV ? `https://vidsrc.to/embed/tv/${activeId}/${s}/${e}` : `https://vidsrc.to/embed/movie/${activeId}`;
+            const finalSrc = selectedServer === 0 ? srv1 : srv2;
+            document.getElementById('iframe-slot').innerHTML = `<iframe src="${finalSrc}" allowfullscreen class="w-full h-full border-0"></iframe>`;
+        }
+
+        function setServer(idx) {
+            selectedServer = idx;
+            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[10px] font-black py-4 rounded-2xl shadow-lg' : 'bg-zinc-900 text-zinc-500 text-[10px] font-black py-4 rounded-2xl';
+            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[10px] font-black py-4 rounded-2xl shadow-lg' : 'bg-zinc-900 text-zinc-500 text-[10px] font-black py-4 rounded-2xl';
+        }
+
+        function toggleFavorite() {
+            const item = localData.find(m => m.id == activeId) || favorites.find(m => m.id == activeId);
+            const idx = favorites.findIndex(f => f.id == activeId);
+            if(idx > -1) favorites.splice(idx, 1);
+            else favorites.push(item);
+            localStorage.setItem('gy_favs', JSON.stringify(favorites));
+            updateFavIcon();
+            if(currentMode === 'fav') load();
+        }
+
+        function updateFavIcon() {
+            const isFav = favorites.some(f => f.id == activeId);
+            const icon = document.getElementById('fav-icon');
+            icon.style.fill = isFav ? "#00f2ff" : "none";
+            icon.style.color = isFav ? "#00f2ff" : "white";
+        }
+
+        function changeMode(m) {
+            currentMode = m;
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
+            document.getElementById(`btn-${m}`).classList.add('tab-active');
+            load();
+        }
+
+        function closePlayer() {
+            document.getElementById('player-modal').classList.remove('active');
+            document.getElementById('iframe-slot').innerHTML = "";
+            document.body.style.overflow = 'auto';
+        }
+
+        async function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                const q = document.getElementById('search').value;
+                if(q.length < 2) return load();
+                const r = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(q)}&type=${currentMode === 'tv' ? 'tv' : 'movie'}`);
+                localData = await r.json();
+                draw(localData);
+            }, 500);
+        }
+
+        window.onload = () => {
+            load();
+            setTimeout(checkInstallation, 3000); // Guía aparece tras 3 segundos
+        };
+    </script>
+</body>
+</html>
