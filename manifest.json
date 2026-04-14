@@ -16,10 +16,16 @@
       "purpose": "any"
     },
     {
-      "src": "mapa-guyana.png",
+      "src": "GYlogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "mapa-guyana.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
