@@ -16,13 +16,7 @@
       "purpose": "any"
     },
     {
-      "src": "GYlogo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "GYlogo.png",
+      "src": "mapa-guyana.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
