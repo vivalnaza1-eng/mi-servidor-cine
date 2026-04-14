@@ -36,17 +36,17 @@
 
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
         <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide">
-            <span class="text-cyan-400 font-black mr-2">NOTICIA:</span> 
-            Esta página se hizo con cariño para ustedes. Tengan paciencia, seguiremos mejorando cada detalle para que sea la mejor. ✨🎬
+            <span class="text-cyan-400 font-black mr-2">NOTICE:</span> 
+            This page was made with love for you. Please be patient, we will keep improving every detail to make it the best. ✨🎬
         </p>
     </div>
 
     <div id="update-banner" class="hidden fixed bottom-6 left-6 right-6 z-[2000] bg-cyan-500 p-4 rounded-2xl flex items-center justify-between shadow-2xl">
         <div class="flex items-center gap-3">
             <i data-lucide="refresh-cw" class="text-black w-5 h-5 animate-spin"></i>
-            <p class="text-black text-[10px] font-black uppercase">Nueva versión disponible!</p>
+            <p class="text-black text-[10px] font-black uppercase">New version available!</p>
         </div>
-        <button onclick="location.reload(true)" class="bg-black text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Actualizar</button>
+        <button onclick="location.reload(true)" class="bg-black text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Update</button>
     </div>
 
     <nav class="p-5 fixed top-11 w-full z-50 flex flex-col gap-5"> 
@@ -57,7 +57,7 @@
                     <h1 class="font-black text-lg italic tracking-tighter text-white uppercase">Guyana Digital</h1>
                 </div>
                 <p class="text-[9px] font-black text-cyan-500 uppercase tracking-[3px] ml-11 mt-0.5">
-                    Essequibo is Guyana
+                    Essequibo belongs to Guyana
                 </p>
             </div>
             <div class="relative max-w-[130px]">
@@ -79,8 +79,8 @@
         <div class="max-w-xs w-full">
             <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl" alt="Logo">
             <h2 class="text-2xl font-black mb-1 italic uppercase">Guyana Digital</h2>
-            <p class="text-cyan-500 text-[10px] font-black mb-8 uppercase tracking-[4px]">Essequibo is Guyana</p>
-            <p class="text-zinc-400 text-[11px] mb-8 italic">"Estamos mejorando para ti. Instala la app para una mejor experiencia."</p>
+            <p class="text-cyan-500 text-[10px] font-black mb-8 uppercase tracking-[4px]">Essequibo belongs to Guyana</p>
+            <p class="text-zinc-400 text-[11px] mb-8 italic">"We are improving for you. Install the app for a better experience."</p>
             <div id="ios-steps" class="hidden space-y-3 text-left mb-8 text-white">
                 <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap <span class="text-cyan-400 font-bold">Share</span> at the bottom.</p>
                 <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Select <span class="text-cyan-400 font-bold">"Add to Home Screen"</span>.</p>
@@ -89,7 +89,7 @@
                 <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap the <span class="text-cyan-400 font-bold">three dots (⋮)</span>.</p>
                 <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Tap <span class="text-cyan-400 font-bold">"Install app"</span>.</p>
             </div>
-            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-[2px] rounded-2xl">Continuar</button>
+            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-[2px] rounded-2xl">Continue</button>
         </div>
     </div>
 
@@ -123,14 +123,14 @@
         const CURRENT_VERSION = "1.0.1";
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
 
-        // Comprobación de versión para el banner
+        // Version check
         function checkVersion() {
             const saved = localStorage.getItem('app_version');
             if (saved && saved !== CURRENT_VERSION) document.getElementById('update-banner').classList.remove('hidden');
             localStorage.setItem('app_version', CURRENT_VERSION);
         }
 
-        // Detección de instalación PWA
+        // PWA detection
         function checkInstallation() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
             if (!isStandalone) {
@@ -141,7 +141,7 @@
         }
         function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
 
-        // Carga de datos desde servidor
+        // Fetch data
         async function load() {
             const grid = document.getElementById('grid');
             grid.innerHTML = Array(8).fill('<div class="poster-card skeleton"></div>').join('');
@@ -154,7 +154,7 @@
             } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px]'>CONNECTION ERROR</p>"; }
         }
 
-        // Renderizado de posters
+        // Draw posters
         function draw(list) {
             const grid = document.getElementById('grid');
             if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase'>EMPTY LIST</p>"; return; }
@@ -165,7 +165,7 @@
             `).join('');
         }
 
-        // Abrir detalles de contenido
+        // Open details
         function openPlayer(id, fromFavs) {
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
@@ -181,7 +181,7 @@
             lucide.createIcons();
         }
 
-        // Carga de iframe de video
+        // Load video
         function initPlay() {
             const s = document.getElementById('season').value || 1, e = document.getElementById('episode').value || 1;
             const isTV = !document.getElementById('series-controls').classList.contains('hidden');
@@ -191,14 +191,14 @@
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
         }
 
-        // Selector de servidor
+        // Server toggle
         function setServer(idx) {
             selectedServer = idx;
             document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
             document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
         }
 
-        // Gestión de favoritos
+        // Favorites toggle
         function toggleFavorite() {
             const item = localData.find(m => m.id == activeId) || favorites.find(m => m.id == activeId);
             const idx = favorites.findIndex(f => f.id == activeId);
@@ -208,7 +208,7 @@
             if(currentMode === 'fav') draw(favorites);
         }
 
-        // Actualizar icono corazón
+        // Heart icon update
         function updateFavIcon() {
             const isFav = favorites.some(f => f.id == activeId);
             const icon = document.getElementById('fav-icon');
@@ -216,7 +216,7 @@
             icon.style.color = isFav ? "#00f2ff" : "white";
         }
 
-        // Cambiar pestañas
+        // Mode change
         function changeMode(m) {
             currentMode = m;
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
@@ -224,13 +224,13 @@
             load();
         }
 
-        // Cerrar reproductor
+        // Close player
         function closePlayer() {
             document.getElementById('player-modal').classList.remove('active');
             document.getElementById('iframe-slot').innerHTML = "";
         }
 
-        // Buscador con retardo
+        // Search logic
         let searchT;
         function debounceSearch() {
             clearTimeout(searchT);
