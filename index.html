@@ -20,15 +20,30 @@
         :root { --accent-cyan: #00f2ff; --bg-dark: #050505; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         nav { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.03); }
+        
+        /* EFECTO PÁLPITO LUMINOSO */
+        .btn-pulse {
+            animation: pulse-cyan 2s infinite;
+            box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7);
+        }
+        @keyframes pulse-cyan {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); }
+        }
+
         .poster-card { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); aspect-ratio: 2/3; border-radius: 16px; overflow: hidden; background: #0f0f0f; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
         .poster-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0, 242, 255, 0.1); border-color: var(--accent-cyan); }
         .skeleton { background: linear-gradient(90deg, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
         .tab-active { color: var(--accent-cyan) !important; position: relative; }
         .tab-active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 2px; background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); }
+        
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .modal.active { display: flex; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #111; color: white; padding: 12px 24px; border-radius: 99px; transition: 0.5s; z-index: 3000; font-size: 10px; font-weight: 800; border: 1px solid var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
         #toast.show { transform: translateX(-50%) translateY(0); }
@@ -39,16 +54,8 @@
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
         <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide">
             <span class="text-cyan-400 font-black mr-2">NOTICE:</span> 
-            This page was made with love for you. ✨🎬
+            Guyana Cinema is online. Enjoy the best quality! 🎬
         </p>
-    </div>
-
-    <div id="update-banner" class="hidden fixed bottom-6 left-6 right-6 z-[2000] bg-cyan-500 p-4 rounded-2xl flex items-center justify-between shadow-2xl">
-        <div class="flex items-center gap-3">
-            <i data-lucide="refresh-cw" class="text-black w-5 h-5 animate-spin"></i>
-            <p class="text-black text-[10px] font-black uppercase">New version available!</p>
-        </div>
-        <button onclick="location.reload(true)" class="bg-black text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Update</button>
     </div>
 
     <nav class="p-5 fixed top-11 w-full z-50 flex flex-col gap-5"> 
@@ -58,46 +65,25 @@
                     <img src="mapa-guyana.png" class="w-8 h-8" alt="Logo">
                     <h1 class="font-black text-lg italic tracking-tighter text-white uppercase">Guyana Digital</h1>
                 </div>
-                <p class="text-[9px] font-black text-cyan-500 uppercase tracking-[3px] ml-11 mt-0.5">
-                    Essequibo belongs to Guyana
-                </p>
+                <p class="text-[9px] font-black text-cyan-500 uppercase tracking-[3px] ml-11 mt-0.5">Essequibo belongs to Guyana</p>
             </div>
             <div class="relative max-w-[130px]">
                 <input type="text" id="search" oninput="debounceSearch()" placeholder="Search..." class="w-full bg-zinc-900/50 rounded-xl py-2 px-8 text-[10px] outline-none border border-white/5 text-white">
                 <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3 h-3 text-zinc-500"></i>
             </div>
         </div>
-        <div class="flex gap-8 overflow-x-auto no-scrollbar items-center">
+        <div class="flex gap-6 overflow-x-auto no-scrollbar items-center">
             <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] font-bold uppercase text-zinc-400 whitespace-nowrap">Movies</button>
             <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">TV Series</button>
             <button onclick="changeMode('upcoming')" id="btn-upcoming" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">Upcoming</button>
             <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">My List</button>
-            <button onclick="openUpdates()" class="text-cyan-500 text-[10px] font-bold uppercase flex items-center gap-1 border border-cyan-500/30 px-3 py-1 rounded-full whitespace-nowrap bg-cyan-500/5">
+            <button onclick="openUpdates()" class="btn-pulse text-white text-[10px] font-black uppercase flex items-center gap-1 bg-cyan-500 px-4 py-1.5 rounded-full whitespace-nowrap">
                 <i data-lucide="sparkles" class="w-3 h-3"></i> Updates
             </button>
         </div>
     </nav>
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
-
-    <div id="install-guide" class="modal bg-zinc-950/98 backdrop-blur-2xl p-8 items-center justify-center text-center">
-        <div class="max-w-xs w-full">
-            <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl" alt="Logo">
-            <h2 class="text-2xl font-black mb-1 italic uppercase text-white">Guyana Digital</h2>
-            <div class="bg-white/5 border border-white/10 p-4 rounded-2xl mb-6">
-                <p class="text-[11px] text-zinc-300 leading-relaxed italic">"For the <span class="text-cyan-400 font-bold">best experience</span>, please use <span class="text-white font-bold">Chrome</span> and install the app."</p>
-            </div>
-            <div id="ios-steps" class="hidden space-y-3 text-left mb-8">
-                <p class="text-[11px] text-zinc-300">1. Tap <span class="text-cyan-400 font-bold">Share</span>.</p>
-                <p class="text-[11px] text-zinc-300">2. Select <span class="text-cyan-400 font-bold">"Add to Home Screen"</span>.</p>
-            </div>
-            <div id="android-steps" class="hidden space-y-3 text-left mb-8">
-                <p class="text-[11px] text-zinc-300">1. Tap <span class="text-cyan-400 font-bold">three dots (⋮)</span>.</p>
-                <p class="text-[11px] text-zinc-300">2. Tap <span class="text-cyan-400 font-bold">"Install App"</span>.</p>
-            </div>
-            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-100 text-black text-[10px] font-black uppercase rounded-2xl">Continue</button>
-        </div>
-    </div>
 
     <div id="update-modal" class="modal bg-zinc-950/98 backdrop-blur-2xl p-6 overflow-y-auto no-scrollbar">
         <div class="max-w-md mx-auto w-full">
@@ -108,8 +94,8 @@
             <div class="space-y-6">
                 <div class="border-l-2 border-cyan-500 pl-4 py-1">
                     <p class="text-[10px] text-cyan-500 font-black uppercase mb-1">April 16, 2026</p>
-                    <p class="text-xs text-white font-bold mb-1">New: Telegram Support System</p>
-                    <p class="text-[11px] text-zinc-400 italic">Integrated direct bug reporting. Users can now describe errors directly to the dev team.</p>
+                    <p class="text-xs text-white font-bold mb-1">Live Report System Active</p>
+                    <p class="text-[11px] text-zinc-400 italic">Connected to Telegram Bot. Send your reports directly to the team.</p>
                 </div>
             </div>
         </div>
@@ -121,7 +107,7 @@
             <span class="font-black text-[10px] uppercase tracking-widest truncate px-4" id="m-title">Loading...</span>
             <button onclick="toggleFavorite()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="heart" id="fav-icon" class="w-4 h-4 text-white"></i></button>
         </div>
-        <div id="video-area" class="w-full aspect-video bg-black shadow-2xl">
+        <div id="video-area" class="w-full aspect-video bg-black">
             <div id="iframe-slot" class="w-full h-full"></div>
         </div>
         <div class="p-6 max-w-xl mx-auto">
@@ -134,13 +120,15 @@
                     <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl">SERVER 1</button>
                     <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl">SERVER 2</button>
                 </div>
-                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
+                <button onclick="initPlay()" class="btn-pulse w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
                 
-                <div class="mt-8 pt-6 border-t border-white/5">
-                    <p class="text-[9px] font-black text-cyan-500 uppercase mb-3 tracking-widest text-center italic">Report an issue</p>
-                    <textarea id="error-msg" placeholder="Describe the error here..." 
-                              class="w-full bg-zinc-900/50 border border-white/5 rounded-xl p-3 text-[10px] text-white outline-none focus:border-cyan-500 h-20 resize-none mb-3"></textarea>
-                    <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-cyan-400 border border-cyan-400/20">Send Report</button>
+                <div class="mt-8 pt-6 border-t border-white/5 text-center">
+                    <p class="text-[9px] font-black text-cyan-500 uppercase mb-3 tracking-widest italic">Describe the issue</p>
+                    <textarea id="error-msg" placeholder="Example: No audio, Server 2 down..." 
+                              class="w-full bg-zinc-900/50 border border-white/5 rounded-xl p-4 text-[11px] text-white outline-none focus:border-cyan-500 h-24 resize-none mb-3"></textarea>
+                    <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-400 border border-white/10 hover:border-cyan-500 hover:text-cyan-500 transition-all">
+                        Submit Report to Team
+                    </button>
                 </div>
             </div>
             <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl mt-6"></p>
@@ -151,27 +139,10 @@
 
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
-        const CURRENT_VERSION = "1.1.0";
-        // REEMPLAZA ESTO CON TU BOT TOKEN
-        const BOT_TOKEN = "INGRESA_TU_BOT_TOKEN_AQUI"; 
+        const BOT_TOKEN = "8744010693:AAGsGx90BSJSs1VWW9IhHC40RsKIV24X0lc"; 
         const CHAT_ID = "8026826478";
         
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
-
-        function checkVersion() {
-            const saved = localStorage.getItem('app_version');
-            if (saved && saved !== CURRENT_VERSION) document.getElementById('update-banner').classList.remove('hidden');
-            localStorage.setItem('app_version', CURRENT_VERSION);
-        }
-
-        function checkInstallation() {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-            if (!isStandalone) {
-                document.getElementById('install-guide').classList.add('active');
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                document.getElementById(isIOS ? 'ios-steps' : 'android-steps').classList.remove('hidden');
-            }
-        }
 
         async function load() {
             const grid = document.getElementById('grid');
@@ -221,7 +192,7 @@
 
         async function reportError() {
             const msg = document.getElementById('error-msg').value;
-            if(!msg.trim()) return alert("Describe the error.");
+            if(!msg.trim()) return alert("Please describe the issue.");
             
             const movie = document.getElementById('m-title').innerText;
             const srv = selectedServer === 0 ? "Server 1" : "Server 2";
@@ -238,7 +209,7 @@
                     document.getElementById('error-msg').value = "";
                     setTimeout(()=> t.classList.remove('show'), 3000);
                 }
-            } catch(e) { alert("Failed to send."); }
+            } catch(e) { alert("Failed to send report."); }
         }
 
         function setServer(idx) {
@@ -273,7 +244,6 @@
         function closePlayer() { document.getElementById('player-modal').classList.remove('active'); document.getElementById('iframe-slot').innerHTML = ""; }
         function openUpdates() { document.getElementById('update-modal').classList.add('active'); lucide.createIcons(); }
         function closeUpdates() { document.getElementById('update-modal').classList.remove('active'); }
-        function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
 
         let searchT;
         function debounceSearch() {
@@ -288,9 +258,7 @@
         }
 
         window.onload = () => {
-            checkVersion();
             load();
-            setTimeout(checkInstallation, 4000);
             lucide.createIcons();
         };
     </script>
