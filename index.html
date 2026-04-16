@@ -30,7 +30,7 @@
         .modal.active { display: flex; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: white; padding: 12px 24px; rounded-full; transition: 0.5s; z-index: 3000; font-size: 10px; font-weight: 800; border: 1px solid var(--accent-cyan); }
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #111; color: white; padding: 12px 24px; border-radius: 99px; transition: 0.5s; z-index: 3000; font-size: 10px; font-weight: 800; border: 1px solid var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
         #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
@@ -39,7 +39,7 @@
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
         <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide">
             <span class="text-cyan-400 font-black mr-2">NOTICE:</span> 
-            This page was made with love for you. Please be patient, we will keep improving every detail to make it the best. ✨🎬
+            This page was made with love for you. Please be patient, we will keep improving every detail. ✨🎬
         </p>
     </div>
 
@@ -67,11 +67,14 @@
                 <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3 h-3 text-zinc-500"></i>
             </div>
         </div>
-        <div class="flex gap-8 overflow-x-auto no-scrollbar">
-            <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] font-bold uppercase text-zinc-400">Movies</button>
-            <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] font-bold uppercase">TV Series</button>
-            <button onclick="changeMode('upcoming')" id="btn-upcoming" class="text-zinc-500 text-[10px] font-bold uppercase">Upcoming</button>
-            <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] font-bold uppercase">My List</button>
+        <div class="flex gap-8 overflow-x-auto no-scrollbar items-center">
+            <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] font-bold uppercase text-zinc-400 whitespace-nowrap">Movies</button>
+            <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">TV Series</button>
+            <button onclick="changeMode('upcoming')" id="btn-upcoming" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">Upcoming</button>
+            <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">My List</button>
+            <button onclick="openUpdates()" class="text-cyan-500 text-[10px] font-bold uppercase flex items-center gap-1 border border-cyan-500/30 px-3 py-1 rounded-full whitespace-nowrap bg-cyan-500/5">
+                <i data-lucide="sparkles" class="w-3 h-3"></i> Updates
+            </button>
         </div>
     </nav>
 
@@ -80,7 +83,7 @@
     <div id="install-guide" class="modal bg-zinc-950/98 backdrop-blur-2xl p-8 items-center justify-center text-center">
         <div class="max-w-xs w-full">
             <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl shadow-[0_0_30px_rgba(0,242,255,0.3)]" alt="Logo">
-            <h2 class="text-2xl font-black mb-1 italic uppercase tracking-tighter">Guyana Digital</h2>
+            <h2 class="text-2xl font-black mb-1 italic uppercase tracking-tighter text-white">Guyana Digital</h2>
             <p class="text-cyan-500 text-[9px] font-black mb-6 uppercase tracking-[4px]">Cinema Experience</p>
             
             <div class="bg-white/5 border border-white/10 p-4 rounded-2xl mb-6">
@@ -115,6 +118,34 @@
         </div>
     </div>
 
+    <div id="update-modal" class="modal bg-zinc-950/98 backdrop-blur-2xl p-6 overflow-y-auto no-scrollbar">
+        <div class="max-w-md mx-auto w-full">
+            <div class="flex items-center justify-between mb-8 sticky top-0 bg-zinc-950/50 py-4 backdrop-blur-md">
+                <h2 class="text-xl font-black italic uppercase tracking-tighter">System Updates</h2>
+                <button onclick="closeUpdates()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full text-white">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="space-y-6">
+                <div class="border-l-2 border-cyan-500 pl-4 py-1">
+                    <p class="text-[10px] text-cyan-500 font-black uppercase mb-1">April 16, 2026</p>
+                    <p class="text-xs text-white font-bold mb-1">New: Compatibility System</p>
+                    <p class="text-[11px] text-zinc-400 italic">Added Chrome/Brave detection and Installation Guide. Improved mobile performance.</p>
+                </div>
+                <div class="border-l-2 border-zinc-800 pl-4 py-1 opacity-60">
+                    <p class="text-[10px] text-zinc-500 font-black uppercase mb-1">April 10, 2026</p>
+                    <p class="text-xs text-white font-bold mb-1">UI Polishing</p>
+                    <p class="text-[11px] text-zinc-400 italic">Adjusted poster grid for tablets and large screens.</p>
+                </div>
+                <div class="border-l-2 border-zinc-800 pl-4 py-1 opacity-60">
+                    <p class="text-[10px] text-zinc-500 font-black uppercase mb-1">April 01, 2026</p>
+                    <p class="text-xs text-white font-bold mb-1">v1.0 Launch</p>
+                    <p class="text-[11px] text-zinc-400 italic">Initial release. Essequibo is Guyana! 🇬🇾</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
         <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50 text-white">
             <button onclick="closePlayer()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="chevron-left"></i></button>
@@ -135,7 +166,6 @@
                     <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl">SERVER 2</button>
                 </div>
                 <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-4">PLAY NOW</button>
-                
                 <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-500 border border-white/5">Report Error</button>
             </div>
             <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl mt-6"></p>
@@ -164,6 +194,8 @@
             }
         }
         function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
+        function openUpdates() { document.getElementById('update-modal').classList.add('active'); lucide.createIcons(); }
+        function closeUpdates() { document.getElementById('update-modal').classList.remove('active'); }
 
         async function load() {
             const grid = document.getElementById('grid');
@@ -236,7 +268,7 @@
         function changeMode(m) {
             currentMode = m;
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById(`btn-${m}`).classList.add('tab-active');
+            if(document.getElementById(`btn-${m}`)) document.getElementById(`btn-${m}`).classList.add('tab-active');
             load();
         }
 
@@ -249,7 +281,7 @@
             const toast = document.getElementById('toast');
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
-            // PRÓXIMO PASO: AQUÍ PONDREMOS EL FETCH DE TELEGRAM
+            // PRÓXIMO PASO: FETCH A TELEGRAM AQUÍ
         }
 
         let searchT;
