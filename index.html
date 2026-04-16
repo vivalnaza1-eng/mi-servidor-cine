@@ -30,6 +30,8 @@
         .modal.active { display: flex; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: white; padding: 12px 24px; rounded-full; transition: 0.5s; z-index: 3000; font-size: 10px; font-weight: 800; border: 1px solid var(--accent-cyan); }
+        #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body class="pt-48 pb-24">
@@ -77,19 +79,39 @@
 
     <div id="install-guide" class="modal bg-zinc-950/98 backdrop-blur-2xl p-8 items-center justify-center text-center">
         <div class="max-w-xs w-full">
-            <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl" alt="Logo">
-            <h2 class="text-2xl font-black mb-1 italic uppercase">Guyana Digital</h2>
-            <p class="text-cyan-500 text-[10px] font-black mb-8 uppercase tracking-[4px]">Essequibo belongs to Guyana</p>
-            <p class="text-zinc-400 text-[11px] mb-8 italic">"We are improving for you. Install the app for a better experience."</p>
-            <div id="ios-steps" class="hidden space-y-3 text-left mb-8 text-white">
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap <span class="text-cyan-400 font-bold">Share</span> at the bottom.</p>
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Select <span class="text-cyan-400 font-bold">"Add to Home Screen"</span>.</p>
+            <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl shadow-[0_0_30px_rgba(0,242,255,0.3)]" alt="Logo">
+            <h2 class="text-2xl font-black mb-1 italic uppercase tracking-tighter">Guyana Digital</h2>
+            <p class="text-cyan-500 text-[9px] font-black mb-6 uppercase tracking-[4px]">Cinema Experience</p>
+            
+            <div class="bg-white/5 border border-white/10 p-4 rounded-2xl mb-6">
+                <p class="text-[11px] text-zinc-300 leading-relaxed italic mb-3">
+                    "For the <span class="text-cyan-400 font-bold">best experience</span>, fewer ads, and full-screen mode, please use <span class="text-white font-bold">Chrome</span> or <span class="text-white font-bold">Brave</span> and install the app."
+                </p>
             </div>
-            <div id="android-steps" class="hidden space-y-3 text-left mb-8 text-white">
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">1. Tap the <span class="text-cyan-400 font-bold">three dots (⋮)</span>.</p>
-                <p class="text-[11px] bg-white/5 p-3 rounded-xl border border-white/5">2. Tap <span class="text-cyan-400 font-bold">"Install app"</span>.</p>
+
+            <div id="ios-steps" class="hidden space-y-3 text-left mb-8">
+                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">1</span>
+                    <p class="text-[11px] text-zinc-300">Tap <span class="text-cyan-400 font-bold">Share</span> at the bottom of Safari.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+                    <p class="text-[11px] text-zinc-300">Select <span class="text-cyan-400 font-bold">"Add to Home Screen"</span>.</p>
+                </div>
             </div>
-            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-800 text-white text-[10px] font-black uppercase tracking-[2px] rounded-2xl">Continue</button>
+
+            <div id="android-steps" class="hidden space-y-3 text-left mb-8">
+                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">1</span>
+                    <p class="text-[11px] text-zinc-300">Tap the <span class="text-cyan-400 font-bold">three dots (⋮)</span> in Chrome.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+                    <p class="text-[11px] text-zinc-300">Tap <span class="text-cyan-400 font-bold">"Install App"</span>.</p>
+                </div>
+            </div>
+
+            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-100 text-black text-[10px] font-black uppercase tracking-[2px] rounded-2xl">Continue to Web</button>
         </div>
     </div>
 
@@ -112,25 +134,27 @@
                     <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl">SERVER 1</button>
                     <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl">SERVER 2</button>
                 </div>
-                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg">PLAY NOW</button>
+                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-4">PLAY NOW</button>
+                
+                <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-500 border border-white/5">Report Error</button>
             </div>
             <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl mt-6"></p>
         </div>
     </div>
+
+    <div id="toast">REPORT SENT! ✅</div>
 
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
         const CURRENT_VERSION = "1.0.1";
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
 
-        // Version check
         function checkVersion() {
             const saved = localStorage.getItem('app_version');
             if (saved && saved !== CURRENT_VERSION) document.getElementById('update-banner').classList.remove('hidden');
             localStorage.setItem('app_version', CURRENT_VERSION);
         }
 
-        // PWA detection
         function checkInstallation() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
             if (!isStandalone) {
@@ -141,7 +165,6 @@
         }
         function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
 
-        // Fetch data
         async function load() {
             const grid = document.getElementById('grid');
             grid.innerHTML = Array(8).fill('<div class="poster-card skeleton"></div>').join('');
@@ -154,7 +177,6 @@
             } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px]'>CONNECTION ERROR</p>"; }
         }
 
-        // Draw posters
         function draw(list) {
             const grid = document.getElementById('grid');
             if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase'>EMPTY LIST</p>"; return; }
@@ -165,7 +187,6 @@
             `).join('');
         }
 
-        // Open details
         function openPlayer(id, fromFavs) {
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
@@ -181,7 +202,6 @@
             lucide.createIcons();
         }
 
-        // Load video
         function initPlay() {
             const s = document.getElementById('season').value || 1, e = document.getElementById('episode').value || 1;
             const isTV = !document.getElementById('series-controls').classList.contains('hidden');
@@ -191,14 +211,12 @@
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
         }
 
-        // Server toggle
         function setServer(idx) {
             selectedServer = idx;
             document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
             document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
         }
 
-        // Favorites toggle
         function toggleFavorite() {
             const item = localData.find(m => m.id == activeId) || favorites.find(m => m.id == activeId);
             const idx = favorites.findIndex(f => f.id == activeId);
@@ -208,7 +226,6 @@
             if(currentMode === 'fav') draw(favorites);
         }
 
-        // Heart icon update
         function updateFavIcon() {
             const isFav = favorites.some(f => f.id == activeId);
             const icon = document.getElementById('fav-icon');
@@ -216,7 +233,6 @@
             icon.style.color = isFav ? "#00f2ff" : "white";
         }
 
-        // Mode change
         function changeMode(m) {
             currentMode = m;
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
@@ -224,13 +240,18 @@
             load();
         }
 
-        // Close player
         function closePlayer() {
             document.getElementById('player-modal').classList.remove('active');
             document.getElementById('iframe-slot').innerHTML = "";
         }
 
-        // Search logic
+        function reportError() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+            // PRÓXIMO PASO: AQUÍ PONDREMOS EL FETCH DE TELEGRAM
+        }
+
         let searchT;
         function debounceSearch() {
             clearTimeout(searchT);
