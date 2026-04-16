@@ -17,7 +17,7 @@
         body { background-color: var(--bg-dark); color: white; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         nav { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.03); }
         
-        /* BOTÓN CON PÁLPITO LUMINOSO */
+        /* PULSING ANIMATION */
         .btn-pulse { animation: pulse-cyan 2s infinite; box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
         @keyframes pulse-cyan {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
@@ -44,8 +44,8 @@
 <body class="pt-48 pb-24">
 
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
-        <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide">
-            <span class="text-cyan-400 font-black mr-2">STATUS:</span> Guyana Cinema is Online 🎬
+        <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide uppercase">
+            <span class="text-cyan-400 font-black mr-2 italic">GUIANA:</span> Essequibo belongs to Guyana 🇬🇾
         </p>
     </div>
 
@@ -85,7 +85,7 @@
                 <div class="border-l-2 border-cyan-500 pl-4 py-1">
                     <p class="text-[10px] text-cyan-500 font-black uppercase mb-1">April 16, 2026</p>
                     <p class="text-xs text-white font-bold mb-1">Report System Active</p>
-                    <p class="text-[11px] text-zinc-400 italic">Cualquier error reportado llegará directamente a nuestro equipo por Telegram.</p>
+                    <p class="text-[11px] text-zinc-400 italic">Any reported errors will be sent directly to our team via Telegram.</p>
                 </div>
             </div>
         </div>
@@ -106,14 +106,14 @@
                 <select id="episode" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
             </div>
             <div class="grid grid-cols-2 gap-3 mb-6">
-                <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase">Server 1</button>
-                <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase">Server 2</button>
+                <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase tracking-tighter">Server 1 (Global)</button>
+                <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase tracking-tighter">Server 2 (Backup)</button>
             </div>
             <button onclick="initPlay()" class="btn-pulse w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
             
             <div class="mt-8 pt-6 border-t border-white/5 text-center">
                 <p class="text-[9px] font-black text-cyan-500 uppercase mb-3 tracking-widest">Report Issue</p>
-                <textarea id="error-msg" placeholder="Describe the problem..." 
+                <textarea id="error-msg" placeholder="Describe the problem here..." 
                         class="w-full bg-zinc-900/50 border border-white/5 rounded-xl p-4 text-[11px] text-white outline-none focus:border-cyan-500 h-24 resize-none mb-3"></textarea>
                 <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-400 border border-white/10 hover:border-cyan-500 transition-all">Submit Report</button>
             </div>
@@ -180,8 +180,8 @@
 
         function setServer(idx) {
             selectedServer = idx;
-            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
-            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
+            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase tracking-tighter' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase tracking-tighter';
+            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase tracking-tighter' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase tracking-tighter';
         }
 
         async function reportError() {
