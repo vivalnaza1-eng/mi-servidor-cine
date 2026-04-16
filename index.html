@@ -39,7 +39,7 @@
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
         <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide">
             <span class="text-cyan-400 font-black mr-2">NOTICE:</span> 
-            This page was made with love for you. Please be patient, we will keep improving every detail. ✨🎬
+            This page was made with love for you. ✨🎬
         </p>
     </div>
 
@@ -82,65 +82,34 @@
 
     <div id="install-guide" class="modal bg-zinc-950/98 backdrop-blur-2xl p-8 items-center justify-center text-center">
         <div class="max-w-xs w-full">
-            <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl shadow-[0_0_30px_rgba(0,242,255,0.3)]" alt="Logo">
-            <h2 class="text-2xl font-black mb-1 italic uppercase tracking-tighter text-white">Guyana Digital</h2>
-            <p class="text-cyan-500 text-[9px] font-black mb-6 uppercase tracking-[4px]">Cinema Experience</p>
-            
+            <img src="mapa-guyana.png" class="w-20 h-20 mx-auto mb-6 rounded-2xl" alt="Logo">
+            <h2 class="text-2xl font-black mb-1 italic uppercase text-white">Guyana Digital</h2>
             <div class="bg-white/5 border border-white/10 p-4 rounded-2xl mb-6">
-                <p class="text-[11px] text-zinc-300 leading-relaxed italic mb-3">
-                    "For the <span class="text-cyan-400 font-bold">best experience</span>, fewer ads, and full-screen mode, please use <span class="text-white font-bold">Chrome</span> or <span class="text-white font-bold">Brave</span> and install the app."
-                </p>
+                <p class="text-[11px] text-zinc-300 leading-relaxed italic">"For the <span class="text-cyan-400 font-bold">best experience</span>, please use <span class="text-white font-bold">Chrome</span> and install the app."</p>
             </div>
-
             <div id="ios-steps" class="hidden space-y-3 text-left mb-8">
-                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">1</span>
-                    <p class="text-[11px] text-zinc-300">Tap <span class="text-cyan-400 font-bold">Share</span> at the bottom of Safari.</p>
-                </div>
-                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
-                    <p class="text-[11px] text-zinc-300">Select <span class="text-cyan-400 font-bold">"Add to Home Screen"</span>.</p>
-                </div>
+                <p class="text-[11px] text-zinc-300">1. Tap <span class="text-cyan-400 font-bold">Share</span>.</p>
+                <p class="text-[11px] text-zinc-300">2. Select <span class="text-cyan-400 font-bold">"Add to Home Screen"</span>.</p>
             </div>
-
             <div id="android-steps" class="hidden space-y-3 text-left mb-8">
-                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">1</span>
-                    <p class="text-[11px] text-zinc-300">Tap the <span class="text-cyan-400 font-bold">three dots (⋮)</span> in Chrome.</p>
-                </div>
-                <div class="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                    <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
-                    <p class="text-[11px] text-zinc-300">Tap <span class="text-cyan-400 font-bold">"Install App"</span>.</p>
-                </div>
+                <p class="text-[11px] text-zinc-300">1. Tap <span class="text-cyan-400 font-bold">three dots (⋮)</span>.</p>
+                <p class="text-[11px] text-zinc-300">2. Tap <span class="text-cyan-400 font-bold">"Install App"</span>.</p>
             </div>
-
-            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-100 text-black text-[10px] font-black uppercase tracking-[2px] rounded-2xl">Continue to Web</button>
+            <button onclick="closeGuide()" class="w-full py-4 bg-zinc-100 text-black text-[10px] font-black uppercase rounded-2xl">Continue</button>
         </div>
     </div>
 
     <div id="update-modal" class="modal bg-zinc-950/98 backdrop-blur-2xl p-6 overflow-y-auto no-scrollbar">
         <div class="max-w-md mx-auto w-full">
             <div class="flex items-center justify-between mb-8 sticky top-0 bg-zinc-950/50 py-4 backdrop-blur-md">
-                <h2 class="text-xl font-black italic uppercase tracking-tighter">System Updates</h2>
-                <button onclick="closeUpdates()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full text-white">
-                    <i data-lucide="x"></i>
-                </button>
+                <h2 class="text-xl font-black italic uppercase">System Updates</h2>
+                <button onclick="closeUpdates()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full text-white"><i data-lucide="x"></i></button>
             </div>
             <div class="space-y-6">
                 <div class="border-l-2 border-cyan-500 pl-4 py-1">
                     <p class="text-[10px] text-cyan-500 font-black uppercase mb-1">April 16, 2026</p>
-                    <p class="text-xs text-white font-bold mb-1">New: Compatibility System</p>
-                    <p class="text-[11px] text-zinc-400 italic">Added Chrome/Brave detection and Installation Guide. Improved mobile performance.</p>
-                </div>
-                <div class="border-l-2 border-zinc-800 pl-4 py-1 opacity-60">
-                    <p class="text-[10px] text-zinc-500 font-black uppercase mb-1">April 10, 2026</p>
-                    <p class="text-xs text-white font-bold mb-1">UI Polishing</p>
-                    <p class="text-[11px] text-zinc-400 italic">Adjusted poster grid for tablets and large screens.</p>
-                </div>
-                <div class="border-l-2 border-zinc-800 pl-4 py-1 opacity-60">
-                    <p class="text-[10px] text-zinc-500 font-black uppercase mb-1">April 01, 2026</p>
-                    <p class="text-xs text-white font-bold mb-1">v1.0 Launch</p>
-                    <p class="text-[11px] text-zinc-400 italic">Initial release. Essequibo is Guyana! 🇬🇾</p>
+                    <p class="text-xs text-white font-bold mb-1">New: Telegram Support System</p>
+                    <p class="text-[11px] text-zinc-400 italic">Integrated direct bug reporting. Users can now describe errors directly to the dev team.</p>
                 </div>
             </div>
         </div>
@@ -165,8 +134,14 @@
                     <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl">SERVER 1</button>
                     <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl">SERVER 2</button>
                 </div>
-                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-4">PLAY NOW</button>
-                <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-500 border border-white/5">Report Error</button>
+                <button onclick="initPlay()" class="w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
+                
+                <div class="mt-8 pt-6 border-t border-white/5">
+                    <p class="text-[9px] font-black text-cyan-500 uppercase mb-3 tracking-widest text-center italic">Report an issue</p>
+                    <textarea id="error-msg" placeholder="Describe the error here..." 
+                              class="w-full bg-zinc-900/50 border border-white/5 rounded-xl p-3 text-[10px] text-white outline-none focus:border-cyan-500 h-20 resize-none mb-3"></textarea>
+                    <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-cyan-400 border border-cyan-400/20">Send Report</button>
+                </div>
             </div>
             <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl mt-6"></p>
         </div>
@@ -176,7 +151,11 @@
 
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
-        const CURRENT_VERSION = "1.0.1";
+        const CURRENT_VERSION = "1.1.0";
+        // REEMPLAZA ESTO CON TU BOT TOKEN
+        const BOT_TOKEN = "INGRESA_TU_BOT_TOKEN_AQUI"; 
+        const CHAT_ID = "8026826478";
+        
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
 
         function checkVersion() {
@@ -193,9 +172,6 @@
                 document.getElementById(isIOS ? 'ios-steps' : 'android-steps').classList.remove('hidden');
             }
         }
-        function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
-        function openUpdates() { document.getElementById('update-modal').classList.add('active'); lucide.createIcons(); }
-        function closeUpdates() { document.getElementById('update-modal').classList.remove('active'); }
 
         async function load() {
             const grid = document.getElementById('grid');
@@ -243,6 +219,28 @@
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
         }
 
+        async function reportError() {
+            const msg = document.getElementById('error-msg').value;
+            if(!msg.trim()) return alert("Describe the error.");
+            
+            const movie = document.getElementById('m-title').innerText;
+            const srv = selectedServer === 0 ? "Server 1" : "Server 2";
+            const text = `🚨 *REPORT* 🚨\n🎬 *Movie:* ${movie}\n🖥️ *Server:* ${srv}\n💬 *Issue:* ${msg}`;
+            
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+            
+            try {
+                const res = await fetch(url);
+                if(res.ok) {
+                    const t = document.getElementById('toast');
+                    t.innerText = "REPORT SENT! ✅";
+                    t.classList.add('show');
+                    document.getElementById('error-msg').value = "";
+                    setTimeout(()=> t.classList.remove('show'), 3000);
+                }
+            } catch(e) { alert("Failed to send."); }
+        }
+
         function setServer(idx) {
             selectedServer = idx;
             document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
@@ -272,17 +270,10 @@
             load();
         }
 
-        function closePlayer() {
-            document.getElementById('player-modal').classList.remove('active');
-            document.getElementById('iframe-slot').innerHTML = "";
-        }
-
-        function reportError() {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-            // PRÓXIMO PASO: FETCH A TELEGRAM AQUÍ
-        }
+        function closePlayer() { document.getElementById('player-modal').classList.remove('active'); document.getElementById('iframe-slot').innerHTML = ""; }
+        function openUpdates() { document.getElementById('update-modal').classList.add('active'); lucide.createIcons(); }
+        function closeUpdates() { document.getElementById('update-modal').classList.remove('active'); }
+        function closeGuide() { document.getElementById('install-guide').classList.remove('active'); }
 
         let searchT;
         function debounceSearch() {
