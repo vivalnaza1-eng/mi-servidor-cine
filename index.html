@@ -17,6 +17,7 @@
         body { background-color: var(--bg-dark); color: white; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         nav { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.03); }
         
+        /* BOTÓN CON PÁLPITO LUMINOSO */
         .btn-pulse { animation: pulse-cyan 2s infinite; box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
         @keyframes pulse-cyan {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
@@ -30,16 +31,14 @@
         .tab-active { color: var(--accent-cyan) !important; position: relative; }
         .tab-active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 2px; background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); }
         
-        .lang-btn { background: #1a1a1a; border-radius: 8px; padding: 6px 12px; font-size: 9px; font-weight: 800; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); color: #666; }
-        .lang-btn.active { background: var(--accent-cyan); color: black; border-color: var(--accent-cyan); }
-
-        .srv-btn { transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; font-weight: 900; font-size: 9px; }
-        .srv-btn.active { background: white; color: black; }
-        .srv-btn.inactive { background: #0f0f0f; color: #444; }
-
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; flex-direction: column; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .modal.active { display: flex; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #111; color: white; padding: 12px 24px; border-radius: 99px; transition: 0.5s; z-index: 3000; font-size: 10px; font-weight: 800; border: 1px solid var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        .skeleton { background: linear-gradient(90deg, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="pt-48 pb-24">
@@ -52,22 +51,24 @@
 
     <nav class="p-5 fixed top-11 w-full z-50 flex flex-col gap-5"> 
         <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <img src="mapa-guyana.png" class="w-8 h-8" alt="Logo">
-                <h1 class="font-black text-lg italic tracking-tighter text-white uppercase">Guyana Digital</h1>
+            <div class="flex flex-col">
+                <div class="flex items-center gap-3">
+                    <img src="mapa-guyana.png" class="w-8 h-8" alt="Logo">
+                    <h1 class="font-black text-lg italic tracking-tighter text-white uppercase">Guyana Digital</h1>
+                </div>
             </div>
             <div class="relative max-w-[130px]">
-                <input type="text" id="search" placeholder="Search..." class="w-full bg-zinc-900/50 rounded-xl py-2 px-8 text-[10px] outline-none border border-white/5 text-white">
+                <input type="text" id="search" oninput="debounceSearch()" placeholder="Search..." class="w-full bg-zinc-900/50 rounded-xl py-2 px-8 text-[10px] outline-none border border-white/5 text-white">
                 <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3 h-3 text-zinc-500"></i>
             </div>
         </div>
         <div class="flex gap-6 overflow-x-auto no-scrollbar items-center">
             <button onclick="changeMode('movie')" id="btn-movie" class="tab-active text-[10px] font-bold uppercase text-zinc-400 whitespace-nowrap">Movies</button>
-            <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">Series & Anime</button>
+            <button onclick="changeMode('tv')" id="btn-tv" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">TV Series</button>
             <button onclick="changeMode('upcoming')" id="btn-upcoming" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">Upcoming</button>
             <button onclick="changeMode('fav')" id="btn-fav" class="text-zinc-500 text-[10px] font-bold uppercase whitespace-nowrap">My List</button>
             <button onclick="openUpdates()" class="btn-pulse text-white text-[10px] font-black uppercase flex items-center gap-1 bg-cyan-500 px-4 py-1.5 rounded-full whitespace-nowrap">
-                <i data-lucide="sparkles" class="w-3 h-3"></i> What's New
+                <i data-lucide="sparkles" class="w-3 h-3"></i> Updates
             </button>
         </div>
     </nav>
@@ -83,13 +84,8 @@
             <div class="space-y-6">
                 <div class="border-l-2 border-cyan-500 pl-4 py-1">
                     <p class="text-[10px] text-cyan-500 font-black uppercase mb-1">April 16, 2026</p>
-                    <p class="text-xs text-white font-bold mb-1">Latin Spanish Servers Integrated</p>
-                    <p class="text-[11px] text-zinc-400 italic">Added specialized Latin servers (Vidsrc.lat & Multiembed) to prioritize Spanish dubbing in movies and current series.</p>
-                </div>
-                <div class="border-l-2 border-zinc-700 pl-4 py-1">
-                    <p class="text-[10px] text-zinc-500 font-black uppercase mb-1">Previous</p>
-                    <p class="text-xs text-white font-bold mb-1">Anime Support</p>
-                    <p class="text-[11px] text-zinc-400 italic">Added support for JPN/SUB selector for anime fans.</p>
+                    <p class="text-xs text-white font-bold mb-1">Report System Active</p>
+                    <p class="text-[11px] text-zinc-400 italic">Cualquier error reportado llegará directamente a nuestro equipo por Telegram.</p>
                 </div>
             </div>
         </div>
@@ -98,50 +94,45 @@
     <div id="player-modal" class="modal overflow-y-auto">
         <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50">
             <button onclick="closePlayer()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="chevron-left"></i></button>
-            <span class="font-black text-[10px] uppercase tracking-widest truncate px-4 text-cyan-400" id="m-title">Loading...</span>
+            <span class="font-black text-[10px] uppercase tracking-widest truncate px-4" id="m-title">Loading...</span>
             <button onclick="toggleFavorite()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="heart" id="fav-icon" class="w-4 h-4"></i></button>
         </div>
-        
         <div id="video-area" class="w-full aspect-video bg-black shadow-2xl">
             <div id="iframe-slot" class="w-full h-full"></div>
         </div>
-
         <div class="p-6 max-w-xl mx-auto">
-            <p class="text-[9px] font-black text-zinc-500 uppercase mb-3 tracking-widest">Select Language</p>
-            <div class="flex gap-2 mb-6">
-                <button onclick="setLang('lat')" id="lang-lat" class="lang-btn active">LATINO</button>
-                <button onclick="setLang('en')" id="lang-en" class="lang-btn">ENGLISH</button>
-                <button onclick="setLang('sub')" id="lang-sub" class="lang-btn">JPN / SUB</button>
-            </div>
-
-            <p class="text-[9px] font-black text-zinc-500 uppercase mb-3 tracking-widest">Select Server</p>
-            <div class="grid grid-cols-3 gap-2 mb-6">
-                <button onclick="setServer(0)" id="srv-0" class="srv-btn active py-3 rounded-xl">Server Lat 1</button>
-                <button onclick="setServer(1)" id="srv-1" class="srv-btn inactive py-3 rounded-xl">Server Lat 2</button>
-                <button onclick="setServer(2)" id="srv-2" class="srv-btn inactive py-3 rounded-xl">Server Global</button>
-            </div>
-
             <div id="series-controls" class="hidden grid grid-cols-2 gap-3 mb-6">
                 <select id="season" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
                 <select id="episode" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
             </div>
-
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase">Server 1</button>
+                <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase">Server 2</button>
+            </div>
             <button onclick="initPlay()" class="btn-pulse w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
-            <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl mb-8"></p>
+            
+            <div class="mt-8 pt-6 border-t border-white/5 text-center">
+                <p class="text-[9px] font-black text-cyan-500 uppercase mb-3 tracking-widest">Report Issue</p>
+                <textarea id="error-msg" placeholder="Describe the problem..." 
+                        class="w-full bg-zinc-900/50 border border-white/5 rounded-xl p-4 text-[11px] text-white outline-none focus:border-cyan-500 h-24 resize-none mb-3"></textarea>
+                <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-400 border border-white/10 hover:border-cyan-500 transition-all">Submit Report</button>
+            </div>
+            <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl mt-6"></p>
         </div>
     </div>
+
+    <div id="toast">REPORT SENT! ✅</div>
 
     <script>
         const API_URL = "https://mi-servidor-cine.onrender.com";
         const BOT_TOKEN = "8744010693:AAGsGx90BSJSs1VWW9IhHC40RsKIV24X0lc"; 
         const CHAT_ID = "8026826478";
         
-        let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], 
-            currentMode = 'movie', activeId = null, selectedServer = 0, currentLang = 'lat';
+        let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
 
         async function load() {
             const grid = document.getElementById('grid');
-            grid.innerHTML = Array(6).fill('<div class="poster-card skeleton"></div>').join('');
+            grid.innerHTML = Array(8).fill('<div class="poster-card skeleton"></div>').join('');
             if(currentMode === 'fav') return draw(favorites);
             try {
                 const ep = currentMode === 'upcoming' ? '/proximamente' : (currentMode === 'movie' ? '/populares' : '/series');
@@ -153,7 +144,7 @@
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase'>Empty List</p>"; return; }
+            if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase'>No content found</p>"; return; }
             grid.innerHTML = list.map(m => `
                 <div class="poster-card" onclick="openPlayer(${m.id}, ${list === favorites})">
                     <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
@@ -165,42 +156,43 @@
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview || "No description.";
+            document.getElementById('m-desc').innerText = item.overview || "No description available.";
             
             if(currentMode === 'tv' || item.name) {
                 document.getElementById('series-controls').classList.remove('hidden');
                 document.getElementById('season').innerHTML = Array.from({length:10}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:24}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else { document.getElementById('series-controls').classList.add('hidden'); }
+
             document.getElementById('player-modal').classList.add('active');
-            updateFavIcon(); lucide.createIcons();
-        }
-
-        function setLang(l) {
-            currentLang = l;
-            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`lang-${l}`).classList.add('active');
-        }
-
-        function setServer(idx) {
-            selectedServer = idx;
-            for(let i=0; i<3; i++) {
-                const btn = document.getElementById(`srv-${i}`);
-                if(btn) btn.className = (i === idx) ? 'srv-btn active py-3 rounded-xl' : 'srv-btn inactive py-3 rounded-xl';
-            }
+            updateFavIcon();
+            lucide.createIcons();
         }
 
         function initPlay() {
             const s = document.getElementById('season').value || 1, e = document.getElementById('episode').value || 1;
             const isTV = !document.getElementById('series-controls').classList.contains('hidden');
-            const type = isTV ? 'tv' : 'movie';
-            let src = "";
-
-            if(selectedServer === 0) src = `https://vidsrc.lat/embed/${type}/${activeId}${isTV?`/${s}/${e}`:''}`;
-            else if(selectedServer === 1) src = `https://multiembed.mov/directstream.php?video_id=${activeId}&tmdb=1${isTV?`&s=${s}&e=${e}`:''}`;
-            else src = `https://vidsrc.xyz/embed/${type}?tmdb=${activeId}${isTV?`&season=${s}&episode=${e}`:''}`;
-            
+            const src = selectedServer === 0 
+                ? `https://vidsrc.xyz/embed/${isTV?'tv':'movie'}?tmdb=${activeId}${isTV?`&season=${s}&episode=${e}`:''}`
+                : `https://vidsrc.to/embed/${isTV?'tv':'movie'}/${activeId}${isTV?`/${s}/${e}`:''}`;
             document.getElementById('iframe-slot').innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
+        }
+
+        function setServer(idx) {
+            selectedServer = idx;
+            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
+            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
+        }
+
+        async function reportError() {
+            const msg = document.getElementById('error-msg').value;
+            if(!msg.trim()) return alert("Describe the issue.");
+            const title = document.getElementById('m-title').innerText;
+            const text = `🚨 *REPORT* 🚨\n🎬 *Title:* ${title}\n💬 *Issue:* ${msg}`;
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`);
+            document.getElementById('toast').classList.add('show');
+            setTimeout(()=> document.getElementById('toast').classList.remove('show'), 3000);
+            document.getElementById('error-msg').value = "";
         }
 
         function changeMode(m) {
