@@ -21,18 +21,14 @@
         body { background-color: var(--bg-dark); color: white; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         nav { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.03); }
         
-        /* EFECTO PÁLPITO LUMINOSO */
-        .btn-pulse {
-            animation: pulse-cyan 2s infinite;
-            box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7);
-        }
+        .btn-pulse { animation: pulse-cyan 2s infinite; box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
         @keyframes pulse-cyan {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); }
         }
 
-        .poster-card { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); aspect-ratio: 2/3; border-radius: 16px; overflow: hidden; background: #0f0f0f; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        .poster-card { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); aspect-ratio: 2/3; border-radius: 16px; overflow: hidden; background: #0f0f0f; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
         .poster-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0, 242, 255, 0.1); border-color: var(--accent-cyan); }
         .skeleton { background: linear-gradient(90deg, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
@@ -54,7 +50,7 @@
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
         <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide">
             <span class="text-cyan-400 font-black mr-2">NOTICE:</span> 
-            Guyana Cinema is online. Enjoy the best quality! 🎬
+            Guyana Cinema is online. Enjoy Baki Dou! 🎬
         </p>
     </div>
 
@@ -85,22 +81,6 @@
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
 
-    <div id="update-modal" class="modal bg-zinc-950/98 backdrop-blur-2xl p-6 overflow-y-auto no-scrollbar">
-        <div class="max-w-md mx-auto w-full">
-            <div class="flex items-center justify-between mb-8 sticky top-0 bg-zinc-950/50 py-4 backdrop-blur-md">
-                <h2 class="text-xl font-black italic uppercase">System Updates</h2>
-                <button onclick="closeUpdates()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full text-white"><i data-lucide="x"></i></button>
-            </div>
-            <div class="space-y-6">
-                <div class="border-l-2 border-cyan-500 pl-4 py-1">
-                    <p class="text-[10px] text-cyan-500 font-black uppercase mb-1">April 16, 2026</p>
-                    <p class="text-xs text-white font-bold mb-1">Live Report System Active</p>
-                    <p class="text-[11px] text-zinc-400 italic">Connected to Telegram Bot. Send your reports directly to the team.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
         <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50 text-white">
             <button onclick="closePlayer()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="chevron-left"></i></button>
@@ -117,8 +97,8 @@
                     <select id="episode" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-6">
-                    <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl">SERVER 1</button>
-                    <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl">SERVER 2</button>
+                    <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl">LATINO</button>
+                    <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase">English (Soon)</button>
                 </div>
                 <button onclick="initPlay()" class="btn-pulse w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
                 
@@ -142,26 +122,50 @@
         const BOT_TOKEN = "8744010693:AAGsGx90BSJSs1VWW9IhHC40RsKIV24X0lc"; 
         const CHAT_ID = "8026826478";
         
+        // SERIE MANUAL: BAKI DOU
+        const BAKI_DOU = {
+            id: "baki-dou-special",
+            name: "Baki Dou: The Invincible Samurai",
+            poster_path: "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/7vH9nL7A7o1ZIs8YnL7A7o1ZIs8.jpg", // Carátula representativa
+            overview: "The underground arena champion, Baki Hanma, trains hard to surpass his father. A new threat arises in the form of a resurrected legendary samurai.",
+            isManual: true,
+            embed: "https://peliculaplay.com/es/detail/drama/Tn2dIHA8VwPHCo9yoCZQP-Baki-Dou-The-Invincible-Samurai/1"
+        };
+
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
 
         async function load() {
             const grid = document.getElementById('grid');
             grid.innerHTML = Array(8).fill('<div class="poster-card skeleton"></div>').join('');
+            
             if(currentMode === 'fav') return draw(favorites);
+            
             try {
                 const ep = currentMode === 'upcoming' ? '/proximamente' : (currentMode === 'movie' ? '/populares' : '/series');
                 const r = await fetch(`${API_URL}${ep}`);
-                localData = await r.json();
+                let data = await r.json();
+                
+                // Si estamos en Series, inyectamos a Baki Dou al inicio
+                if (currentMode === 'tv') {
+                    data = [BAKI_DOU, ...data];
+                }
+                
+                localData = data;
                 draw(localData);
-            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px]'>CONNECTION ERROR</p>"; }
+            } catch (e) { 
+                // En caso de error de API, al menos mostramos a Baki si estamos en series
+                if(currentMode === 'tv') draw([BAKI_DOU]);
+                else grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px]'>CONNECTION ERROR</p>"; 
+            }
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
             if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase'>EMPTY LIST</p>"; return; }
             grid.innerHTML = list.map(m => `
-                <div class="poster-card" onclick="openPlayer(${m.id}, ${list === favorites})">
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                <div class="poster-card" onclick="openPlayer('${m.id}', ${list === favorites})">
+                    <img src="${m.isManual ? m.poster_path : 'https://image.tmdb.org/t/p/w500' + m.poster_path}" class="w-full h-full object-cover" loading="lazy">
+                    ${m.isManual ? '<span class="absolute top-2 right-2 bg-cyan-500 text-black text-[8px] font-black px-2 py-0.5 rounded-full">EXCLUSIVE</span>' : ''}
                 </div>
             `).join('');
         }
@@ -169,69 +173,65 @@
         function openPlayer(id, fromFavs) {
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
+            
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
             document.getElementById('m-desc').innerText = item.overview || "No description.";
+            
+            const isBaki = id === "baki-dou-special";
+            const srv1Btn = document.getElementById('srv-1');
+
             if(currentMode === 'tv' || item.name) {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
-            } else { document.getElementById('series-controls').classList.add('hidden'); }
+                document.getElementById('season').innerHTML = `<option value="1">Season 1</option>`;
+                document.getElementById('episode').innerHTML = Array.from({length:12}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+            } else { 
+                document.getElementById('series-controls').classList.add('hidden'); 
+            }
+
+            if(isBaki) {
+                srv1Btn.innerText = "English (Soon)";
+                srv1Btn.classList.add('opacity-50');
+            } else {
+                srv1Btn.innerText = "SERVER 2";
+                srv1Btn.classList.remove('opacity-50');
+            }
+
             document.getElementById('player-modal').classList.add('active');
             updateFavIcon();
             lucide.createIcons();
         }
 
         function initPlay() {
-            const s = document.getElementById('season').value || 1, e = document.getElementById('episode').value || 1;
-            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
-            const src = selectedServer === 0 
-                ? `https://vidsrc.xyz/embed/${isTV?'tv':'movie'}?tmdb=${activeId}${isTV?`&season=${s}&episode=${e}`:''}`
-                : `https://vidsrc.to/embed/${isTV?'tv':'movie'}/${activeId}${isTV?`/${s}/${e}`:''}`;
-            document.getElementById('iframe-slot').innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
-        }
+            const isBaki = activeId === "baki-dou-special";
+            const iframeSlot = document.getElementById('iframe-slot');
 
-        async function reportError() {
-            const msg = document.getElementById('error-msg').value;
-            if(!msg.trim()) return alert("Please describe the issue.");
-            
-            const movie = document.getElementById('m-title').innerText;
-            const srv = selectedServer === 0 ? "Server 1" : "Server 2";
-            const text = `🚨 *REPORT* 🚨\n🎬 *Movie:* ${movie}\n🖥️ *Server:* ${srv}\n💬 *Issue:* ${msg}`;
-            
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
-            
-            try {
-                const res = await fetch(url);
-                if(res.ok) {
-                    const t = document.getElementById('toast');
-                    t.innerText = "REPORT SENT! ✅";
-                    t.classList.add('show');
-                    document.getElementById('error-msg').value = "";
-                    setTimeout(()=> t.classList.remove('show'), 3000);
+            if (isBaki) {
+                if(selectedServer === 1) {
+                    alert("English version coming soon!");
+                    return;
                 }
-            } catch(e) { alert("Failed to send report."); }
+                // Para Baki usamos el link directo que pasaste
+                iframeSlot.innerHTML = `<iframe src="${BAKI_DOU.embed}" allowfullscreen class="w-full h-full border-0"></iframe>`;
+            } else {
+                const s = document.getElementById('season').value || 1, e = document.getElementById('episode').value || 1;
+                const isTV = !document.getElementById('series-controls').classList.contains('hidden');
+                const src = selectedServer === 0 
+                    ? `https://vidsrc.xyz/embed/${isTV?'tv':'movie'}?tmdb=${activeId}${isTV?`&season=${s}&episode=${e}`:''}`
+                    : `https://vidsrc.to/embed/${isTV?'tv':'movie'}/${activeId}${isTV?`/${s}/${e}`:''}`;
+                iframeSlot.innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
+            }
         }
 
+        // --- MANTÉN EL RESTO DE TUS FUNCIONES (reportError, setServer, toggleFavorite, etc.) ---
+        
         function setServer(idx) {
+            if(activeId === "baki-dou-special" && idx === 1) {
+                alert("English version coming soon!");
+                return;
+            }
             selectedServer = idx;
             document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
             document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
-        }
-
-        function toggleFavorite() {
-            const item = localData.find(m => m.id == activeId) || favorites.find(m => m.id == activeId);
-            const idx = favorites.findIndex(f => f.id == activeId);
-            if(idx > -1) favorites.splice(idx, 1); else favorites.push(item);
-            localStorage.setItem('gy_favs', JSON.stringify(favorites));
-            updateFavIcon();
-            if(currentMode === 'fav') draw(favorites);
-        }
-
-        function updateFavIcon() {
-            const isFav = favorites.some(f => f.id == activeId);
-            const icon = document.getElementById('fav-icon');
-            icon.style.fill = isFav ? "#00f2ff" : "none";
-            icon.style.color = isFav ? "#00f2ff" : "white";
         }
 
         function changeMode(m) {
@@ -245,22 +245,42 @@
         function openUpdates() { document.getElementById('update-modal').classList.add('active'); lucide.createIcons(); }
         function closeUpdates() { document.getElementById('update-modal').classList.remove('active'); }
 
-        let searchT;
-        function debounceSearch() {
-            clearTimeout(searchT);
-            searchT = setTimeout(async () => {
-                const q = document.getElementById('search').value;
-                if(q.length < 3) return load();
-                const r = await fetch(`${API_URL}/buscar?q=${q}&type=${currentMode==='tv'?'tv':'movie'}`);
-                localData = await r.json();
-                draw(localData);
-            }, 600);
+        async function reportError() {
+            const msg = document.getElementById('error-msg').value;
+            if(!msg.trim()) return alert("Please describe the issue.");
+            const movie = document.getElementById('m-title').innerText;
+            const text = `🚨 *REPORT* 🚨\n🎬 *Movie:* ${movie}\n💬 *Issue:* ${msg}`;
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+            try {
+                const res = await fetch(url);
+                if(res.ok) {
+                    const t = document.getElementById('toast');
+                    t.classList.add('show');
+                    document.getElementById('error-msg').value = "";
+                    setTimeout(()=> t.classList.remove('show'), 3000);
+                }
+            } catch(e) { alert("Error."); }
         }
 
-        window.onload = () => {
-            load();
-            lucide.createIcons();
-        };
+        function updateFavIcon() {
+            const isFav = favorites.some(f => f.id == activeId);
+            const icon = document.getElementById('fav-icon');
+            if(icon) {
+                icon.style.fill = isFav ? "#00f2ff" : "none";
+                icon.style.color = isFav ? "#00f2ff" : "white";
+            }
+        }
+
+        function toggleFavorite() {
+            const item = localData.find(m => m.id == activeId) || favorites.find(m => m.id == activeId);
+            const idx = favorites.findIndex(f => f.id == activeId);
+            if(idx > -1) favorites.splice(idx, 1); else favorites.push(item);
+            localStorage.setItem('gy_favs', JSON.stringify(favorites));
+            updateFavIcon();
+            if(currentMode === 'fav') draw(favorites);
+        }
+
+        window.onload = () => { load(); lucide.createIcons(); };
     </script>
 </body>
 </html>
