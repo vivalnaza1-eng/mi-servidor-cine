@@ -17,6 +17,7 @@
         body { background-color: var(--bg-dark); color: white; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         nav { background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.03); }
         
+        /* BOTÓN CON PÁLPITO LUMINOSO */
         .btn-pulse { animation: pulse-cyan 2s infinite; box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
         @keyframes pulse-cyan {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
@@ -24,10 +25,8 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); }
         }
 
-        .poster-card { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); aspect-ratio: 2/3; border-radius: 16px; overflow: hidden; background: #0f0f0f; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
+        .poster-card { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); aspect-ratio: 2/3; border-radius: 16px; overflow: hidden; background: #0f0f0f; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
         .poster-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0, 242, 255, 0.1); border-color: var(--accent-cyan); }
-        .skeleton { background: linear-gradient(90deg, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
         .tab-active { color: var(--accent-cyan) !important; position: relative; }
         .tab-active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 2px; background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); }
@@ -36,17 +35,17 @@
         .modal.active { display: flex; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .no-scrollbar::-webkit-scrollbar { display: none; }
         #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #111; color: white; padding: 12px 24px; border-radius: 99px; transition: 0.5s; z-index: 3000; font-size: 10px; font-weight: 800; border: 1px solid var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
         #toast.show { transform: translateX(-50%) translateY(0); }
+        .skeleton { background: linear-gradient(90deg, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="pt-48 pb-24">
 
     <div class="fixed top-0 w-full z-[100] bg-zinc-950/95 backdrop-blur-md border-b border-white/10 py-3 px-4 text-center">
         <p class="text-[9px] md:text-[10px] font-medium text-zinc-300 italic tracking-wide">
-            <span class="text-cyan-400 font-black mr-2">NOTICE:</span> 
-            Guyana Cinema is online. Baki Dou Updated! 🎬
+            <span class="text-cyan-400 font-black mr-2">STATUS:</span> Guyana Cinema is Online 🎬
         </p>
     </div>
 
@@ -57,7 +56,6 @@
                     <img src="mapa-guyana.png" class="w-8 h-8" alt="Logo">
                     <h1 class="font-black text-lg italic tracking-tighter text-white uppercase">Guyana Digital</h1>
                 </div>
-                <p class="text-[9px] font-black text-cyan-500 uppercase tracking-[3px] ml-11 mt-0.5">Essequibo belongs to Guyana</p>
             </div>
             <div class="relative max-w-[130px]">
                 <input type="text" id="search" oninput="debounceSearch()" placeholder="Search..." class="w-full bg-zinc-900/50 rounded-xl py-2 px-8 text-[10px] outline-none border border-white/5 text-white">
@@ -77,7 +75,7 @@
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
 
-    <div id="update-modal" class="modal bg-zinc-950/98 backdrop-blur-2xl p-6 overflow-y-auto no-scrollbar">
+    <div id="update-modal" class="modal bg-zinc-950/98 backdrop-blur-2xl p-6 overflow-y-auto">
         <div class="max-w-md mx-auto w-full">
             <div class="flex items-center justify-between mb-8 sticky top-0 bg-zinc-950/50 py-4 backdrop-blur-md">
                 <h2 class="text-xl font-black italic uppercase">System Updates</h2>
@@ -86,42 +84,38 @@
             <div class="space-y-6">
                 <div class="border-l-2 border-cyan-500 pl-4 py-1">
                     <p class="text-[10px] text-cyan-500 font-black uppercase mb-1">April 16, 2026</p>
-                    <p class="text-xs text-white font-bold mb-1">Baki Dou Fixed & New Poster</p>
-                    <p class="text-[11px] text-zinc-400 italic">Solucionado error de carga en Baki y actualizada imagen oficial.</p>
+                    <p class="text-xs text-white font-bold mb-1">Report System Active</p>
+                    <p class="text-[11px] text-zinc-400 italic">Cualquier error reportado llegará directamente a nuestro equipo por Telegram.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="player-modal" class="modal overflow-y-auto no-scrollbar">
-        <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50 text-white">
+    <div id="player-modal" class="modal overflow-y-auto">
+        <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50">
             <button onclick="closePlayer()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="chevron-left"></i></button>
             <span class="font-black text-[10px] uppercase tracking-widest truncate px-4" id="m-title">Loading...</span>
-            <button onclick="toggleFavorite()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="heart" id="fav-icon" class="w-4 h-4 text-white"></i></button>
+            <button onclick="toggleFavorite()" class="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full"><i data-lucide="heart" id="fav-icon" class="w-4 h-4"></i></button>
         </div>
-        <div id="video-area" class="w-full aspect-video bg-black flex items-center justify-center">
-            <div id="iframe-slot" class="w-full h-full flex items-center justify-center text-center px-6">
-                <p class="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Select Server & Press Play</p>
-            </div>
+        <div id="video-area" class="w-full aspect-video bg-black shadow-2xl">
+            <div id="iframe-slot" class="w-full h-full"></div>
         </div>
         <div class="p-6 max-w-xl mx-auto">
-            <div id="play-ui">
-                <div id="series-controls" class="hidden grid grid-cols-2 gap-3 mb-6">
-                    <select id="season" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
-                    <select id="episode" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl">LATINO</button>
-                    <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl">English (Soon)</button>
-                </div>
-                <button onclick="initPlay()" class="btn-pulse w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
-                
-                <div class="mt-8 pt-6 border-t border-white/5 text-center">
-                    <p class="text-[9px] font-black text-cyan-500 uppercase mb-3 tracking-widest italic">Describe the issue</p>
-                    <textarea id="error-msg" placeholder="Example: No audio, Server 2 down..." 
-                              class="w-full bg-zinc-900/50 border border-white/5 rounded-xl p-4 text-[11px] text-white outline-none focus:border-cyan-500 h-24 resize-none mb-3"></textarea>
-                    <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-400 border border-white/10">Submit Report</button>
-                </div>
+            <div id="series-controls" class="hidden grid grid-cols-2 gap-3 mb-6">
+                <select id="season" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
+                <select id="episode" class="bg-zinc-900 text-white p-3 rounded-xl text-xs outline-none border border-white/5"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="setServer(0)" id="srv-0" class="bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase">Server 1</button>
+                <button onclick="setServer(1)" id="srv-1" class="bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase">Server 2</button>
+            </div>
+            <button onclick="initPlay()" class="btn-pulse w-full py-4 rounded-2xl text-xs font-black uppercase bg-cyan-400 text-black shadow-lg mb-8">PLAY NOW</button>
+            
+            <div class="mt-8 pt-6 border-t border-white/5 text-center">
+                <p class="text-[9px] font-black text-cyan-500 uppercase mb-3 tracking-widest">Report Issue</p>
+                <textarea id="error-msg" placeholder="Describe the problem..." 
+                          class="w-full bg-zinc-900/50 border border-white/5 rounded-xl p-4 text-[11px] text-white outline-none focus:border-cyan-500 h-24 resize-none mb-3"></textarea>
+                <button onclick="reportError()" class="w-full py-3 rounded-xl text-[9px] font-bold uppercase bg-zinc-900 text-zinc-400 border border-white/10 hover:border-cyan-500 transition-all">Submit Report</button>
             </div>
             <p id="m-desc" class="text-xs text-zinc-400 leading-relaxed bg-white/5 p-4 rounded-xl mt-6"></p>
         </div>
@@ -134,16 +128,6 @@
         const BOT_TOKEN = "8744010693:AAGsGx90BSJSs1VWW9IhHC40RsKIV24X0lc"; 
         const CHAT_ID = "8026826478";
         
-        // BAKI DOU ACTUALIZADO CON IMAGEN OFICIAL 2026
-        const BAKI_DOU = {
-            id: "baki-dou-special",
-            name: "Baki Dou: The Invincible Samurai",
-            poster_path: "https://www.anitrendz.com/news/wp-content/uploads/2026/02/Baki-Dou-The-Invincible-Samurai-Special-Visual.jpg", 
-            overview: "Baki Hanma faces the ultimate symbol of strength: the resurrected Musashi Miyamoto. It's sword versus fist in the underground arena.",
-            isManual: true,
-            externalLink: "https://peliculaplay.com/es/detail/drama/Tn2dIHA8VwPHCo9yoCZQP-Baki-Dou-The-Invincible-Samurai/1"
-        };
-
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
 
         async function load() {
@@ -153,23 +137,17 @@
             try {
                 const ep = currentMode === 'upcoming' ? '/proximamente' : (currentMode === 'movie' ? '/populares' : '/series');
                 const r = await fetch(`${API_URL}${ep}`);
-                let data = await r.json();
-                if (currentMode === 'tv') data = [BAKI_DOU, ...data];
-                localData = data;
+                localData = await r.json();
                 draw(localData);
-            } catch (e) { 
-                if(currentMode === 'tv') draw([BAKI_DOU]);
-                else grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px]'>OFFLINE</p>"; 
-            }
+            } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase'>Connection Error</p>"; }
         }
 
         function draw(list) {
             const grid = document.getElementById('grid');
-            if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px]'>EMPTY</p>"; return; }
+            if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase'>No content found</p>"; return; }
             grid.innerHTML = list.map(m => `
-                <div class="poster-card" onclick="openPlayer('${m.id}', ${list === favorites})">
-                    <img src="${m.isManual ? m.poster_path : 'https://image.tmdb.org/t/p/w500' + m.poster_path}" class="w-full h-full object-cover" onerror="this.src='mapa-guyana.png'">
-                    ${m.isManual ? '<span class="absolute top-2 right-2 bg-cyan-500 text-black text-[7px] font-black px-2 py-0.5 rounded-full">NEW 2026</span>' : ''}
+                <div class="poster-card" onclick="openPlayer(${m.id}, ${list === favorites})">
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
             `).join('');
         }
@@ -178,38 +156,26 @@
             activeId = id;
             const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
-            document.getElementById('m-desc').innerText = item.overview;
+            document.getElementById('m-desc').innerText = item.overview || "No description available.";
             
-            const isBaki = id === "baki-dou-special";
             if(currentMode === 'tv' || item.name) {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = `<option>Season 1</option>`;
-                document.getElementById('episode').innerHTML = Array.from({length:12}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:10}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:24}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else { document.getElementById('series-controls').classList.add('hidden'); }
 
-            document.getElementById('srv-1').innerText = isBaki ? "English (Soon)" : "SERVER 2";
             document.getElementById('player-modal').classList.add('active');
             updateFavIcon();
             lucide.createIcons();
         }
 
         function initPlay() {
-            const isBaki = activeId === "baki-dou-special";
-            const slot = document.getElementById('iframe-slot');
-            
-            if (isBaki) {
-                if(selectedServer === 1) return alert("English Coming Soon!");
-                // SOLUCIÓN: Como PeliculaPlay no deja abrirse en iframe, lo abrimos en ventana nueva para que funcione
-                slot.innerHTML = `<div class="text-center"><p class="text-[10px] text-cyan-500 font-bold mb-4">OPENING EXTERNAL PLAYER...</p></div>`;
-                window.open(BAKI_DOU.externalLink, '_blank');
-            } else {
-                const s = document.getElementById('season').value || 1, e = document.getElementById('episode').value || 1;
-                const isTV = !document.getElementById('series-controls').classList.contains('hidden');
-                const src = selectedServer === 0 
-                    ? `https://vidsrc.xyz/embed/${isTV?'tv':'movie'}?tmdb=${activeId}${isTV?`&season=${s}&episode=${e}`:''}`
-                    : `https://vidsrc.to/embed/${isTV?'tv':'movie'}/${activeId}${isTV?`/${s}/${e}`:''}`;
-                slot.innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
-            }
+            const s = document.getElementById('season').value || 1, e = document.getElementById('episode').value || 1;
+            const isTV = !document.getElementById('series-controls').classList.contains('hidden');
+            const src = selectedServer === 0 
+                ? `https://vidsrc.xyz/embed/${isTV?'tv':'movie'}?tmdb=${activeId}${isTV?`&season=${s}&episode=${e}`:''}`
+                : `https://vidsrc.to/embed/${isTV?'tv':'movie'}/${activeId}${isTV?`/${s}/${e}`:''}`;
+            document.getElementById('iframe-slot').innerHTML = `<iframe src="${src}" allowfullscreen class="w-full h-full border-0"></iframe>`;
         }
 
         function setServer(idx) {
@@ -220,11 +186,13 @@
 
         async function reportError() {
             const msg = document.getElementById('error-msg').value;
-            if(!msg.trim()) return;
-            const text = `🚨 *REPORT* 🚨\n🎬 *Title:* ${document.getElementById('m-title').innerText}\n💬 *Issue:* ${msg}`;
+            if(!msg.trim()) return alert("Describe the issue.");
+            const title = document.getElementById('m-title').innerText;
+            const text = `🚨 *REPORT* 🚨\n🎬 *Title:* ${title}\n💬 *Issue:* ${msg}`;
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`);
             document.getElementById('toast').classList.add('show');
             setTimeout(()=> document.getElementById('toast').classList.remove('show'), 3000);
+            document.getElementById('error-msg').value = "";
         }
 
         function changeMode(m) {
