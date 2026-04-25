@@ -130,7 +130,7 @@
         const BOT_TOKEN = "8744010693:AAGsGx90BSJSs1VWW9IhHC40RsKIV24X0lc"; 
         const CHAT_ID = "8026826478";
         
-        let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
+        let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0, searchTimer;
 
         async function load() {
             const grid = document.getElementById('grid');
@@ -144,26 +144,48 @@
             } catch (e) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase text-zinc-400'>Connection Error</p>"; }
         }
 
+        // LÓGICA DEL BUSCADOR REPARADA
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(performGlobalSearch, 500);
+        }
+
+        async function performGlobalSearch() {
+            const query = document.getElementById('search').value.trim();
+            const grid = document.getElementById('grid');
+            if(!query) return load();
+
+            grid.innerHTML = Array(4).fill('<div class="poster-card skeleton"></div>').join('');
+            try {
+                const r = await fetch(`${API_URL}/buscar?q=${query}`);
+                localData = await r.json();
+                draw(localData);
+            } catch (e) { console.error("Search error:", e); }
+        }
+
         function draw(list) {
             const grid = document.getElementById('grid');
             if(!list.length) { grid.innerHTML = "<p class='col-span-full text-center py-20 text-zinc-600 text-[10px] uppercase text-zinc-400'>No content found</p>"; return; }
             grid.innerHTML = list.map(m => `
-                <div class="poster-card" onclick="openPlayer(${m.id}, ${list === favorites})">
+                <div class="poster-card" onclick="openPlayer(${m.id})">
                     <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" class="w-full h-full object-cover" loading="lazy">
                 </div>
             `).join('');
         }
 
-        function openPlayer(id, fromFavs) {
+        function openPlayer(id) {
             activeId = id;
-            const item = fromFavs ? favorites.find(m => m.id == id) : localData.find(m => m.id == id);
+            const item = localData.find(m => m.id == id) || favorites.find(m => m.id == id);
+            if(!item) return;
+
             document.getElementById('m-title').innerText = (item.title || item.name).toUpperCase();
             document.getElementById('m-desc').innerText = item.overview || "No description available.";
             
-            if(currentMode === 'tv' || item.name) {
+            const isTV = (item.name && !item.title) || currentMode === 'tv';
+            if(isTV) {
                 document.getElementById('series-controls').classList.remove('hidden');
-                document.getElementById('season').innerHTML = Array.from({length:10}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
-                document.getElementById('episode').innerHTML = Array.from({length:24}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
+                document.getElementById('season').innerHTML = Array.from({length:15}, (_,i)=>`<option value="${i+1}">Season ${i+1}</option>`).join('');
+                document.getElementById('episode').innerHTML = Array.from({length:30}, (_,i)=>`<option value="${i+1}">Episode ${i+1}</option>`).join('');
             } else { document.getElementById('series-controls').classList.add('hidden'); }
 
             document.getElementById('player-modal').classList.add('active');
@@ -182,8 +204,8 @@
 
         function setServer(idx) {
             selectedServer = idx;
-            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
-            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl';
+            document.getElementById('srv-0').className = idx === 0 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase';
+            document.getElementById('srv-1').className = idx === 1 ? 'bg-white text-black text-[9px] font-black py-3 rounded-xl uppercase' : 'bg-zinc-900 text-zinc-500 text-[9px] font-black py-3 rounded-xl uppercase';
         }
 
         async function reportError() {
@@ -207,7 +229,7 @@
         function toggleFavorite() {
             const item = localData.find(m => m.id == activeId) || favorites.find(m => m.id == activeId);
             const idx = favorites.findIndex(f => f.id == activeId);
-            if(idx > -1) favorites.splice(idx, 1); else favorites.push(item);
+            if(idx > -1) favorites.splice(idx, 1); else if(item) favorites.push(item);
             localStorage.setItem('gy_favs', JSON.stringify(favorites));
             updateFavIcon();
         }
