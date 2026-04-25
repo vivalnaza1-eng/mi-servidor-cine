@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guyana Digital Cinema PRO</title>
+<title>Guyana Cinema ULTRA</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -11,99 +11,116 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;900&display=swap');
 
-body {
-    background: radial-gradient(circle at top, #0a0a0a, #000);
-    color: white;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+:root{
+    --g-green:#0f3d2e;
+    --g-gold:#facc15;
+}
+
+body{
+    background: radial-gradient(circle at top, #06110c, #000);
+    color:white;
+    font-family:'Plus Jakarta Sans',sans-serif;
 }
 
 /* NAV */
-nav {
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(40px);
+nav{
+    background:rgba(0,0,0,0.7);
+    backdrop-filter:blur(30px);
 }
 
 /* HERO */
-#hero {
-    height: 75vh;
-    position: relative;
+#hero{
+    height:80vh;
+    position:relative;
 }
 
-#hero-bg {
+#hero-bg{
     position:absolute;
     inset:0;
     background-size:cover;
     background-position:center;
+    transition:1s;
 }
 
-#hero-bg::after {
+#hero-bg::after{
     content:'';
     position:absolute;
     inset:0;
-    background: linear-gradient(to top,#000 10%,transparent 60%);
+    background:linear-gradient(to top,#000 5%,transparent 60%);
 }
 
-#hero-content {
+#hero-content{
     position:absolute;
-    bottom:40px;
-    left:30px;
+    bottom:60px;
+    left:40px;
+    max-width:500px;
+}
+
+.hero-btn{
+    background:var(--g-gold);
+    color:black;
+    padding:10px 20px;
+    border-radius:30px;
+    font-weight:800;
+    margin-right:10px;
 }
 
 /* ROWS */
-.row { margin-bottom: 30px; }
-
-.row-title {
-    font-size:14px;
-    font-weight:800;
+.row{margin-bottom:35px;}
+.row-title{
+    font-weight:900;
     margin-bottom:10px;
 }
 
-.row-scroll {
+.row-scroll{
     display:flex;
     gap:12px;
     overflow-x:auto;
 }
 
-.row-scroll::-webkit-scrollbar { display:none; }
+.row-scroll::-webkit-scrollbar{display:none;}
 
-/* CARDS */
-.poster-card {
-    min-width:140px;
-    border-radius:12px;
+/* CARD */
+.poster-card{
+    min-width:150px;
+    border-radius:14px;
     overflow:hidden;
+    position:relative;
     cursor:pointer;
     transition:0.4s;
 }
 
-.poster-card:hover {
-    transform: scale(1.25);
-    z-index:10;
-    box-shadow:0 20px 60px rgba(0,0,0,0.9);
+.poster-card:hover{
+    transform:scale(1.3);
+    z-index:20;
 }
 
-.poster-card img {
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    transition:0.4s;
+.poster-overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top,rgba(0,0,0,0.9),transparent);
+    opacity:0;
+    transition:0.3s;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:10px;
 }
 
-.poster-card:hover img {
-    transform:scale(1.1);
+.poster-card:hover .poster-overlay{
+    opacity:1;
 }
 
-/* MODAL */
-.modal {
+/* PLAYER */
+.modal{
     display:none;
     position:fixed;
     inset:0;
     background:black;
-    z-index:2000;
+    z-index:999;
 }
 
-.modal.active {
-    display:block;
-}
+.modal.active{display:block;}
 
 </style>
 </head>
@@ -111,16 +128,20 @@ nav {
 <body>
 
 <nav class="p-4 flex justify-between items-center">
-    <h1 class="font-black">GUYANA CINEMA</h1>
+    <h1 class="font-black text-lg">🇬🇾 Guyana Cinema</h1>
     <input id="search" placeholder="Search..." class="bg-zinc-900 px-3 py-1 rounded">
 </nav>
 
 <!-- HERO -->
 <div id="hero">
     <div id="hero-bg"></div>
+
     <div id="hero-content">
-        <h1 id="hero-title" class="text-4xl font-black"></h1>
-        <button onclick="heroPlay()" class="mt-3 bg-white text-black px-5 py-2 rounded">▶ Play</button>
+        <h1 id="hero-title" class="text-5xl font-black mb-3"></h1>
+        <p id="hero-desc" class="text-sm text-zinc-300 mb-4"></p>
+
+        <button class="hero-btn" onclick="heroPlay()">▶ Play</button>
+        <button class="hero-btn bg-white text-black">+ My List</button>
     </div>
 </div>
 
@@ -129,43 +150,66 @@ nav {
 
 <!-- PLAYER -->
 <div id="player" class="modal">
-    <button onclick="closePlayer()" class="p-4">⬅ Back</button>
+    <button onclick="closePlayer()" class="p-5 text-white">⬅ Back</button>
     <div id="frame"></div>
 </div>
 
 <script>
-const API = "https://mi-servidor-cine.onrender.com";
+const API="https://mi-servidor-cine.onrender.com";
 
-let data = [];
-let heroItem = null;
+let data=[];
+let heroItem=null;
 
 /* LOAD */
-async function load() {
-    const res = await fetch(API + "/populares");
-    const json = await res.json();
-    data = json.results || json;
+async function load(){
+    const r=await fetch(API+"/populares");
+    const j=await r.json();
+    data=j.results||j;
 
-    draw(data);
     showHero(data[0]);
+    draw(data);
 }
 
-/* DRAW ROWS */
-function draw(list) {
-    const container = document.getElementById('rows');
+/* HERO */
+function showHero(item){
+    heroItem=item;
 
-    let rows = [];
-    for (let i = 0; i < list.length; i += 10) {
-        rows.push(list.slice(i, i + 10));
+    document.getElementById('hero-bg').style.backgroundImage=
+        `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
+
+    document.getElementById('hero-title').innerText=item.title||item.name;
+    document.getElementById('hero-desc').innerText=item.overview?.slice(0,120)+"...";
+}
+
+function heroPlay(){
+    openPlayer(heroItem.id);
+}
+
+/* ROWS */
+function draw(list){
+    const container=document.getElementById('rows');
+
+    let rows=[];
+    for(let i=0;i<list.length;i+=10){
+        rows.push(list.slice(i,i+10));
     }
 
-    container.innerHTML = rows.map((row, i) => `
+    container.innerHTML=rows.map((row,i)=>`
         <div class="row">
-            <h3 class="row-title">${i==0?'🔥 Trending':'Popular'}</h3>
+            <h3 class="row-title">${i==0?'🔥 Trending Guyana':'Popular'}</h3>
 
             <div class="row-scroll">
-                ${row.map(m => `
-                    <div class="poster-card" onclick="openPlayer(${m.id})">
+                ${row.map(m=>`
+                    <div class="poster-card">
                         <img src="https://image.tmdb.org/t/p/w500${m.poster_path}">
+
+                        <div class="poster-overlay">
+                            <p class="text-xs font-bold">${m.title||m.name}</p>
+
+                            <div class="flex gap-2 mt-2">
+                                <button onclick="openPlayer(${m.id})">▶</button>
+                            </div>
+                        </div>
                     </div>
                 `).join('')}
             </div>
@@ -173,36 +217,21 @@ function draw(list) {
     `).join('');
 }
 
-/* HERO */
-function showHero(item) {
-    heroItem = item;
-
-    document.getElementById('hero-bg').style.backgroundImage =
-        `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
-
-    document.getElementById('hero-title').innerText =
-        item.title || item.name;
-}
-
-function heroPlay() {
-    if(heroItem) openPlayer(heroItem.id);
-}
-
 /* AUTO HERO */
-let i = 0;
+let i=0;
 setInterval(()=>{
-    if(!data.length) return;
-    i = (i+1)%data.length;
+    if(!data.length)return;
+    i=(i+1)%data.length;
     showHero(data[i]);
-},8000);
+},7000);
 
 /* PLAYER */
 function openPlayer(id){
     document.getElementById('player').classList.add('active');
 
-    document.getElementById('frame').innerHTML =
-        `<iframe src="https://vidsrc.xyz/embed/movie?tmdb=${id}"
-        width="100%" height="500" allowfullscreen></iframe>`;
+    document.getElementById('frame').innerHTML=
+    `<iframe src="https://vidsrc.xyz/embed/movie?tmdb=${id}"
+    width="100%" height="500" allowfullscreen></iframe>`;
 }
 
 function closePlayer(){
@@ -212,13 +241,12 @@ function closePlayer(){
 
 /* SEARCH */
 document.getElementById('search').addEventListener('input', async e=>{
-    const q = e.target.value;
+    const q=e.target.value;
     if(!q) return load();
 
-    const res = await fetch(API + "/buscar?q=" + q);
-    const json = await res.json();
-
-    draw(json);
+    const r=await fetch(API+"/buscar?q="+q);
+    const j=await r.json();
+    draw(j);
 });
 
 /* INIT */
