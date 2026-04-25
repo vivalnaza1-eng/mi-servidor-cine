@@ -24,7 +24,6 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); }
         }
 
-        /* Estilo para el botón flotante de MMG */
         .btn-mmg { position: fixed; bottom: 30px; left: 20px; width: 65px; height: 65px; background: white; border-radius: 22px; z-index: 1000; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); border: 3px solid var(--accent-cyan); transition: 0.3s; }
         .btn-mmg:active { transform: scale(0.9); }
 
@@ -106,10 +105,30 @@
         const CHAT_ID = "8026826478";
         
         let localData = [], favorites = JSON.parse(localStorage.getItem('gy_favs')) || [], currentMode = 'movie', activeId = null, selectedServer = 0;
+        let searchTimer; // Variable necesaria para el buscador
 
         // FUNCIONES DE DONACIÓN
         function openDonation() { document.getElementById('donation-modal').classList.add('active'); }
         function closeDonation() { document.getElementById('donation-modal').classList.remove('active'); }
+
+        // LÓGICA DEL BUSCADOR
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(performGlobalSearch, 500);
+        }
+
+        async function performGlobalSearch() {
+            const query = document.getElementById('search').value.trim();
+            const grid = document.getElementById('grid');
+            if(!query) return load();
+
+            grid.innerHTML = Array(4).fill('<div class="poster-card skeleton"></div>').join('');
+            try {
+                const r = await fetch(`${API_URL}/buscar?q=${query}`);
+                localData = await r.json();
+                draw(localData);
+            } catch (e) { console.error("Search error:", e); }
+        }
 
         async function load() {
             const grid = document.getElementById('grid');
@@ -133,7 +152,14 @@
             `).join('');
         }
 
-        // ... [El resto de tus funciones initPlay, reportError, etc., se mantienen intactas] ...
+        function changeMode(m) {
+            currentMode = m;
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+            if(document.getElementById(`btn-${m}`)) document.getElementById(`btn-${m}`).classList.add('tab-active');
+            load();
+        }
+
+        // ... [Asegúrate de incluir tus funciones de openPlayer, reportError, etc. aquí abajo] ...
 
         window.onload = () => { load(); lucide.createIcons(); };
     </script>
