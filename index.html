@@ -38,6 +38,95 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #111; color: white; padding: 12px 24px; border-radius: 99px; transition: 0.5s; z-index: 3000; font-size: 10px; font-weight: 800; border: 1px solid var(--accent-cyan); }
         #toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── DONATION BUTTON ── */
+        #donate-fab {
+            position: fixed;
+            bottom: 28px;
+            right: 20px;
+            z-index: 4000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #141414 100%);
+            border: 1.5px solid var(--accent-cyan);
+            box-shadow: 0 0 18px rgba(0,242,255,0.35), 0 4px 20px rgba(0,0,0,0.7);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            animation: pulse-fab 3s infinite;
+        }
+        #donate-fab:hover { transform: scale(1.1); box-shadow: 0 0 28px rgba(0,242,255,0.6), 0 6px 24px rgba(0,0,0,0.8); }
+        #donate-fab img { width: 32px; height: 32px; object-fit: contain; pointer-events: none; }
+        @keyframes pulse-fab {
+            0%,100% { box-shadow: 0 0 18px rgba(0,242,255,0.35), 0 4px 20px rgba(0,0,0,0.7); }
+            50%      { box-shadow: 0 0 30px rgba(0,242,255,0.65), 0 4px 20px rgba(0,0,0,0.7); }
+        }
+
+        /* ── DONATION MODAL ── */
+        #donate-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            z-index: 4500;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 0 24px;
+        }
+        #donate-modal.active { display: flex; }
+        #donate-sheet {
+            width: 100%;
+            max-width: 440px;
+            background: #0c0c0c;
+            border: 1px solid rgba(0,242,255,0.18);
+            border-radius: 28px 28px 20px 20px;
+            padding: 28px 24px 32px;
+            animation: slideUp 0.4s cubic-bezier(0.23,1,0.32,1);
+            position: relative;
+            text-align: center;
+        }
+        #donate-sheet .close-btn {
+            position: absolute; top: 16px; right: 16px;
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: background 0.2s;
+        }
+        #donate-sheet .close-btn:hover { background: rgba(0,242,255,0.12); }
+        .donate-logo { width: 60px; height: 60px; object-fit: contain; margin: 0 auto 12px; display: block; }
+        .donate-title { font-size: 11px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 6px; }
+        .donate-subtitle { font-size: 10px; color: #a1a1aa; margin-bottom: 22px; line-height: 1.6; }
+        .donate-number-box {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: rgba(0,242,255,0.06);
+            border: 1px solid rgba(0,242,255,0.25);
+            border-radius: 14px;
+            padding: 14px 20px;
+            margin-bottom: 18px;
+        }
+        .donate-number { font-size: 22px; font-weight: 900; letter-spacing: 0.08em; color: #fff; }
+        .copy-btn {
+            background: rgba(0,242,255,0.12);
+            border: 1px solid rgba(0,242,255,0.3);
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex; align-items: center;
+        }
+        .copy-btn:hover { background: rgba(0,242,255,0.25); }
+        .donate-note {
+            font-size: 9px; color: #52525b; line-height: 1.7;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 14px; margin-top: 4px;
+        }
+        .donate-note span { color: var(--accent-cyan); font-weight: 800; }
     </style>
 </head>
 <body class="pt-48 pb-24">
@@ -80,6 +169,39 @@
     </nav>
 
     <main id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6"></main>
+
+    <!-- ── DONATION FLOATING BUTTON ── -->
+    <button id="donate-fab" onclick="openDonate()" title="Support us via MMG">
+        <img src="mmg.svg" alt="MMG Donate">
+    </button>
+
+    <!-- ── DONATION MODAL ── -->
+    <div id="donate-modal" onclick="closeDonateOutside(event)">
+        <div id="donate-sheet">
+            <button class="close-btn" onclick="closeDonate()">
+                <i data-lucide="x" class="w-3.5 h-3.5 text-zinc-400"></i>
+            </button>
+
+            <img src="mmg.svg" alt="MMG" class="donate-logo">
+            <p class="donate-title">Support Guyana Digital</p>
+            <p class="donate-subtitle">
+                Enjoy free movies &amp; series? Help keep the platform alive!<br>
+                Send your donation via <strong style="color:#fff">MMG</strong> to the number below.
+            </p>
+
+            <div class="donate-number-box">
+                <span class="donate-number">7005167</span>
+                <button class="copy-btn" onclick="copyNumber()" title="Copy number">
+                    <i data-lucide="copy" id="copy-icon" class="w-4 h-4 text-cyan-400"></i>
+                </button>
+            </div>
+
+            <p class="donate-note">
+                Every contribution, no matter how small, helps us keep the servers running and the content flowing. 🎬<br>
+                <span>Thank you for your support!</span>
+            </p>
+        </div>
+    </div>
 
     <div id="player-modal" class="modal overflow-y-auto">
         <div class="p-5 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl z-50">
@@ -212,6 +334,26 @@
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
             if(document.getElementById(`btn-${m}`)) document.getElementById(`btn-${m}`).classList.add('tab-active');
             load();
+        }
+
+        // ── DONATION FUNCTIONS ──
+        function openDonate() {
+            document.getElementById('donate-modal').classList.add('active');
+            lucide.createIcons();
+        }
+        function closeDonate() {
+            document.getElementById('donate-modal').classList.remove('active');
+        }
+        function closeDonateOutside(e) {
+            if(e.target === document.getElementById('donate-modal')) closeDonate();
+        }
+        function copyNumber() {
+            navigator.clipboard.writeText('7005167').then(() => {
+                const icon = document.getElementById('copy-icon');
+                icon.setAttribute('data-lucide', 'check');
+                lucide.createIcons();
+                setTimeout(() => { icon.setAttribute('data-lucide', 'copy'); lucide.createIcons(); }, 2000);
+            });
         }
 
         window.onload = () => { load(); lucide.createIcons(); };
